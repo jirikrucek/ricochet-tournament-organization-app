@@ -28,16 +28,6 @@ const PlayerFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             let lname = '';
             const full = initialData?.full_name || '';
             if (full) {
-                // Simple split on first space, but better logic might be needed if multiple names.
-                // Assuming "Surname Name" or "Name Surname"? 
-                // Based on CSV request, columns are "Surname" and "Name".
-                // Let's assume the stored full_name is "Surname Name" based on previous steps.
-
-                // Wait, previous step CSV combined them as `${surname} ${name}` => "Bodis Michal".
-                // So first word is surname? Or user wants specific fields now?
-                // The user wants inputs to match CSV columns: Surname, Name.
-                // So we should split by space, first token is Surname, rest is Name? 
-                // Or let the user edit it.
                 const parts = full.split(' ');
                 if (parts.length > 0) lname = parts[0];
                 if (parts.length > 1) fname = parts.slice(1).join(' ');
@@ -51,14 +41,8 @@ const PlayerFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             });
 
             setErrors({});
-            // Prevent body scroll
-            document.body.style.overflow = 'hidden';
-        } else {
-            document.body.style.overflow = '';
+            // Body scroll lock removed
         }
-        return () => {
-            document.body.style.overflow = '';
-        };
     }, [isOpen, initialData]);
 
     // Click outside to close helper

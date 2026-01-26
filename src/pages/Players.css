@@ -7,10 +7,13 @@
     background: rgba(0, 0, 0, 0.6);
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
+    /* Changed from center to allow scrolling from top */
     z-index: 9999;
     backdrop-filter: blur(4px);
     animation: fadeIn 0.2s ease-out;
+    overflow-y: auto;
+    /* Essential for scrolling */
 }
 
 .modal-content {
@@ -21,14 +24,14 @@
     box-shadow: var(--shadow-lg);
     border: 1px solid var(--border-color);
     padding: 1.5rem;
-    max-height: 85vh;
     display: flex;
     flex-direction: column;
-    /* Modal Positioning Fix */
-    position: fixed;
-    top: 50%;
+    /* Absolute positioning for scroll support */
+    position: absolute;
+    top: 20px;
     left: 50%;
-    transform: translate(-50%, -50%);
+    transform: translateX(-50%);
+    margin-bottom: 50px;
     z-index: 10000;
 }
 
