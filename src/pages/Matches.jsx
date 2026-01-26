@@ -295,12 +295,20 @@ const Matches = () => {
                     )}
                 </div>
 
-                {!isCompact && match.microPoints && match.microPoints.length > 0 && (
-                    <div style={{ marginTop: '0.5rem', fontSize: '0.8rem', color: 'var(--text-secondary)', display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                        <span>Sets:</span>
-                        {match.microPoints.map((mp, i) => (
-                            <span key={i} style={{ background: 'var(--bg-primary)', padding: '2px 6px', borderRadius: '4px', border: '1px solid var(--border-color)' }}>
-                                {mp.a}-{mp.b}
+                {match.microPoints && match.microPoints.length > 0 && (
+                    <div style={{
+                        marginTop: isCompact ? '0' : '0.5rem',
+                        marginLeft: isCompact ? '1rem' : '0',
+                        fontSize: '0.75rem',
+                        color: '#9ca3af',
+                        display: 'flex',
+                        gap: '0.25rem',
+                        flexWrap: 'wrap',
+                        alignItems: 'center'
+                    }}>
+                        {match.microPoints.sort((a, b) => a.set - b.set).map((mp, i) => (
+                            <span key={i}>
+                                {mp.a}:{mp.b}{i < match.microPoints.length - 1 ? ',' : ''}
                             </span>
                         ))}
                     </div>

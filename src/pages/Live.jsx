@@ -188,11 +188,11 @@ const Live = () => {
                 </div>
 
                 {match.microPoints && match.microPoints.length > 0 && (
-                    <div className="micro-points-container">
-                        {match.microPoints.map((mp, idx) => (
-                            <div key={idx} className="micro-point-badge">
-                                S{mp.set}: {mp.a}-{mp.b}
-                            </div>
+                    <div className="micro-points-container" style={{ justifyContent: 'center', gap: '4px', fontSize: '0.75rem', color: '#9ca3af' }}>
+                        {match.microPoints.sort((a, b) => a.set - b.set).map((mp, idx) => (
+                            <span key={idx}>
+                                {mp.a}:{mp.b}{idx < match.microPoints.length - 1 ? ',' : ''}
+                            </span>
                         ))}
                     </div>
                 )}
@@ -300,6 +300,23 @@ const Live = () => {
                                 <span style={{ color: match.winnerId === match.player2?.id ? 'var(--accent-green)' : 'inherit' }}>{match.player2?.full_name || 'TBD'}</span>
                                 <span>{match.score2}</span>
                             </div>
+
+                            {match.microPoints && match.microPoints.length > 0 && (
+                                <div style={{
+                                    marginTop: '0.5rem',
+                                    fontSize: '0.75rem',
+                                    color: '#9ca3af',
+                                    display: 'flex',
+                                    justifyContent: 'flex-end',
+                                    gap: '0.25rem'
+                                }}>
+                                    {match.microPoints.sort((a, b) => a.set - b.set).map((mp, i) => (
+                                        <span key={i}>
+                                            {mp.a}:{mp.b}{i < match.microPoints.length - 1 ? ',' : ''}
+                                        </span>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     )) : (
                         <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>{t('live.noResults')}</p>
