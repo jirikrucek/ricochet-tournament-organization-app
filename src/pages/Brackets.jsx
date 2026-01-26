@@ -7,6 +7,7 @@ import { TransformWrapper, TransformComponent } from 'react-zoom-pan-pinch';
 import { ZoomIn, ZoomOut, RotateCcw, Save, RefreshCw, X, Trophy } from 'lucide-react';
 import './Brackets.css';
 import { useAuth } from '../hooks/useAuth.tsx';
+import { useTournament } from '../contexts/TournamentContext';
 
 const Brackets = () => {
     const { t } = useTranslation();

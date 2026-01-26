@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMatches } from '../hooks/useMatches';
+import { useTournament } from '../contexts/TournamentContext';
 import { updateBracketMatch, clearBracketMatch, generateDoubleEliminationBracket } from '../utils/bracketLogic';
 import { getBestOf, getMatchStatus, canEditMatch } from '../utils/matchUtils';
 import { Edit2, Trophy, Clock, Activity, CheckCircle, Save, X, Trash2 } from 'lucide-react';
@@ -177,6 +178,7 @@ const Matches = () => {
     const { t } = useTranslation();
     const { matches, saveMatches } = useMatches();
     const { players } = usePlayers();
+    const { activeTournamentId, updateTournament } = useTournament();
     const [filter, setFilter] = useState('all');
     const [editingMatch, setEditingMatch] = useState(null);
     const { isAuthenticated } = useAuth();
@@ -351,14 +353,17 @@ const Matches = () => {
                                 Zarejestrowanych graczy: <strong>{players.length}</strong>
                             </p>
                             <button
-                                onClick={() => {
+                                onClick={async () => {
                                     if (players.length < 2) {
                                         alert(t('matches.needPlayers'));
                                         return;
                                     }
                                     if (window.confirm(t('matches.generateConfirm', { count: players.length }))) {
                                         const newBracket = generateDoubleEliminationBracket(players);
-                                        saveMatches(newBracket);
+                                        await saveMatches(newBracket);
+                                        if (activeTournamentId) {
+                                            await updateTournament(activeTournamentId, { status: 'in_progress' });
+                                        }
                                     }
                                 }}
                                 className="btn-primary"
