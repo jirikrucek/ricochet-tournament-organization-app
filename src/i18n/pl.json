@@ -41,6 +41,7 @@
             "editTitle": "Edytuj zawodnika",
             "labels": {
                 "fullName": "Imię i nazwisko *",
+                "photo": "Link do zdjęcia",
                 "country": "Kraj",
                 "elo": "ELO"
             },

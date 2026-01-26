@@ -13,6 +13,7 @@ const PlayerFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
     const [formData, setFormData] = useState({
         first_name: '',
         last_name: '',
+        photo: '',
         country: '',
         elo: ''
     });
@@ -36,6 +37,7 @@ const PlayerFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             setFormData({
                 first_name: fname,
                 last_name: lname,
+                photo: initialData?.photo || '',
                 country: initialData?.country || '',
                 elo: initialData?.elo != null ? initialData.elo : ''
             });
@@ -77,6 +79,7 @@ const PlayerFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
             const combined = `${formData.last_name.trim()} ${formData.first_name.trim()}`;
             onSubmit({
                 full_name: combined,
+                photo: formData.photo,
                 country: formData.country,
                 elo: formData.elo
             });
@@ -120,6 +123,26 @@ const PlayerFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                                     placeholder="np. Jan"
                                 />
                                 {errors.first_name && <div className="error-message">{errors.first_name}</div>}
+                            </div>
+                        </div>
+
+                        <div className="form-group">
+                            <label className="form-label">{t('players.modal.labels.photo')}</label>
+                            <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
+                                <div className="player-avatar" style={{ width: '50px', height: '50px' }}>
+                                    {formData.photo ? (
+                                        <img src={formData.photo} alt="Preview" style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => e.target.style.display = 'none'} />
+                                    ) : (
+                                        <User size={30} />
+                                    )}
+                                </div>
+                                <input
+                                    className="form-input"
+                                    value={formData.photo}
+                                    onChange={e => setFormData({ ...formData, photo: e.target.value })}
+                                    placeholder="https://example.com/photo.jpg"
+                                    style={{ flex: 1 }}
+                                />
                             </div>
                         </div>
 
