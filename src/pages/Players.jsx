@@ -1,5 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { usePlayers } from '../hooks/usePlayers';
+import { useMatches } from '../hooks/useMatches';
+import PlayerProfileModal from '../components/PlayerProfileModal';
 import { Search, Plus, Edit2, Trash2, X, Upload, Check, User } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { EUROPEAN_COUNTRIES, getCountryCode } from '../constants/countries';
@@ -221,9 +223,11 @@ const PlayerFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
 const Players = () => {
     const { t } = useTranslation();
     const { players, addPlayer, updatePlayer, deletePlayer, importPlayers, bulkUpsertPlayers } = usePlayers();
+    const { matches } = useMatches();
     const [searchTerm, setSearchTerm] = useState('');
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [editingPlayer, setEditingPlayer] = useState(null);
+    const [selectedProfilePlayer, setSelectedProfilePlayer] = useState(null);
     const [toastMessage, setToastMessage] = useState(null);
     const { isAuthenticated } = useAuth(); // Auth
 
@@ -434,7 +438,7 @@ const Players = () => {
                     <tbody>
                         {filteredPlayers.length > 0 ? (
                             filteredPlayers.map(player => (
-                                <tr key={player.id}>
+                                <tr key={player.id} onClick={() => setSelectedProfilePlayer(player)} style={{ cursor: 'pointer' }}>
                                     <td>
                                         <div className="player-avatar">
                                             {player.photo ? (
@@ -466,7 +470,7 @@ const Players = () => {
                                     </td>
                                     <td>{player.elo || '-'}</td>
                                     {isAuthenticated && (
-                                        <td>
+                                        <td onClick={e => e.stopPropagation()}>
                                             <div className="flex-center" style={{ gap: '0.5rem' }}>
                                                 <button
                                                     className="btn-icon"
@@ -505,6 +509,13 @@ const Players = () => {
                 onClose={() => setIsModalOpen(false)}
                 onSubmit={handleSave}
                 initialData={editingPlayer}
+            />
+
+            <PlayerProfileModal
+                player={selectedProfilePlayer}
+                matches={matches}
+                allPlayers={players}
+                onClose={() => setSelectedProfilePlayer(null)}
             />
 
             {toastMessage && (
