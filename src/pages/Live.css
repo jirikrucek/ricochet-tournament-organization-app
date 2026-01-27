@@ -384,15 +384,17 @@
 }
 
 .set-box {
-    background: var(--bg-secondary);
+    background: rgba(255, 255, 255, 0.05);
+    /* Subtle grey glass effect */
     border: 1px solid var(--border-color);
-    border-radius: 6px;
-    padding: 0.5rem 0.8rem;
-    min-width: 80px;
+    border-radius: 4px;
+    /* More boxy */
+    padding: 0.4rem 0.6rem;
+    min-width: 60px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.25rem;
+    gap: 0.1rem;
 }
 
 .set-label {
