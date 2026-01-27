@@ -293,7 +293,7 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
                             return (
                                 <div key={group.id} style={{
                                     display: 'flex', flexDirection: 'column', gap: '1rem',
-                                    border: `1px solid ${group.color}40`, // Source Theme Color
+                                    border: `1px solid ${group.color}40`,
                                     borderLeft: `4px solid ${group.color}`,
                                     padding: '1.5rem', borderRadius: '8px',
                                     background: `linear-gradient(to right, ${group.color}05, transparent)`
