@@ -78,7 +78,8 @@
         "gf": "Finals",
         "round": "Round",
         "liveBadge": "LIVE",
-        "readinessAlert": "Następny mecz: Proszę o gotowość przy korcie ⏳"
+        "readinessAlert": "Następny mecz: Proszę o gotowość przy korcie ⏳",
+        "scanForResults": "WYNIKI MOBILE"
     },
     "organizer": {
         "title": "Zarządzanie Turniejami",

@@ -436,6 +436,19 @@ const Live = () => {
                     </section>
                 </div>
             </div>
+
+            {/* QR Code Widget */}
+            <div className="qr-widget">
+                <div className="qr-box">
+                    <img
+                        src="/qr-live.png"
+                        alt="Mobile Results"
+                        style={{ width: '100%', height: '100%', objectFit: 'contain' }}
+                        onError={(e) => e.target.style.display = 'none'}
+                    />
+                </div>
+                <div className="qr-label">{t('live.scanForResults')}</div>
+            </div>
         </div>
     );
 };

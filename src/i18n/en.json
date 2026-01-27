@@ -77,7 +77,8 @@
         "gf": "Finals",
         "round": "Round",
         "liveBadge": "LIVE",
-        "readinessAlert": "Next match: Please be ready near the court ⏳"
+        "readinessAlert": "Next match: Please be ready near the court ⏳",
+        "scanForResults": "MOBILE RESULTS"
     },
     "organizer": {
         "title": "Tournament Management",
