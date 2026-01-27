@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useRef } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Maximize, Minimize, Trophy, Clock, Activity, PauseCircle, X } from 'lucide-react';
+import { Maximize, Minimize, Trophy, Clock, Activity, X } from 'lucide-react';
 import { useMatches } from '../hooks/useMatches';
 import { usePlayers } from '../hooks/usePlayers';
 import { getBestOf } from '../utils/matchUtils';
@@ -82,7 +82,6 @@ const Live = () => {
     // Carousel State
     const [viewMode, setViewMode] = useState('panel'); // 'panel' or 'bracket'
     const [timeLeft, setTimeLeft] = useState(45);
-    const [isPaused, setIsPaused] = useState(false);
 
     // Initial load timestamp
     useEffect(() => {
@@ -95,19 +94,17 @@ const Live = () => {
             const now = new Date();
             setCurrentTime(now);
 
-            if (!isPaused) {
-                setTimeLeft((prev) => {
-                    if (prev <= 1) {
-                        // Switch view
-                        setViewMode(v => v === 'panel' ? 'bracket' : 'panel');
-                        return 45;
-                    }
-                    return prev - 1;
-                });
-            }
+            setTimeLeft((prev) => {
+                if (prev <= 1) {
+                    // Switch view
+                    setViewMode(v => v === 'panel' ? 'bracket' : 'panel');
+                    return 45;
+                }
+                return prev - 1;
+            });
         }, 1000);
         return () => clearInterval(interval);
-    }, [isPaused]);
+    }, []);
 
     const handleRefresh = () => {
         window.location.reload();
@@ -120,32 +117,6 @@ const Live = () => {
             navigate('/live?mode=tv');
         }
     };
-
-    const handleInteraction = () => {
-        // Only trigger pause if not already paused
-        if (!isPaused) {
-            setIsPaused(true);
-
-            // Auto resume after 60s
-            // We use a timeout but need to be careful about cleanup if component unmounts
-            // For simplicity in this functional component, just setting a timeout is okay, 
-            // but if the user clicks again, we might want to extend it. 
-            // Ideally we'd use a ref for the timeout ID to clear previous ones.
-        }
-        // If already paused, we could extend the pause or just let it run.
-        // Let's just extend/reset the pause.
-    };
-
-    // Effect to handle pause timeout reset
-    useEffect(() => {
-        let timeout;
-        if (isPaused) {
-            timeout = setTimeout(() => {
-                setIsPaused(false);
-            }, 60000);
-        }
-        return () => clearTimeout(timeout);
-    }, [isPaused]);
 
 
     const formatTime = (date) => {
@@ -297,12 +268,12 @@ const Live = () => {
     };
 
     // Calculate Progress Bar Width
-    const progressWidth = isPaused ? 100 : ((timeLeft / 45) * 100);
+    const progressWidth = (timeLeft / 45) * 100;
 
     return (
-        <div className={`live-container ${isTvMode ? 'tv-mode' : ''}`} onClick={handleInteraction}>
+        <div className={`live-container ${isTvMode ? 'tv-mode' : ''}`}>
             {/* Carousel Progress Bar */}
-            <div className="carousel-progress-bar" style={{ width: `${progressWidth}%`, opacity: isPaused ? 0.5 : 1 }}></div>
+            <div className="carousel-progress-bar" style={{ width: `${progressWidth}%`, opacity: 1 }}></div>
 
             {/* TV Mode Controls */}
             <div className="tv-controls" style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 10000 }}>
@@ -320,11 +291,6 @@ const Live = () => {
             <header className="live-header" style={{ paddingRight: isTvMode ? '120px' : '0' }}>
                 <div>
                     <h1 className="live-title">{t('live.title')}</h1>
-                    {isPaused && (
-                        <div style={{ color: 'var(--accent-pink)', fontWeight: 700, display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.9rem' }}>
-                            <PauseCircle size={16} /> PAUSED (60s)
-                        </div>
-                    )}
                 </div>
                 <div style={{ textAlign: 'right', display: 'flex', gap: '1rem', alignItems: 'center' }}>
                     {/* Digital Clock */}
