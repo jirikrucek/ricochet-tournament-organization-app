@@ -1,62 +1,11 @@
-import React, { useState, useEffect, useMemo, useRef } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Maximize, Minimize, Trophy, Clock, Activity, X } from 'lucide-react';
+import { Maximize, Trophy, Clock, Activity, X } from 'lucide-react';
 import { useMatches } from '../hooks/useMatches';
 import { usePlayers } from '../hooks/usePlayers';
 import { getBestOf, compareMatchIds } from '../utils/matchUtils';
-import BracketCanvas from '../components/BracketCanvas';
 import './Live.css';
-
-// Helper for Auto Scaling Bracket
-const AutoScaledBracket = ({ matches, players, visibleSections = ['wb', 'mid', 'lb'] }) => {
-    const containerRef = useRef(null);
-    const contentRef = useRef(null);
-    const [scale, setScale] = useState(1);
-
-    useEffect(() => {
-        const calculateScale = () => {
-            if (containerRef.current && contentRef.current) {
-                const container = containerRef.current;
-                const content = contentRef.current;
-
-                // Aggressive Auto-Scale for TV Mode
-                const contentRect = content.getBoundingClientRect();
-                // We use scrollWidth/scrollHeight for inherent size, but precise pixel measurement is better
-                const contentW = content.scrollWidth || contentRect.width;
-                const contentH = content.scrollHeight || contentRect.height;
-
-                // Available space (Full Window in TV Mode)
-                const availW = window.innerWidth;
-                const availH = window.innerHeight;
-
-                // Maximize scale: fit either width or height effectively
-                // 0.94 width factor for margins, 0.90 height factor
-                const scaleX = (availW * 0.94) / contentW;
-                const scaleY = (availH * 0.90) / contentH;
-
-                const newScale = Math.min(scaleX, scaleY);
-                setScale(newScale);
-            }
-        };
-
-        // Delay slightly to allow layout to settle
-        const timer = setTimeout(calculateScale, 200);
-        window.addEventListener('resize', calculateScale);
-        return () => {
-            window.removeEventListener('resize', calculateScale);
-            clearTimeout(timer);
-        };
-    }, [matches, players, visibleSections]);
-
-    return (
-        <div ref={containerRef} className="auto-bracket-wrapper">
-            <div ref={contentRef} className="scaled-content" style={{ transform: `scale(${scale})` }}>
-                <BracketCanvas matches={matches} players={players} readonly={true} visibleSections={visibleSections} />
-            </div>
-        </div>
-    );
-};
 
 const splitName = (fullName) => {
     if (!fullName) return { surname: 'S.', firstName: 'Name' };
@@ -81,40 +30,18 @@ const Live = () => {
     const [currentTime, setCurrentTime] = useState(new Date());
     const [lastUpdate, setLastUpdate] = useState(Date.now());
 
-    // Carousel State
-    const [viewMode, setViewMode] = useState('panel'); // 'panel' or 'bracket'
-    const [timeLeft, setTimeLeft] = useState(45);
-
     // Initial load timestamp
     useEffect(() => {
         setLastUpdate(Date.now());
     }, [matches]);
 
-    // Clock & Carousel Timer
+    // Clock
     useEffect(() => {
         const interval = setInterval(() => {
-            const now = new Date();
-            setCurrentTime(now);
-
-            setTimeLeft((prev) => {
-                if (prev <= 1) {
-                    // Switch view: Panel -> Bracket WB -> Bracket LB -> Panel
-                    setViewMode(v => {
-                        if (v === 'panel') return 'bracket_wb';
-                        if (v === 'bracket_wb') return 'bracket_lb';
-                        return 'panel';
-                    });
-                    return 45;
-                }
-                return prev - 1;
-            });
+            setCurrentTime(new Date());
         }, 1000);
         return () => clearInterval(interval);
     }, []);
-
-    const handleRefresh = () => {
-        window.location.reload();
-    };
 
     const toggleTvMode = () => {
         if (isTvMode) {
@@ -296,13 +223,8 @@ const Live = () => {
         ));
     };
 
-    // Calculate Progress Bar Width
-    const progressWidth = (timeLeft / 45) * 100;
-
     return (
         <div className={`live-container ${isTvMode ? 'tv-mode' : ''}`}>
-            {/* Carousel Progress Bar */}
-            <div className="carousel-progress-bar" style={{ width: `${progressWidth}%`, opacity: 1 }}></div>
 
             {/* TV Mode Controls */}
             <div className="tv-controls" style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 10000 }}>
@@ -336,8 +258,8 @@ const Live = () => {
 
             {/* View Layers Wrapper */}
             <div className="live-content-wrapper">
-                {/* 1. Panel View */}
-                <div className={`view-layer panel-content ${viewMode === 'panel' ? 'active' : 'inactive'}`}>
+                {/* 1. Panel View (Always Visible) */}
+                <div className={`view-layer panel-content active`}>
                     <div className="courts-grid">
                         {/* 1. KORT RÓŻOWY */}
                         <div className="court-card" style={{ borderTop: '4px solid var(--accent-pink)' }}>
@@ -410,22 +332,6 @@ const Live = () => {
                             )}
                         </div>
                     </section>
-                </div>
-
-                {/* 2. Bracket View (WB) */}
-                <div className={`view-layer ${viewMode === 'bracket_wb' ? 'active' : 'inactive'}`}>
-                    <AutoScaledBracket matches={matches} players={players} visibleSections={['wb', 'mid']} />
-                    <div style={{ position: 'absolute', bottom: '2rem', width: '100%', textAlign: 'center', fontWeight: 'bold', color: 'var(--text-secondary)', pointerEvents: 'none' }}>
-                        LIVE BRACKET OVERVIEW - WINNERS
-                    </div>
-                </div>
-
-                {/* 3. Bracket View (LB) */}
-                <div className={`view-layer ${viewMode === 'bracket_lb' ? 'active' : 'inactive'}`}>
-                    <AutoScaledBracket matches={matches} players={players} visibleSections={['lb']} />
-                    <div style={{ position: 'absolute', bottom: '2rem', width: '100%', textAlign: 'center', fontWeight: 'bold', color: 'var(--text-secondary)', pointerEvents: 'none' }}>
-                        LIVE BRACKET OVERVIEW - LOSERS
-                    </div>
                 </div>
             </div>
         </div>
