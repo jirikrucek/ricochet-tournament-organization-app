@@ -226,6 +226,31 @@ export const getBracketBlueprint = () => {
     const p5f = allMatches.find(m => m.id === 'p5-f');
     if (p5f) { p5f.sourceMatchId1 = 'lb-r6-m1'; p5f.sourceType1 = 'loser'; p5f.sourceMatchId2 = 'lb-r6-m2'; p5f.sourceType2 = 'loser'; }
 
+    // --- POST-PROCESSING: LINK DESTINATIONS ---
+    // Iterate to set nextMatchId (winner path) and consolationMatchId (loser path)
+    // Create a quick lookup map
+    const matchMap = new Map();
+    allMatches.forEach(m => matchMap.set(m.id, m));
+
+    allMatches.forEach(dest => {
+        // Check Source 1
+        if (dest.sourceMatchId1) {
+            const src = matchMap.get(dest.sourceMatchId1);
+            if (src) {
+                if (dest.sourceType1 === 'winner') src.nextMatchId = dest.id;
+                else if (dest.sourceType1 === 'loser') src.consolationMatchId = dest.id;
+            }
+        }
+        // Check Source 2
+        if (dest.sourceMatchId2) {
+            const src = matchMap.get(dest.sourceMatchId2);
+            if (src) {
+                if (dest.sourceType2 === 'winner') src.nextMatchId = dest.id;
+                else if (dest.sourceType2 === 'loser') src.consolationMatchId = dest.id;
+            }
+        }
+    });
+
     return allMatches;
 };
 

@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useState } from 'react';
 import { Trophy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 // We assume parent imports Brackets.css or we import it here
@@ -9,20 +9,69 @@ import { getBracketBlueprint } from '../utils/bracketLogic';
 
 const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visibleSections = ['wb', 'mid', 'lb'] }) => {
     const { t } = useTranslation();
+    const [selectedMatchId, setSelectedMatchId] = useState(null);
 
     // Enrich matches for display
     const enrichedMatches = useMemo(() => {
-        if (!matches) return [];
-        return matches.map(m => {
+        // If matches are not provided or empty, fallback to blueprint to show structure
+        const baseMatches = (matches && matches.length > 0) ? matches : getBracketBlueprint();
+
+        // Ensure linking logic is present (if missing from DB/props)
+        // We rely on getBracketBlueprint() to have correct linking logic now.
+        // However, if match objects come from DB, they might lack nextMatchId/consolationMatchId fields if those aren't stored.
+        // We can re-apply the linking logic blueprint provides to the live objects.
+        const blueprint = getBracketBlueprint();
+        const blueprintMap = new Map();
+        blueprint.forEach(m => blueprintMap.set(m.id, m));
+
+        return baseMatches.map(m => {
             const p1 = players.find(p => p.id === m.player1Id);
             const p2 = players.find(p => p.id === m.player2Id);
+
+            // Re-hydrate linking from blueprint if missing
+            const bp = blueprintMap.get(m.id);
+            const nextMatchId = m.nextMatchId || (bp ? bp.nextMatchId : null);
+            const consolationMatchId = m.consolationMatchId || (bp ? bp.consolationMatchId : null);
+            const sourceMatchId1 = m.sourceMatchId1 || (bp ? bp.sourceMatchId1 : null);
+            const sourceType1 = m.sourceType1 || (bp ? bp.sourceType1 : null);
+            const sourceMatchId2 = m.sourceMatchId2 || (bp ? bp.sourceMatchId2 : null);
+            const sourceType2 = m.sourceType2 || (bp ? bp.sourceType2 : null);
+
             return {
                 ...m,
                 player1: p1 || null,
-                player2: p2 || null
+                player2: p2 || null,
+                nextMatchId,
+                consolationMatchId,
+                sourceMatchId1, sourceType1,
+                sourceMatchId2, sourceType2
             };
         });
     }, [matches, players]);
+
+    // Path Highlighting Logic
+    const highlightSet = useMemo(() => {
+        if (!selectedMatchId) return null;
+        const set = new Set();
+        const queue = [selectedMatchId];
+
+        // Dictionary for fast lookup
+        const mDict = {};
+        enrichedMatches.forEach(m => mDict[m.id] = m);
+
+        while (queue.length > 0) {
+            const currentId = queue.pop();
+            if (set.has(currentId)) continue;
+            set.add(currentId);
+
+            const m = mDict[currentId];
+            if (m) {
+                if (m.nextMatchId) queue.push(m.nextMatchId);
+                if (m.consolationMatchId) queue.push(m.consolationMatchId);
+            }
+        }
+        return set;
+    }, [selectedMatchId, enrichedMatches]);
 
     // Helper to extract match number for sorting
     const getMatchNumber = (id) => {
@@ -47,16 +96,58 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
 
         const isClickable = !readonly && onMatchClick && !match.player1?.isBye && !match.player2?.isBye;
         const style = isClickable ? { cursor: 'pointer' } : { cursor: 'default' };
-        const onClick = isClickable ? () => onMatchClick(match) : undefined;
 
-        // Zone Info for Tooltip
+        // Toggle Highlight or Edit
+        const handleMatchInteraction = (e) => {
+            e.stopPropagation();
+            if (isClickable) {
+                // If clickable (admin edit), prioritize edit. 
+                // But user wants "Click to highlight". Maybe highlight on hover?
+                // Or: Admin -> Click to edit. Viewer -> Click to highlight.
+                // Request says: "Po kliknięciu w mecz... system ma podświetlić".
+                // If I am admin, I might want to see path too.
+                // Let's do: Highlight always happens. If isClickable, we ALSO trigger onMatchClick.
+                setSelectedMatchId(prev => (prev === match.id ? null : match.id));
+                onMatchClick(match);
+            } else {
+                setSelectedMatchId(prev => (prev === match.id ? null : match.id));
+            }
+        };
+
+        const isHighlighted = highlightSet ? highlightSet.has(match.id) : true;
+
+        const wrapperStyle = {
+            ...style,
+            opacity: isHighlighted ? 1 : 0.3,
+            transition: 'opacity 0.2s ease',
+            boxShadow: (selectedMatchId === match.id) ? '0 0 0 2px var(--primary)' : 'none',
+            // enhance visibility if highlighted
+            filter: isHighlighted && highlightSet ? 'brightness(1.05)' : 'none'
+        };
+
+        // Zone Info
         const zone = getZoneConfig(match.bracket, match.round);
+        let pathContext = '';
+        if (match.nextMatchId) pathContext += `\nWin -> ${match.nextMatchId}`;
+        if (match.consolationMatchId) pathContext += `\nLoss -> ${match.consolationMatchId}`;
         const zoneTooltip = zone ? `\n[${zone.label}]\n🏆 Win: Advances\n💀 Loss: ${zone.places} Place` : '';
-        const baseTitle = isClickable ? (match.id + " " + t('brackets.clickToEdit')) : match.id;
-        const title = baseTitle + zoneTooltip;
+        const title = (match.id + " " + (isClickable ? t('brackets.clickToEdit') : '')) + zoneTooltip + pathContext;
 
         const totalScore = (match.score1 || 0) + (match.score2 || 0);
         const showScore = match.status === 'finished' || (match.status === 'live' && totalScore > 0);
+
+        // Source Labels for TBD
+        const getSourceLabel = (srcId, type) => {
+            if (!srcId) return null; // No label if no source
+            // Shorten: wb-r1-m1 -> W-M1
+            const parts = srcId.split('-');
+            if (parts.length < 3) return type === 'winner' ? '(W)' : '(L)';
+            const matchNum = parts[2].replace('m', '');
+            // Maybe include Round? r1? No space.
+            // Just W-M1 is good enough as per request.
+            const prefix = type === 'winner' ? 'W' : 'L';
+            return <span className="source-label" style={{ fontSize: '0.65em', color: 'var(--text-tertiary)', marginLeft: '6px', fontWeight: 'normal', opacity: 0.8 }}>[{prefix}-{matchNum}]</span>;
+        };
 
         // --- Racket Path Logic ---
         const renderRacketPath = (m) => {
@@ -64,27 +155,15 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
             const config = getRacketPathConfig(m.id, m.bracket, m.round, mNum);
             if (!config) return null;
 
-            // Scenario A: Source (WB R1) - Always show 
             if (config.type === 'source') {
-                return (
-                    <RacketBadge
-                        colorKey={config.colorKey}
-                        text={config.text}
-                        isDual={config.isDual}
-                    />
-                );
+                return <RacketBadge colorKey={config.colorKey} text={config.text} isDual={config.isDual} />;
             }
-            // Scenario B: Destination (LB R1) - Only if players missing
             if (config.type === 'destination') {
                 const hasBothPlayers = m.player1 && m.player2;
                 if (!hasBothPlayers) {
                     return (
                         <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px', width: '100%' }}>
-                            <RacketBadge
-                                colorKey={config.colorKey}
-                                text={config.text}
-                                isDual={config.isDual}
-                            />
+                            <RacketBadge colorKey={config.colorKey} text={config.text} isDual={config.isDual} />
                         </div>
                     );
                 }
@@ -99,9 +178,9 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
             <div
                 key={match.id}
                 className="match-block"
-                onClick={onClick}
+                onClick={handleMatchInteraction}
                 title={title}
-                style={style}
+                style={wrapperStyle}
             >
                 <div className="match-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span>{match.id.toUpperCase().replace('WB-', '').replace('LB-', '').replace('GF-', t('brackets.finalBadge') + ' ')}</span>
@@ -112,13 +191,13 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
 
                 <div className={`match-player ${isWinner1 ? 'winner' : ''}`}>
                     <span className={`player-name ${!p1 ? 'placeholder' : ''}`}>
-                        {p1 ? p1.full_name : 'TBD'}
+                        {p1 ? p1.full_name : (<span>TBD {getSourceLabel(match.sourceMatchId1, match.sourceType1)}</span>)}
                     </span>
                     <span className="player-score">{showScore ? (match.score1 ?? 0) : '-'}</span>
                 </div>
                 <div className={`match-player ${isWinner2 ? 'winner' : ''}`}>
                     <span className={`player-name ${!p2 ? 'placeholder' : ''}`}>
-                        {p2 ? p2.full_name : 'TBD'}
+                        {p2 ? p2.full_name : (<span>TBD {getSourceLabel(match.sourceMatchId2, match.sourceType2)}</span>)}
                     </span>
                     <span className="player-score">{showScore ? (match.score2 ?? 0) : '-'}</span>
                 </div>
@@ -126,8 +205,36 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
         );
     };
 
+    // Monrad Groups Configuration (using new prefixes to capture sub-brackets)
+    const monradGroups = [
+        {
+            id: 'p25_group',
+            prefixes: ['p25', 'p27', 'p29', 'p31'],
+            title: 'Places 25-32',
+            headers: ['QF 25-32', 'SF 25-28 / 29-32', 'Finals (25-32)']
+        },
+        {
+            id: 'p17_group',
+            prefixes: ['p17', 'p19', 'p21', 'p23'],
+            title: 'Places 17-24',
+            headers: ['QF 17-24', 'SF 17-20 / 21-24', 'Finals (17-24)']
+        },
+        {
+            id: 'p13_group',
+            prefixes: ['p13', 'p15'],
+            title: 'Places 13-16',
+            headers: ['SF 13-16', 'Finals (13-16)']
+        },
+        {
+            id: 'p9_group',
+            prefixes: ['p9', 'p11'],
+            title: 'Places 9-12',
+            headers: ['SF 9-12', 'Finals (9-12)']
+        }
+    ];
+
     return (
-        <div className="bracket-canvas">
+        <div className="bracket-canvas" onClick={() => setSelectedMatchId(null)}>
             {/* Section A: Winners Bracket */}
             {visibleSections.includes('wb') && (
                 <div className="bracket-section section-wb">
@@ -159,7 +266,6 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
             {/* Section C: Losers Bracket */}
             {visibleSections.includes('lb') && (
                 <div className="bracket-section section-lb">
-                    {/* ... (existing LB code) ... */}
                     <div className="section-title lb-title">{t('brackets.lb')}</div>
                     <div className="bracket-rounds-container">
                         {lbRounds.map((roundMatches, i) => {
@@ -205,23 +311,25 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
                     <div className="section-title mid-title">PLACEMENT (MONRAD)</div>
                     <div className="bracket-rounds-container" style={{ gap: '3rem' }}>
 
-                        {/* Helper to render a mini bracket column */}
-                        {[
-                            { id: 'p25', title: 'Places 25-32' },
-                            { id: 'p17', title: 'Places 17-24' },
-                            { id: 'p13', title: 'Places 13-16' },
-                            { id: 'p9', title: 'Places 9-12' }
-                        ].map(group => {
-                            let groupMatches = enrichedMatches.filter(m => m.bracket.startsWith(group.id));
+                        {/* Dynamic Monrad Groups */}
+                        {monradGroups.map(group => {
+                            // Filter matches matching ANY prefix
+                            let groupMatches = enrichedMatches.filter(m => group.prefixes.some(pre => m.bracket.startsWith(pre)));
+
+                            // Fallback to blueprint if empty
                             if (groupMatches.length === 0) {
-                                groupMatches = getBracketBlueprint().filter(m => m.bracket.startsWith(group.id)).map(m => ({
-                                    ...m,
-                                    player1: null,
-                                    player2: null,
-                                    score1: null,
-                                    score2: null,
-                                    status: 'scheduled'
-                                }));
+                                groupMatches = getBracketBlueprint()
+                                    .filter(m => group.prefixes.some(pre => m.bracket.startsWith(pre)))
+                                    .map(m => ({
+                                        ...m,
+                                        player1: null,
+                                        player2: null,
+                                        nextMatchId: m.nextMatchId, // Ensure blueprint linking is preserved
+                                        consolationMatchId: m.consolationMatchId,
+                                        sourceMatchId1: m.sourceMatchId1, sourceType1: m.sourceType1,
+                                        sourceMatchId2: m.sourceMatchId2, sourceType2: m.sourceType2,
+                                        status: 'scheduled'
+                                    }));
                             }
                             groupMatches.sort((a, b) => a.round - b.round || byMatchId(a, b));
 
@@ -238,7 +346,7 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
                                     <div style={{ display: 'flex', gap: '1rem' }}>
                                         {rounds.map((rMatches, idx) => rMatches && (
                                             <div key={idx} className="round-column" style={{ minWidth: '180px', gap: '1rem' }}>
-                                                <div className="round-header">R{idx}</div>
+                                                <div className="round-header">{group.headers[idx - 1] || `Round ${idx}`}</div>
                                                 {rMatches.map(renderMatch)}
                                             </div>
                                         ))}
@@ -252,8 +360,18 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
                             {['p7', 'p5'].map(bid => {
                                 let m = enrichedMatches.find(x => x.bracket === bid);
                                 if (!m) {
+                                    // Fallback
                                     const bp = getBracketBlueprint().find(x => x.bracket === bid);
-                                    if (bp) m = { ...bp, player1: null, player2: null, score1: null, score2: null, status: 'scheduled' };
+                                    if (bp) m = {
+                                        ...bp,
+                                        player1: null,
+                                        player2: null,
+                                        nextMatchId: bp.nextMatchId,
+                                        consolationMatchId: bp.consolationMatchId,
+                                        sourceMatchId1: bp.sourceMatchId1, sourceType1: bp.sourceType1,
+                                        sourceMatchId2: bp.sourceMatchId2, sourceType2: bp.sourceType2,
+                                        status: 'scheduled'
+                                    };
                                 }
 
                                 return m ? (
@@ -264,7 +382,6 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
                                 ) : null;
                             })}
                         </div>
-
                     </div>
                 </div>
             )}
