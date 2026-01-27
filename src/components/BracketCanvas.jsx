@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react';
+import React, { useMemo, useRef, useLayoutEffect, useState } from 'react';
 import { Trophy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import '../pages/Brackets.css';
@@ -8,6 +8,9 @@ import { getBracketBlueprint } from '../utils/bracketLogic';
 
 const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visibleSections = ['wb', 'mid', 'lb'] }) => {
     const { t } = useTranslation();
+    const containerRef = useRef(null);
+    const matchRefs = useRef({});
+    const [paths, setPaths] = useState([]);
 
     // --- 1. Data Preparation ---
     const enrichedMatches = useMemo(() => {
@@ -45,14 +48,77 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
 
     // Monrad Groups
     const monradConfig = [
-        { id: '25-32', brackets: ['p25', 'p27', 'p29', 'p31'], title: 'Places 25-32', color: '#ef4444' },
-        { id: '17-24', brackets: ['p17', 'p19', 'p21', 'p23'], title: 'Places 17-24', color: '#f97316' },
-        { id: '13-16', brackets: ['p13', 'p15'], title: 'Places 13-16', color: '#eab308' },
-        { id: '9-12', brackets: ['p9', 'p11'], title: 'Places 9-12', color: '#84cc16' }
+        { id: '25-32', brackets: ['p25', 'p27', 'p29', 'p31'], title: 'Places 25-32' },
+        { id: '17-24', brackets: ['p17', 'p19', 'p21', 'p23'], title: 'Places 17-24' },
+        { id: '13-16', brackets: ['p13', 'p15'], title: 'Places 13-16' },
+        { id: '9-12', brackets: ['p9', 'p11'], title: 'Places 9-12' }
     ];
 
+    // --- 2. Path Calculation (Classic Lines) ---
+    useLayoutEffect(() => {
+        if (!containerRef.current) return;
+        const newPaths = [];
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const scrollLeft = containerRef.current.scrollLeft;
+        const scrollTop = containerRef.current.scrollTop;
+
+        // Force slight delay to ensure layout matches render
+        // Actually useLayoutEffect should be fine
+
+        enrichedMatches.forEach(m => {
+            const srcEl = matchRefs.current[m.id];
+            if (!srcEl) return;
+            const srcRect = srcEl.getBoundingClientRect();
+
+            // Start Point: Right Middle
+            const startX = srcRect.right - containerRect.left + scrollLeft;
+            const startY = srcRect.top - containerRect.top + scrollTop + (srcRect.height / 2);
+
+            // Winner Line (Solid)
+            if (m.nextMatchId) {
+                const destEl = matchRefs.current[m.nextMatchId];
+                if (destEl) {
+                    const destRect = destEl.getBoundingClientRect();
+                    const endX = destRect.left - containerRect.left + scrollLeft;
+                    const endY = destRect.top - containerRect.top + scrollTop + (destRect.height / 2);
+
+                    // Classic Bracket Shape: Horizontal -> Vertical -> Horizontal
+                    const midX = (startX + endX) / 2;
+                    newPaths.push({
+                        id: `${m.id}-win`,
+                        d: `M ${startX} ${startY} L ${midX} ${startY} L ${midX} ${endY} L ${endX} ${endY}`,
+                        type: 'solid'
+                    });
+                }
+            }
+            // Loser Line (Optional/Dashed - simple connection to next section)
+            // For cluttered views, sometimes better to omit consolation lines or make them very subtle.
+            // User asked for "Connect matches".
+            if (m.consolationMatchId) {
+                const destEl = matchRefs.current[m.consolationMatchId];
+                if (destEl) {
+                    const destRect = destEl.getBoundingClientRect();
+                    const endX = destRect.left - containerRect.left + scrollLeft;
+                    const endY = destRect.top - containerRect.top + scrollTop + (destRect.height / 2);
+
+                    // Simple Direct or Bent Line
+                    // Usually drops from bottom of card in trees, but we use Right Middle
+                    // Let's use same logic but dotted
+                    const midX = (startX + endX) / 2;
+                    newPaths.push({
+                        id: `${m.id}-loss`,
+                        d: `M ${startX} ${startY} L ${midX} ${startY} L ${midX} ${endY} L ${endX} ${endY}`,
+                        type: 'dashed'
+                    });
+                }
+            }
+        });
+        setPaths(newPaths);
+    }, [enrichedMatches, matches, visibleSections]);
+
+
     // --- 3. Render Match Card ---
-    const renderMatch = (match, customHeader = null, width = '240px') => {
+    const renderMatch = (match, customHeader = null) => {
         const p1 = match.player1;
         const p2 = match.player2;
         const isWinner1 = match.winnerId && match.winnerId === p1?.id;
@@ -65,47 +131,53 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
         const pathCfg = getRacketPathConfig(match.id, match.bracket, match.round, mNum);
         const racketSource = pathCfg?.type === 'source' ? <RacketBadge colorKey={pathCfg.colorKey} text={pathCfg.text} isDual={pathCfg.isDual} /> : null;
 
-        const displayHeader = customHeader || match.bracket.toUpperCase() + ' ' + match.round + '-' + getMatchNumber(match.id);
+        const displayHeader = customHeader || getMatchNumber(match.id); // Simple Number
 
         return (
             <div
+                ref={el => matchRefs.current[match.id] = el}
                 key={match.id}
                 onClick={isClickable ? () => onMatchClick(match) : undefined}
                 style={{
-                    width,
+                    width: '180px', // Compact
                     flexShrink: 0,
-                    background: 'rgba(30, 32, 44, 0.75)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(255, 255, 255, 0.1)',
-                    borderRadius: '10px',
-                    boxShadow: '0 4px 6px rgba(0,0,0,0.3)',
+                    background: 'rgba(20, 20, 30, 0.6)',
+                    backdropFilter: 'blur(4px)',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                    borderRadius: '4px', // Boxier
+                    boxShadow: '0 2px 4px rgba(0,0,0,0.4)',
                     cursor: isClickable ? 'pointer' : 'default',
                     display: 'flex', flexDirection: 'column',
                     position: 'relative',
-                    zIndex: 10
+                    zIndex: 10,
+                    fontSize: '0.8rem'
                 }}
             >
-                {/* Header */}
-                <div style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 12px', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                    <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'rgba(255,255,255,0.5)' }}>{displayHeader}</span>
+                {/* Header: Just ID and Racket */}
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '4px 8px', background: 'rgba(0,0,0,0.2)', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                    <span style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.4)', fontWeight: 'bold' }}>#{displayHeader}</span>
                     {racketSource}
                 </div>
                 {/* Players */}
-                <div style={{ padding: '8px 0' }}>
+                <div style={{ padding: '0' }}>
                     {[
                         { p: p1, s: match.score1, w: isWinner1 },
                         { p: p2, s: match.score2, w: isWinner2 }
                     ].map((row, idx) => (
                         <div key={idx} style={{
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                            padding: '6px 12px',
-                            background: row.w ? 'rgba(34, 197, 94, 0.15)' : 'transparent'
+                            padding: '4px 8px',
+                            background: row.w ? 'rgba(255, 255, 255, 0.1)' : 'transparent',
+                            borderBottom: idx === 0 ? '1px solid rgba(255,255,255,0.05)' : 'none'
                         }}>
-                            <span style={{ fontSize: '0.9rem', color: row.p ? (row.w ? '#86efac' : '#e5e7eb') : 'rgba(255,255,255,0.3)' }}>
+                            <span style={{
+                                whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '130px',
+                                color: row.p ? (row.w ? '#fff' : '#aaa') : '#555'
+                            }}>
                                 {row.p ? row.p.full_name : 'TBD'}
                             </span>
-                            <span style={{ fontWeight: 700, color: row.w ? '#86efac' : '#fff' }}>
-                                {showScore ? (row.s ?? 0) : '-'}
+                            <span style={{ fontWeight: 700, color: row.w ? '#fff' : '#888', fontSize: '0.75rem' }}>
+                                {showScore ? (row.s ?? 0) : ''}
                             </span>
                         </div>
                     ))}
@@ -115,45 +187,69 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
     };
 
     return (
-        <div className="bracket-scroll-container" style={{ width: '100%', height: '100%', overflowX: 'auto', background: '#0f172a', position: 'relative' }}>
+        <div className="bracket-scroll-container" style={{ width: '100%', height: '100%', overflowX: 'auto', background: '#000', position: 'relative' }}>
+
+            {/* SVG Layer for Lines */}
+            <svg style={{ position: 'absolute', top: 0, left: 0, width: '10000px', height: '10000px', pointerEvents: 'none', zIndex: 0 }}>
+                {paths.map(p => (
+                    <path
+                        key={p.id}
+                        d={p.d}
+                        stroke="rgba(255,255,255,0.15)" // Subtle white lines
+                        strokeWidth="1.5"
+                        fill="none"
+                        strokeDasharray={p.type === 'dashed' ? '4 4' : 'none'}
+                    />
+                ))}
+            </svg>
+
             <div
+                ref={containerRef}
                 className="bracket-layout"
                 style={{
                     display: 'flex',
-                    flexDirection: 'row', // Horizontal Orientation
-                    padding: '40px',
-                    gap: '80px', // Spacing between Sections
+                    flexDirection: 'row',
                     minWidth: 'max-content',
-                    position: 'relative'
+                    minHeight: '100vh'
                 }}
             >
-                {/* Section: Winners Bracket */}
+                {/* Section: Winners Bracket - Dark Purple/Pink */}
                 {visibleSections.includes('wb') && (
-                    <div className="section-wb" style={{ display: 'flex', flexDirection: 'column' }}>
-                        <h2 style={{ color: '#ec4899', fontSize: '1.5rem', fontWeight: 800, marginBottom: '2rem', textTransform: 'uppercase' }}>Winners Bracket</h2>
-                        <div style={{ display: 'flex', gap: '60px' }}>
+                    <div className="section-wb" style={{
+                        display: 'flex', flexDirection: 'column',
+                        background: 'linear-gradient(to bottom, #2e1065, #4c0519)', // Deep Purple to Pinkish
+                        padding: '40px',
+                        borderRight: '1px solid rgba(255,255,255,0.1)'
+                    }}>
+                        <h2 style={{ color: 'rgba(255,255,255,0.3)', fontSize: '1.2rem', fontWeight: 900, marginBottom: '30px', textTransform: 'uppercase', letterSpacing: '2px' }}>Winners Bracket</h2>
+                        <div style={{ display: 'flex', gap: '40px' }}>
                             {wbRounds.map((roundMatches, i) => (
-                                <div key={i} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: '30px' }}>
+                                <div key={i} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: '20px' }}>
                                     {roundMatches.map(m => renderMatch(m))}
                                 </div>
                             ))}
                             {visibleSections.includes('mid') && gfMatches.length > 0 && (
-                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '40px', marginLeft: '20px' }}>
-                                    {gfMatches.map(m => renderMatch(m, "FINAL"))}
-                                    <div style={{ alignSelf: 'center' }}><Trophy size={48} color="#fbbf24" /></div>
+                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '20px', marginLeft: '20px' }}>
+                                    {gfMatches.map(m => renderMatch(m, "GF"))}
+                                    <div style={{ alignSelf: 'center', opacity: 0.3 }}><Trophy size={32} color="#fff" /></div>
                                 </div>
                             )}
                         </div>
                     </div>
                 )}
 
-                {/* Section: Losers Bracket */}
+                {/* Section: Losers Bracket - Dark Blue */}
                 {visibleSections.includes('lb') && (
-                    <div className="section-lb" style={{ display: 'flex', flexDirection: 'column' }}>
-                        <h2 style={{ color: '#f97316', fontSize: '1.5rem', fontWeight: 800, marginBottom: '2rem', textTransform: 'uppercase' }}>Losers Bracket</h2>
-                        <div style={{ display: 'flex', gap: '60px' }}>
+                    <div className="section-lb" style={{
+                        display: 'flex', flexDirection: 'column',
+                        background: 'linear-gradient(to bottom, #0f172a, #172554)', // Slate to Deep Blue
+                        padding: '40px',
+                        borderRight: '1px solid rgba(255,255,255,0.1)'
+                    }}>
+                        <h2 style={{ color: 'rgba(255,255,255,0.3)', fontSize: '1.2rem', fontWeight: 900, marginBottom: '30px', textTransform: 'uppercase', letterSpacing: '2px' }}>Losers Bracket</h2>
+                        <div style={{ display: 'flex', gap: '40px' }}>
                             {lbRounds.map((roundMatches, i) => (
-                                <div key={i} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: '30px' }}>
+                                <div key={i} style={{ display: 'flex', flexDirection: 'column', justifyContent: 'space-around', gap: '20px' }}>
                                     {roundMatches.map(m => renderMatch(m))}
                                 </div>
                             ))}
@@ -161,11 +257,15 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
                     </div>
                 )}
 
-                {/* Section: Monrad */}
+                {/* Section: Monrad - Dark Earth/Orange */}
                 {(visibleSections.includes('lb') || visibleSections.includes('all')) && (
-                    <div className="section-monrad" style={{ display: 'flex', flexDirection: 'column' }}>
-                        <h2 style={{ color: '#94a3b8', fontSize: '1.5rem', fontWeight: 800, marginBottom: '2rem', textTransform: 'uppercase' }}>Placement Matches</h2>
-                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', maxWidth: '1200px' }}>
+                    <div className="section-monrad" style={{
+                        display: 'flex', flexDirection: 'column',
+                        background: 'linear-gradient(to bottom, #431407, #78350f)', // Deep Brown/Orange
+                        padding: '40px'
+                    }}>
+                        <h2 style={{ color: 'rgba(255,255,255,0.3)', fontSize: '1.2rem', fontWeight: 900, marginBottom: '30px', textTransform: 'uppercase', letterSpacing: '2px' }}>Placement</h2>
+                        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '30px', maxWidth: '1000px' }}>
                             {monradConfig.map(group => {
                                 let groupMatches = enrichedMatches.filter(m => group.brackets.some(b => m.bracket.startsWith(b)));
                                 if (!groupMatches.length) {
@@ -174,17 +274,16 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
                                         .map(m => ({ ...m, player1: null, player2: null }));
                                 }
                                 if (!groupMatches.length) return null;
-
                                 const rounds = [];
                                 groupMatches.forEach(m => { if (!rounds[m.round]) rounds[m.round] = []; rounds[m.round].push(m); });
 
                                 return (
-                                    <div key={group.id} style={{ display: 'flex', flexDirection: 'column', borderLeft: `4px solid ${group.color}`, paddingLeft: '20px', gap: '20px' }}>
-                                        <div style={{ color: group.color, fontWeight: 700 }}>{group.title}</div>
-                                        <div style={{ display: 'flex', gap: '30px' }}>
+                                    <div key={group.id} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                        <div style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 700, fontSize: '0.8rem' }}>{group.title.toUpperCase()}</div>
+                                        <div style={{ display: 'flex', gap: '20px' }}>
                                             {rounds.map((rMatches, i) => rMatches && (
-                                                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
-                                                    {rMatches.map(m => renderMatch(m, null, '200px'))}
+                                                <div key={i} style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                                    {rMatches.map(m => renderMatch(m, null))}
                                                 </div>
                                             ))}
                                         </div>
@@ -192,12 +291,12 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
                                 );
                             })}
                             {/* Singles */}
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', borderLeft: '4px solid #22c55e', paddingLeft: '20px' }}>
-                                <div style={{ color: '#22c55e', fontWeight: 700 }}>FINAL PLACEMENT</div>
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+                                <div style={{ color: 'rgba(255,255,255,0.4)', fontWeight: 700, fontSize: '0.8rem' }}>FINAL PLACEMENT</div>
                                 {['p7', 'p5'].map(bid => {
                                     let m = enrichedMatches.find(x => x.bracket === bid);
-                                    if (!m) m = { ...getBracketBlueprint().find(x => x.bracket === bid), player1: null, player2: null };
-                                    return m ? renderMatch(m, bid === 'p5' ? '5TH' : '7TH', '200px') : null;
+                                    if (!m) m = { ...getBracketBlueprint().find(x => x.bracket === bid), player1: null, player2: null, score1: null, score2: null };
+                                    return m ? renderMatch(m, bid === 'p5' ? '5TH' : '7TH') : null;
                                 })}
                             </div>
                         </div>
