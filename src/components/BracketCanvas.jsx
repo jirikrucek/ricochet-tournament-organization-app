@@ -1,7 +1,7 @@
 import React, { useMemo } from 'react';
 import { Trophy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-// We assume parent imports Brackets.css or we import it here
+// Dependencies
 import '../pages/Brackets.css';
 import RacketBadge from './RacketBadge';
 import { getRacketPathConfig, getZoneConfig } from '../utils/racketPathUtils';
@@ -10,339 +10,268 @@ import { getBracketBlueprint } from '../utils/bracketLogic';
 const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visibleSections = ['wb', 'mid', 'lb'] }) => {
     const { t } = useTranslation();
 
-    // Enrich matches for display
+    // --- 1. Data Preparation ---
     const enrichedMatches = useMemo(() => {
         const baseMatches = (matches && matches.length > 0) ? matches : getBracketBlueprint();
-        const blueprint = getBracketBlueprint();
-        const blueprintMap = new Map();
-        blueprint.forEach(m => blueprintMap.set(m.id, m));
-
+        // Fallback or real data
         return baseMatches.map(m => {
             const p1 = players.find(p => p.id === m.player1Id);
             const p2 = players.find(p => p.id === m.player2Id);
-
-            const bp = blueprintMap.get(m.id);
-            const sourceMatchId1 = m.sourceMatchId1 || (bp ? bp.sourceMatchId1 : null);
-            const sourceType1 = m.sourceType1 || (bp ? bp.sourceType1 : null);
-            const sourceMatchId2 = m.sourceMatchId2 || (bp ? bp.sourceMatchId2 : null);
-            const sourceType2 = m.sourceType2 || (bp ? bp.sourceType2 : null);
-
-            return {
-                ...m,
-                player1: p1 || null,
-                player2: p2 || null,
-                sourceMatchId1, sourceType1,
-                sourceMatchId2, sourceType2
-            };
+            return { ...m, player1: p1 || null, player2: p2 || null };
         });
     }, [matches, players]);
 
-    // Helper to extract match number for sorting
     const getMatchNumber = (id) => {
         const parts = id.split('-m');
         return parts.length > 1 ? parseInt(parts[1], 10) : 0;
     };
     const byMatchId = (a, b) => getMatchNumber(a.id) - getMatchNumber(b.id);
 
-    // Filter Matches
+    // Filter Sections
     const wbMatches = enrichedMatches.filter(m => m.bracket === 'wb');
     const lbMatches = enrichedMatches.filter(m => m.bracket === 'lb');
     const gfMatches = enrichedMatches.filter(m => m.bracket === 'gf').sort(byMatchId);
 
+    // Group by Rounds
     const wbRounds = [1, 2, 3, 4, 5].map(r => wbMatches.filter(m => m.round === r).sort(byMatchId));
     const lbRounds = [1, 2, 3, 4, 5, 6, 7, 8].map(r => lbMatches.filter(m => m.round === r).sort(byMatchId));
 
-    const renderMatch = (match, borderColor = null) => {
+    // --- 2. Render Match Card (Glassmorphism) ---
+    const renderMatch = (match, customHeader = null) => {
         const p1 = match.player1;
         const p2 = match.player2;
         const isWinner1 = match.winnerId && match.winnerId === p1?.id;
         const isWinner2 = match.winnerId && match.winnerId === p2?.id;
-
         const isClickable = !readonly && onMatchClick && !match.player1?.isBye && !match.player2?.isBye;
-        const style = isClickable ? { cursor: 'pointer' } : { cursor: 'default' };
-        if (borderColor) style.borderLeft = `3px solid ${borderColor}`;
-
-        const onClick = isClickable ? () => onMatchClick(match) : undefined;
-
-        // Zone Info
-        const zone = getZoneConfig(match.bracket, match.round);
-        const zoneTooltip = zone ? `\n[${zone.label}]\n🏆 Win: Advances\n💀 Loss: ${zone.places} Place` : '';
-        const title = (match.id + " " + (isClickable ? t('brackets.clickToEdit') : '')) + zoneTooltip;
 
         const totalScore = (match.score1 || 0) + (match.score2 || 0);
         const showScore = match.status === 'finished' || (match.status === 'live' && totalScore > 0);
 
-        // Readable Source Labels for TBD
-        const getSourceLabel = (srcId, type) => {
-            if (!srcId) return null;
-            const parts = srcId.split('-');
-            if (parts.length < 3) return null;
-            const matchNum = parts[2].replace('m', '');
-            const label = type === 'winner'
-                ? t('brackets.sourceWinner', { n: matchNum })
-                : t('brackets.sourceLoser', { n: matchNum });
+        // Racket Path Logic
+        const mNum = getMatchNumber(match.id);
+        const pathCfg = getRacketPathConfig(match.id, match.bracket, match.round, mNum);
 
-            return (
-                <span className="source-label" style={{
-                    fontSize: '0.7rem',
-                    color: 'var(--text-tertiary)',
-                    display: 'block',
-                    lineHeight: '1.1',
-                    marginTop: '2px',
-                    fontStyle: 'italic',
-                    opacity: 0.8
-                }}>
-                    {label}
-                </span>
-            );
-        };
+        let racketSource = null;
+        let racketDest = null;
 
-        // --- Racket Path Logic ---
-        const renderRacketPath = (m) => {
-            const mNum = getMatchNumber(m.id);
-            const config = getRacketPathConfig(m.id, m.bracket, m.round, mNum);
-            if (!config) return null;
-
-            if (config.type === 'source') {
-                return <RacketBadge colorKey={config.colorKey} text={config.text} isDual={config.isDual} />;
+        if (pathCfg) {
+            if (pathCfg.type === 'source') {
+                racketSource = <RacketBadge colorKey={pathCfg.colorKey} text={pathCfg.text} isDual={pathCfg.isDual} />;
+            } else if (pathCfg.type === 'destination' && (!p1 || !p2)) {
+                racketDest = (
+                    <div style={{ position: 'absolute', top: -10, left: '50%', transform: 'translateX(-50%)', zIndex: 10 }}>
+                        <RacketBadge colorKey={pathCfg.colorKey} text={pathCfg.text} isDual={pathCfg.isDual} />
+                    </div>
+                );
             }
-            if (config.type === 'destination') {
-                const hasBothPlayers = m.player1 && m.player2;
-                if (!hasBothPlayers) {
-                    return (
-                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px', width: '100%' }}>
-                            <RacketBadge colorKey={config.colorKey} text={config.text} isDual={config.isDual} />
-                        </div>
-                    );
-                }
-            }
-            return null;
-        };
+        }
 
-        const racketBadgeSource = getRacketPathConfig(match.id, match.bracket, match.round, getMatchNumber(match.id))?.type === 'source' ? renderRacketPath(match) : null;
-        const racketBadgeDest = getRacketPathConfig(match.id, match.bracket, match.round, getMatchNumber(match.id))?.type === 'destination' ? renderRacketPath(match) : null;
+        const matchIdLabel = match.id.toUpperCase()
+            .replace('WB-', 'WB ')
+            .replace('LB-', 'LB ')
+            .replace('GF-', 'FINAL ')
+            .replace('-M', '#');
 
         return (
             <div
                 key={match.id}
-                className="match-block"
-                onClick={onClick}
-                title={title}
-                style={style}
+                onClick={isClickable ? () => onMatchClick(match) : undefined}
+                style={{
+                    position: 'relative',
+                    width: '240px',
+                    background: 'rgba(30, 32, 44, 0.85)',
+                    backdropFilter: 'blur(12px)',
+                    border: '1px solid rgba(255, 255, 255, 0.1)',
+                    borderRadius: '12px',
+                    boxShadow: '0 4px 6px rgba(0, 0, 0, 0.3)',
+                    cursor: isClickable ? 'pointer' : 'default',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    overflow: 'visible',
+                    transition: 'all 0.2s ease',
+                    color: 'white'
+                }}
+                className="glass-match-card"
+                title={customHeader || match.bracket}
             >
-                <div className="match-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                    <span>{match.id.toUpperCase().replace('WB-', '').replace('LB-', '').replace('GF-', t('brackets.finalBadge') + ' ')}</span>
-                    {racketBadgeSource}
+                {/* Header */}
+                <div style={{
+                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                    padding: '8px 12px',
+                    borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+                    fontSize: '0.75rem',
+                    color: 'rgba(255, 255, 255, 0.5)',
+                    fontWeight: 700,
+                    letterSpacing: '0.05em'
+                }}>
+                    <span>{customHeader || matchIdLabel}</span>
+                    {racketSource}
                 </div>
 
-                {racketBadgeDest}
+                {racketDest}
 
-                <div className={`match-player ${isWinner1 ? 'winner' : ''}`}>
-                    <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                        <span className={`player-name ${!p1 ? 'placeholder' : ''}`}>
+                {/* Players */}
+                <div style={{ display: 'flex', flexDirection: 'column' }}>
+                    {/* Player 1 */}
+                    <div style={{
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        padding: '8px 12px',
+                        borderBottom: '1px solid rgba(255, 255, 255, 0.05)',
+                        background: isWinner1 ? 'rgba(34, 197, 94, 0.2)' : 'transparent'
+                    }}>
+                        <span style={{
+                            fontSize: '0.9rem',
+                            fontWeight: isWinner1 ? 700 : 500,
+                            color: p1 ? (isWinner1 ? '#4ade80' : '#e5e7eb') : 'rgba(255,255,255,0.3)',
+                            fontStyle: p1 ? 'normal' : 'italic'
+                        }}>
                             {p1 ? p1.full_name : 'TBD'}
                         </span>
-                        {!p1 && getSourceLabel(match.sourceMatchId1, match.sourceType1)}
+                        <span style={{ fontWeight: 700, color: isWinner1 ? '#4ade80' : 'white' }}>
+                            {showScore ? (match.score1 ?? 0) : '-'}
+                        </span>
                     </div>
-                    <span className="player-score">{showScore ? (match.score1 ?? 0) : '-'}</span>
-                </div>
-                <div className={`match-player ${isWinner2 ? 'winner' : ''}`}>
-                    <div style={{ display: 'flex', flexDirection: 'column', width: '100%' }}>
-                        <span className={`player-name ${!p2 ? 'placeholder' : ''}`}>
+
+                    {/* Player 2 */}
+                    <div style={{
+                        display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+                        padding: '8px 12px',
+                        background: isWinner2 ? 'rgba(34, 197, 94, 0.2)' : 'transparent'
+                    }}>
+                        <span style={{
+                            fontSize: '0.9rem',
+                            fontWeight: isWinner2 ? 700 : 500,
+                            color: p2 ? (isWinner2 ? '#4ade80' : '#e5e7eb') : 'rgba(255,255,255,0.3)',
+                            fontStyle: p2 ? 'normal' : 'italic'
+                        }}>
                             {p2 ? p2.full_name : 'TBD'}
                         </span>
-                        {!p2 && getSourceLabel(match.sourceMatchId2, match.sourceType2)}
+                        <span style={{ fontWeight: 700, color: isWinner2 ? '#4ade80' : 'white' }}>
+                            {showScore ? (match.score2 ?? 0) : '-'}
+                        </span>
                     </div>
-                    <span className="player-score">{showScore ? (match.score2 ?? 0) : '-'}</span>
                 </div>
             </div>
         );
     };
 
-    // Monrad Groups Configuration with Themes
-    const monradGroups = [
-        {
-            id: 'p25_group',
-            prefixes: ['p25', 'p27', 'p29', 'p31'],
-            title: 'MIEJSCA 25-32',
-            headers: ['ĆWIERĆFINAŁY 25-32', 'PÓŁFINAŁY 25-28 / 29-32', 'FINAŁY (25, 27, 29, 31)'],
-            color: '#ef4444' // Red (from LB R1)
-        },
-        {
-            id: 'p17_group',
-            prefixes: ['p17', 'p19', 'p21', 'p23'],
-            title: 'MIEJSCA 17-24',
-            headers: ['ĆWIERĆFINAŁY 17-24', 'PÓŁFINAŁY 17-20 / 21-24', 'FINAŁY (17, 19, 21, 23)'],
-            color: '#f97316' // Orange (from LB R2)
-        },
-        {
-            id: 'p13_group',
-            prefixes: ['p13', 'p15'],
-            title: 'MIEJSCA 13-16',
-            headers: ['PÓŁFINAŁY 13-16', 'FINAŁY (13, 15)'],
-            color: '#eab308' // Yellow (from LB R3)
-        },
-        {
-            id: 'p9_group',
-            prefixes: ['p9', 'p11'],
-            title: 'MIEJSCA 9-12',
-            headers: ['PÓŁFINAŁY 9-12', 'FINAŁY (9, 11)'],
-            color: '#84cc16' // Lime (from LB R4)
-        }
-    ];
+    // --- 3. Layout Rendering ---
 
     return (
-        <div className="bracket-canvas">
-            {/* Section A: Winners Bracket */}
-            {visibleSections.includes('wb') && (
-                <div className="bracket-section section-wb">
-                    <div className="section-title wb-title">{t('brackets.wb')}</div>
-                    <div className="bracket-rounds-container">
-                        {wbRounds.map((roundMatches, i) => (
-                            <div key={`wb-r${i}`} className="round-column">
-                                <div className="round-header">{t('brackets.round')} {i + 1}</div>
-                                {roundMatches.map(m => renderMatch(m))}
-                            </div>
-                        ))}
-                    </div>
-                </div>
-            )}
+        <div className="bracket-canvas" style={{
+            display: 'flex', flexDirection: 'column', gap: '80px',
+            padding: '40px', minHeight: '100vh',
+            background: 'linear-gradient(135deg, #0f172a 0%, #172554 100%)' // Deep Blue Background
+        }}>
 
-            {/* Section B: Finals / Mid */}
-            {visibleSections.includes('mid') && (
-                <div className="bracket-section section-mid">
-                    <div className="section-title mid-title">{t('brackets.finals')}</div>
-                    <div className="round-column" style={{ justifyContent: 'center' }}>
-                        {gfMatches.map(m => renderMatch(m))}
-                        <div style={{ textAlign: 'center', marginTop: '2rem', opacity: 0.5 }}>
-                            <Trophy size={48} color="gold" />
+            {/* UPPER SECTION: MAIN BRACKETS */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '60px' }}>
+
+                {/* WB & Finals */}
+                {visibleSections.includes('wb') && (
+                    <div style={{ position: 'relative' }}>
+                        <div className="section-title" style={{ color: '#f472b6', textAlign: 'left', marginLeft: '20px' }}>
+                            WINNERS BRACKET
                         </div>
-                    </div>
-                </div>
-            )}
-
-            {/* Section C: Losers Bracket */}
-            {visibleSections.includes('lb') && (
-                <div className="bracket-section section-lb">
-                    <div className="section-title lb-title">{t('brackets.lb')}</div>
-                    <div className="bracket-rounds-container">
-                        {lbRounds.map((roundMatches, i) => {
-                            const zone = getZoneConfig('lb', i + 1);
-                            const wrapperStyle = zone ? {
-                                border: `1px dashed ${zone.color}60`,
-                                background: `linear-gradient(to bottom, ${zone.color}08, transparent)`,
-                                borderRadius: '12px',
-                                padding: '10px',
-                                position: 'relative',
-                                margin: '0 4px',
-                                minWidth: '220px'
-                            } : {};
-
-                            return (
-                                <div key={`lb-r${i}`} className="round-column" style={wrapperStyle}>
-                                    {zone && (
-                                        <div style={{
-                                            position: 'absolute', top: '-12px', right: '10px',
-                                            fontSize: '0.65rem', fontWeight: 'bold', textTransform: 'uppercase',
-                                            color: zone.color, background: 'var(--bg-card)',
-                                            padding: '2px 8px', border: `1px solid ${zone.color}`, borderRadius: '20px',
-                                            zIndex: 5, whiteSpace: 'nowrap',
-                                            boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
-                                        }}>
-                                            {zone.label}
-                                        </div>
-                                    )}
-                                    <div className="round-header" style={{ marginBottom: zone ? '1rem' : '0.5rem' }}>
-                                        LB {t('brackets.round')} {i + 1}
-                                    </div>
+                        <div style={{ display: 'flex', gap: '60px', alignItems: 'center', overflowX: 'auto', paddingBottom: '20px' }}>
+                            {wbRounds.map((roundMatches, i) => (
+                                <div key={`wb-r${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '30px', justifyContent: 'space-around' }}>
                                     {roundMatches.map(m => renderMatch(m))}
                                 </div>
-                            );
-                        })}
+                            ))}
+
+                            {/* Finals Attached to WB end */}
+                            {visibleSections.includes('mid') && gfMatches.length > 0 && (
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '40px', justifyContent: 'center', marginLeft: '40px' }}>
+                                    <div className="section-title" style={{ color: '#fbbf24', fontSize: '1rem', marginBottom: '10px' }}>GRAND FINAL</div>
+                                    {gfMatches.map(m => renderMatch(m, "CHAMPIONSHIP MATCH"))}
+                                    <div style={{ alignSelf: 'center', opacity: 0.8 }}><Trophy size={64} color="#fbbf24" /></div>
+                                </div>
+                            )}
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* Section D: Placement (Monrad) */}
+                {/* Losers Bracket */}
+                {visibleSections.includes('lb') && (
+                    <div style={{ position: 'relative' }}>
+                        <div className="section-title" style={{ color: '#fb923c', textAlign: 'left', marginLeft: '20px' }}>
+                            LOSERS BRACKET
+                        </div>
+                        <div style={{ display: 'flex', gap: '60px', alignItems: 'center', overflowX: 'auto', paddingBottom: '20px' }}>
+                            {lbRounds.map((roundMatches, i) => (
+                                <div key={`lb-r${i}`} style={{ display: 'flex', flexDirection: 'column', gap: '30px', justifyContent: 'space-around' }}>
+                                    {roundMatches.map(m => renderMatch(m))}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
+            </div>
+
+            {/* LOWER SECTION: MONRAD (PLACEMENT) */}
             {(visibleSections.includes('lb') || visibleSections.includes('all')) && (
-                <div className="bracket-section section-placement" style={{ borderLeft: '1px dashed var(--border-color)', background: 'rgba(0,0,0,0.02)' }}>
-                    <div className="section-title mid-title">PLACEMENT (MONRAD)</div>
-                    <div className="bracket-rounds-container" style={{ gap: '3rem' }}>
+                <div style={{
+                    marginTop: '40px',
+                    padding: '40px',
+                    background: 'rgba(0,0,0,0.2)',
+                    borderRadius: '24px',
+                    border: '1px dashed rgba(255,255,255,0.1)'
+                }}>
+                    <div className="section-title" style={{ color: '#94a3b8', marginBottom: '40px' }}>
+                        PLACEMENT MATCHES (MONRAD)
+                    </div>
 
-                        {monradGroups.map(group => {
-                            let groupMatches = enrichedMatches.filter(m => group.prefixes.some(pre => m.bracket.startsWith(pre)));
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: '40px', justifyContent: 'center' }}>
+
+                        {/* Config for Monrad Columns */}
+                        {[
+                            { title: 'PLACES 25-32', id: '25-32', brackets: ['p25', 'p27', 'p29', 'p31'], color: '#ef4444' },
+                            { title: 'PLACES 17-24', id: '17-24', brackets: ['p17', 'p19', 'p21', 'p23'], color: '#f97316' },
+                            { title: 'PLACES 13-16', id: '13-16', brackets: ['p13', 'p15'], color: '#eab308' },
+                            { title: 'PLACES 9-12', id: '9-12', brackets: ['p9', 'p11'], color: '#84cc16' }
+                        ].map(group => {
+                            // Collect matches
+                            let groupMatches = enrichedMatches.filter(m => group.brackets.some(b => m.bracket.startsWith(b)));
+                            // Fallback to blueprint
                             if (groupMatches.length === 0) {
                                 groupMatches = getBracketBlueprint()
-                                    .filter(m => group.prefixes.some(pre => m.bracket.startsWith(pre)))
-                                    .map(m => ({
-                                        ...m,
-                                        player1: null, player2: null,
-                                        sourceMatchId1: m.sourceMatchId1, sourceType1: m.sourceType1,
-                                        sourceMatchId2: m.sourceMatchId2, sourceType2: m.sourceType2,
-                                        status: 'scheduled'
-                                    }));
+                                    .filter(m => group.brackets.some(b => m.bracket.startsWith(b)))
+                                    .map(m => ({ ...m, player1: null, player2: null, status: 'scheduled' }));
                             }
-                            groupMatches.sort((a, b) => a.round - b.round || byMatchId(a, b));
 
-                            const rounds = [];
-                            groupMatches.forEach(m => {
-                                if (!rounds[m.round]) rounds[m.round] = [];
-                                rounds[m.round].push(m);
-                            });
+                            if (groupMatches.length === 0) return null;
 
                             return (
                                 <div key={group.id} style={{
-                                    display: 'flex', flexDirection: 'column', gap: '1rem',
-                                    border: `1px solid ${group.color}40`,
-                                    borderLeft: `4px solid ${group.color}`,
-                                    padding: '1.5rem', borderRadius: '8px',
-                                    background: `linear-gradient(to right, ${group.color}05, transparent)`
+                                    display: 'flex', flexDirection: 'column', gap: '20px',
+                                    borderTop: `4px solid ${group.color}`,
+                                    paddingTop: '20px',
+                                    minWidth: '250px'
                                 }}>
-                                    <div style={{
-                                        fontWeight: 900, textAlign: 'center',
-                                        color: group.color,
-                                        textTransform: 'uppercase',
-                                        letterSpacing: '1px', fontSize: '1.1rem', marginBottom: '1rem'
-                                    }}>
-                                        {group.title}
-                                    </div>
-                                    <div style={{ display: 'flex', gap: '1rem' }}>
-                                        {rounds.map((rMatches, idx) => rMatches && (
-                                            <div key={idx} className="round-column" style={{ minWidth: '220px', gap: '1rem' }}>
-                                                <div className="round-header" style={{ color: 'var(--text-secondary)' }}>
-                                                    {group.headers[idx - 1] || `Runda ${idx}`}
-                                                </div>
-                                                {rMatches.map(m => renderMatch(m, group.color))}
-                                            </div>
-                                        ))}
-                                    </div>
+                                    <div style={{ color: group.color, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>{group.title}</div>
+                                    {groupMatches.sort((a, b) => a.round - b.round || byMatchId(a, b)).map(m => renderMatch(m))}
                                 </div>
                             );
                         })}
 
-                        {/* Singles (5-6, 7-8) */}
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', justifyContent: 'center' }}>
+                        {/* Singular Places */}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '20px', borderTop: '4px solid #22c55e', paddingTop: '20px', minWidth: '250px' }}>
+                            <div style={{ color: '#22c55e', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '1px' }}>7TH & 5TH PLACE</div>
                             {['p7', 'p5'].map(bid => {
-                                const color = bid === 'p5' ? '#06b6d4' : '#22c55e'; // Cyan / Green
                                 let m = enrichedMatches.find(x => x.bracket === bid);
                                 if (!m) {
-                                    const bp = getBracketBlueprint().find(x => x.bracket === bid);
-                                    if (bp) m = { ...bp, player1: null, player2: null, status: 'scheduled' };
+                                    m = getBracketBlueprint().find(x => x.bracket === bid);
+                                    if (m) m = { ...m, player1: null, player2: null };
                                 }
-
-                                return m ? (
-                                    <div key={bid} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                                        <div className="round-header" style={{ color: color, fontWeight: 'bold' }}>
-                                            {bid === 'p5' ? 'MIEJSCE 5' : 'MIEJSCE 7'}
-                                        </div>
-                                        {renderMatch(m, color)}
-                                    </div>
-                                ) : null;
+                                return m ? renderMatch(m, bid === 'p5' ? '5TH PLACE' : '7TH PLACE') : null;
                             })}
                         </div>
+
                     </div>
                 </div>
             )}
+
         </div>
     );
 };
