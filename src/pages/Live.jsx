@@ -159,6 +159,11 @@ const Live = () => {
         if (!match) return renderEmptyLive(courtColor);
         const bestOf = getBestOf(match.bracket);
         const isLive = (match.score1 > 0 || match.score2 > 0);
+
+        // Prepare micro points (sets)
+        const sets = match.microPoints || [];
+        const sortedSets = [...sets].sort((a, b) => a.set - b.set);
+
         return (
             <div className="live-match-display">
                 {isLive && (
@@ -178,24 +183,37 @@ const Live = () => {
                         <div className="player-surname">{splitName(match.player1.full_name).surname}</div>
                         <div className="player-firstname">{splitName(match.player1.full_name).firstName}</div>
                     </div>
-                    <div className="score-display">
-                        <span className="big-score" style={{ color: courtColor }}>
-                            {(match.winnerId || match.score1 > 0 || match.score2 > 0) ? (match.score1 ?? 0) : '-'}
-                        </span>
-                        <span className="vs-divider"> : </span>
-                        <span className="big-score" style={{ color: courtColor }}>
-                            {(match.winnerId || match.score1 > 0 || match.score2 > 0) ? (match.score2 ?? 0) : '-'}
-                        </span>
+
+                    <div className="score-center-col">
+                        <div className="score-display">
+                            <span className="big-score" style={{ color: courtColor }}>
+                                {(match.winnerId || match.score1 > 0 || match.score2 > 0) ? (match.score1 ?? 0) : '-'}
+                            </span>
+                            <span className="vs-divider"> : </span>
+                            <span className="big-score" style={{ color: courtColor }}>
+                                {(match.winnerId || match.score1 > 0 || match.score2 > 0) ? (match.score2 ?? 0) : '-'}
+                            </span>
+                        </div>
                     </div>
+
                     <div className="player-container right" style={{ color: match.score2 > match.score1 ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
                         <div className="player-surname">{splitName(match.player2.full_name).surname}</div>
                         <div className="player-firstname">{splitName(match.player2.full_name).firstName}</div>
                     </div>
                 </div>
-                {match.microPoints && match.microPoints.length > 0 && (
-                    <div className="micro-points-container" style={{ justifyContent: 'center', gap: '4px', fontSize: '0.75rem', color: '#9ca3af' }}>
-                        {match.microPoints.sort((a, b) => a.set - b.set).map((mp, idx) => (
-                            <span key={idx}>{mp.a}:{mp.b}{idx < match.microPoints.length - 1 ? ',' : ''}</span>
+
+                {/* Sets Display */}
+                {sortedSets.length > 0 && (
+                    <div className="sets-container">
+                        {sortedSets.map((s, idx) => (
+                            <div key={idx} className="set-box">
+                                <div className="set-label">SET {s.set}</div>
+                                <div className="set-score">
+                                    <span className={s.a > s.b ? 'set-winner' : ''}>{s.a}</span>
+                                    <span>:</span>
+                                    <span className={s.b > s.a ? 'set-winner' : ''}>{s.b}</span>
+                                </div>
+                            </div>
                         ))}
                     </div>
                 )}

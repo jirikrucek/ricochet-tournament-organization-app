@@ -181,12 +181,22 @@ export const rebuildBracketState = (players, existingMatchesMap = {}) => {
         } else if (match.player1Id && match.player2Id && existing && (existing.score1 !== null || existing.score2 !== null)) {
             match.score1 = existing.score1;
             match.score2 = existing.score2;
-            match.microPoints = existing.micro_points || []; // Keep consistent naming check? User said microPoints in camelCase earlier or snake? "match = {...}" list didn't specify. I'll stick to camelCase `microPoints` internal, map if needed.
-            // Wait, useMatches saves as is. 
-            // I'll use `microPoints` here.
+            match.microPoints = existing.micro_points || [];
 
-            if (match.score1 > match.score2) match.winnerId = match.player1Id;
-            else if (match.score2 > match.score1) match.winnerId = match.player2Id;
+            // Determine Winner Logic (Respect Explicit or Calculate)
+            // 1. Explicit winner from input (if stored)
+            if (existing.winnerId) {
+                match.winnerId = existing.winnerId;
+            } else {
+                // 2. Score Threshold Logic
+                const bestOf = (match.bracket === 'wb' || match.bracket === 'gf') ? 5 : 3;
+                const winThreshold = Math.ceil(bestOf / 2);
+
+                if (match.score1 >= winThreshold) match.winnerId = match.player1Id;
+                else if (match.score2 >= winThreshold) match.winnerId = match.player2Id;
+                else if (match.score1 > match.score2 && existing.status === 'finished') match.winnerId = match.player1Id; // Fallback if forced finished but score is weird
+                else if (match.score2 > match.score1 && existing.status === 'finished') match.winnerId = match.player2Id;
+            }
 
             match.status = match.winnerId ? 'finished' : 'live';
         } else {
@@ -203,19 +213,31 @@ export const generateDoubleEliminationBracket = (players) => {
     return rebuildBracketState(players, {});
 };
 
-export const updateBracketMatch = (matches, matchId, score1, score2, microPoints = [], playersSource) => {
+export const updateBracketMatch = (matches, matchId, score1, score2, microPoints = [], playersSource, winnerId = null, status = 'live') => {
     // 1. Scrape Results
     const resultsMap = {};
     matches.forEach(m => {
         if (m.score1 !== null || m.score2 !== null) {
-            resultsMap[m.id] = { score1: m.score1, score2: m.score2, micro_points: m.microPoints };
+            resultsMap[m.id] = {
+                score1: m.score1,
+                score2: m.score2,
+                micro_points: m.microPoints,
+                winnerId: m.winnerId,
+                status: m.status
+            };
         }
     });
+
     // 2. Update
-    resultsMap[matchId] = { score1: parseInt(score1), score2: parseInt(score2), micro_points: microPoints };
+    resultsMap[matchId] = {
+        score1: parseInt(score1),
+        score2: parseInt(score2),
+        micro_points: microPoints,
+        winnerId: winnerId,
+        status: status
+    };
 
     // 3. Rebuild - Use playersSource
-    // We assume playersSource is valid.
     return rebuildBracketState(playersSource, resultsMap);
 };
 
@@ -223,7 +245,7 @@ export const clearBracketMatch = (matches, matchId, playersSource) => {
     const resultsMap = {};
     matches.forEach(m => {
         if (m.id !== matchId && (m.score1 !== null || m.score2 !== null)) {
-            resultsMap[m.id] = { score1: m.score1, score2: m.score2, micro_points: m.microPoints };
+            resultsMap[m.id] = { score1: m.score1, score2: m.score2, micro_points: m.microPoints, winnerId: m.winnerId, status: m.status };
         }
     });
     return rebuildBracketState(playersSource, resultsMap);

@@ -56,12 +56,33 @@ const MatchEditModal = ({ match, onClose, onSave, onClear }) => {
             return;
         }
 
+        // Logic check for auto-completion
+        let finalStatus = status;
+        let winnerId = match.winnerId;
+
+        // Auto-detect finish condition
+        if (score1 >= winThreshold) {
+            finalStatus = 'finished';
+            winnerId = match.player1.id;
+        } else if (score2 >= winThreshold) {
+            finalStatus = 'finished';
+            winnerId = match.player2.id;
+        } else if (status === 'finished' && score1 < winThreshold && score2 < winThreshold) {
+            // If manually set to finished but scores don't reflect it, warn or allow?
+            // Let's assume manual override is okay, but if it was finished and now scores dropped, maybe re-open?
+            // User wants "Zamykanie meczu: Gdy warunek... spełniony".
+            // We'll enforce the winner if finished.
+            if (score1 > score2) winnerId = match.player1.id;
+            else if (score2 > score1) winnerId = match.player2.id;
+        }
+
         onSave(match.id, {
             score1: parseInt(score1),
             score2: parseInt(score2),
             microPoints: microPoints,
-            forceFinished: status === 'finished',
-            court: court
+            forceFinished: finalStatus === 'finished',
+            court: court,
+            winnerId: winnerId // Pass winner explicit if logic determined it
         });
     };
 
@@ -227,7 +248,8 @@ const Matches = () => {
     const handleSaveScore = (matchId, data) => {
         // Update local state is tricky because useMatches holds raw data.
         // We calculate next state using util.
-        const newState = updateBracketMatch(matches, matchId, data.score1, data.score2, data.microPoints, players);
+        const status = data.forceFinished ? 'finished' : 'live';
+        const newState = updateBracketMatch(matches, matchId, data.score1, data.score2, data.microPoints, players, data.winnerId, status);
 
         // Also update court manually if needed since bracket logic might not track it?
         // BracketLogic focuses on bracket progression. Court is metadata.
