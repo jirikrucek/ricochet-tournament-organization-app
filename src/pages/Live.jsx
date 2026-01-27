@@ -5,16 +5,29 @@ import { Maximize, Trophy, Clock, Activity, X } from 'lucide-react';
 import { useMatches } from '../hooks/useMatches';
 import { usePlayers } from '../hooks/usePlayers';
 import { getBestOf, compareMatchIds } from '../utils/matchUtils';
+import { getCountryCode } from '../constants/countries';
 import './Live.css';
 
 // Helper Component for Flag
 const PlayerFlag = ({ countryCode }) => {
     if (!countryCode) return null;
+
+    let code = countryCode;
+    // Attempt to map full name to code if length > 2
+    if (code.length > 2) {
+        code = getCountryCode(code) || code;
+    }
+
+    // FlagCDN requires 2-letter codes (ISO 3166-1 alpha-2)
+    // If we still don't have a 2-letter code, render nothing to avoid broken image icon
+    if (!code || code.length !== 2) return null;
+
     return (
         <img
-            src={`https://flagcdn.com/w40/${countryCode.toLowerCase()}.png`}
+            src={`https://flagcdn.com/w40/${code.toLowerCase()}.png`}
             alt={countryCode}
             className="player-flag"
+            onError={(e) => { e.target.style.display = 'none'; }} // Fallback hiding
         />
     );
 };

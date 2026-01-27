@@ -7,16 +7,24 @@ import { getBestOf, getMatchStatus, canEditMatch, compareMatchIds } from '../uti
 import { Edit2, Trophy, Clock, Activity, CheckCircle, Save, X, Trash2 } from 'lucide-react';
 import './Matches.css';
 import { usePlayers } from '../hooks/usePlayers';
+import { getCountryCode } from '../constants/countries';
 import { useAuth } from '../hooks/useAuth.tsx';
 
 // Helper Component for Flag
 const PlayerFlag = ({ countryCode }) => {
     if (!countryCode) return null;
+    let code = countryCode;
+    if (code.length > 2) {
+        code = getCountryCode(code) || code;
+    }
+    if (!code || code.length !== 2) return null;
+
     return (
         <img
-            src={`https://flagcdn.com/w40/${countryCode.toLowerCase()}.png`}
+            src={`https://flagcdn.com/w40/${code.toLowerCase()}.png`}
             alt={countryCode}
             className="player-flag"
+            onError={(e) => { e.target.style.display = 'none'; }}
         />
     );
 };
