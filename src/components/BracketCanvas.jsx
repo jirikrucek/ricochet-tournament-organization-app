@@ -3,6 +3,8 @@ import { Trophy } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 // We assume parent imports Brackets.css or we import it here
 import '../pages/Brackets.css';
+import RacketBadge from './RacketBadge';
+import { getRacketPathConfig } from '../utils/racketPathUtils';
 
 const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visibleSections = ['wb', 'mid', 'lb'] }) => {
     const { t } = useTranslation();
@@ -51,6 +53,43 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
         const totalScore = (match.score1 || 0) + (match.score2 || 0);
         const showScore = match.status === 'finished' || (match.status === 'live' && totalScore > 0);
 
+        // --- Racket Path Logic ---
+        const renderRacketPath = (m) => {
+            const mNum = getMatchNumber(m.id);
+            const config = getRacketPathConfig(m.id, m.bracket, m.round, mNum);
+            if (!config) return null;
+
+            // Scenario A: Source (WB R1) - Always show 
+            if (config.type === 'source') {
+                return (
+                    <RacketBadge
+                        colorKey={config.colorKey}
+                        text={config.text}
+                        isDual={config.isDual}
+                    />
+                );
+            }
+            // Scenario B: Destination (LB R1) - Only if players missing
+            if (config.type === 'destination') {
+                const hasBothPlayers = m.player1 && m.player2;
+                if (!hasBothPlayers) {
+                    return (
+                        <div style={{ display: 'flex', justifyContent: 'center', marginBottom: '4px', width: '100%' }}>
+                            <RacketBadge
+                                colorKey={config.colorKey}
+                                text={config.text}
+                                isDual={config.isDual}
+                            />
+                        </div>
+                    );
+                }
+            }
+            return null;
+        };
+
+        const racketBadgeSource = getRacketPathConfig(match.id, match.bracket, match.round, getMatchNumber(match.id))?.type === 'source' ? renderRacketPath(match) : null;
+        const racketBadgeDest = getRacketPathConfig(match.id, match.bracket, match.round, getMatchNumber(match.id))?.type === 'destination' ? renderRacketPath(match) : null;
+
         return (
             <div
                 key={match.id}
@@ -59,9 +98,13 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
                 title={title}
                 style={style}
             >
-                <div className="match-header">
+                <div className="match-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <span>{match.id.toUpperCase().replace('WB-', '').replace('LB-', '').replace('GF-', t('brackets.finalBadge') + ' ')}</span>
+                    {racketBadgeSource}
                 </div>
+
+                {racketBadgeDest}
+
                 <div className={`match-player ${isWinner1 ? 'winner' : ''}`}>
                     <span className={`player-name ${!p1 ? 'placeholder' : ''}`}>
                         {p1 ? p1.full_name : 'TBD'}
