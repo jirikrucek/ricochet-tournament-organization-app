@@ -194,18 +194,17 @@ export const rebuildBracketState = (players, existingMatchesMap = {}) => {
 
                 if (match.score1 >= winThreshold) match.winnerId = match.player1Id;
                 else if (match.score2 >= winThreshold) match.winnerId = match.player2Id;
-                else if (match.score1 > match.score2 && existing.status === 'finished') match.winnerId = match.player1Id; // Fallback if forced finished but score is weird
-                else if (match.score2 > match.score1 && existing.status === 'finished') match.winnerId = match.player2Id;
             }
-
-            match.status = match.winnerId ? 'finished' : 'live';
-        } else {
-            // Check readiness
-            match.status = (match.player1Id && match.player2Id) ? 'pending' : 'scheduled';
         }
+
+        match.status = match.winnerId ? 'finished' : 'live';
+    } else {
+        // Check readiness
+        match.status = (match.player1Id && match.player2Id) ? 'pending' : 'scheduled';
+    }
     });
 
-    return processingOrder;
+return processingOrder;
 };
 
 // EXPORTS

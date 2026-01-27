@@ -60,20 +60,17 @@ const MatchEditModal = ({ match, onClose, onSave, onClear }) => {
         let finalStatus = status;
         let winnerId = match.winnerId;
 
-        // Auto-detect finish condition
+        // Auto-detect finish condition (Strict)
         if (score1 >= winThreshold) {
             finalStatus = 'finished';
             winnerId = match.player1.id;
         } else if (score2 >= winThreshold) {
             finalStatus = 'finished';
             winnerId = match.player2.id;
-        } else if (status === 'finished' && score1 < winThreshold && score2 < winThreshold) {
-            // If manually set to finished but scores don't reflect it, warn or allow?
-            // Let's assume manual override is okay, but if it was finished and now scores dropped, maybe re-open?
-            // User wants "Zamykanie meczu: Gdy warunek... spełniony".
-            // We'll enforce the winner if finished.
-            if (score1 > score2) winnerId = match.player1.id;
-            else if (score2 > score1) winnerId = match.player2.id;
+        } else {
+            // Force active if threshold not met, regardless of what user tried to select as status
+            finalStatus = 'live';
+            winnerId = null;
         }
 
         onSave(match.id, {
