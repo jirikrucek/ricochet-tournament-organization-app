@@ -103,37 +103,40 @@ export const getBracketBlueprint = () => {
         m.sourceMatchId2 = `wb-r1-m${i * 2 + 2}`; m.sourceType2 = 'loser';
     });
 
-    // LB R2 (9-16) - BLOCK CROSS-OVER INVERSION (Explicit User Map v3)
-    // Rules:
-    // WB Matches 1/2 -> LB Slots 3/4
-    // WB Matches 3/4 -> LB Slots 1/2
-    // WB Matches 5/6 -> LB Slots 7/8
-    // WB Matches 7/8 -> LB Slots 5/6  <- Klemm Rocco (WB M8) lands here
-    allMatches.filter(m => m.bracket === 'lb' && m.round === 2).forEach((m, i) => {
-        const matchNum = i + 1; // 1 to 8
+    // LB R2 (9-16) - TOTAL LOGIC RESET (Block X Swaps)
+    // LB Block 1 (Indices 0,1) sources from WB Block 2 (Indices 2,3)
+    // LB Block 2 (Indices 2,3) sources from WB Block 1 (Indices 0,1)
+    // LB Block 3 (Indices 4,5) sources from WB Block 4 (Indices 6,7)
+    // LB Block 4 (Indices 6,7) sources from WB Block 3 (Indices 4,5)
 
-        // Source 1: Standard Winner Flow (LB R1 M[i] -> LB R2 M[i])
-        // Assumption: Winner flow remains straight.
-        m.sourceMatchId1 = `lb-r1-m${matchNum}`; m.sourceType1 = 'winner';
+    // Mapping Table (LB Index -> WB Index)
+    // 0 -> 2
+    // 1 -> 3
+    // 2 -> 0
+    // 3 -> 1
+    // 4 -> 6
+    // 5 -> 7
+    // 6 -> 4
+    // 7 -> 5
+
+    const lbToWbMap = [2, 3, 0, 1, 6, 7, 4, 5];
+
+    console.groupCollapsed("LB R2 Placement Logic - Block Swap");
+    allMatches.filter(m => m.bracket === 'lb' && m.round === 2).forEach((m, i) => {
+        const wbSourceIndex = lbToWbMap[i]; // Get 0-7 index
+        const wbMatchNum = wbSourceIndex + 1; // Convert to 1-8 ID
+
+        // Source 1: Straight from LB R1 winner (Sequential)
+        m.sourceMatchId1 = `lb-r1-m${i + 1}`;
+        m.sourceType1 = 'winner';
+
+        // Source 2: Cross-Over from WB R2 loser
+        m.sourceMatchId2 = `wb-r2-m${wbMatchNum}`;
         m.sourceType2 = 'loser';
 
-        // Source 2: Loser Drop from WB R2 (Block Cross-Over)
-        switch (matchNum) {
-            case 1: m.sourceMatchId2 = 'wb-r2-m3'; break; // Top Slot gets WB M3
-            case 2: m.sourceMatchId2 = 'wb-r2-m4'; break; // Top Slot gets WB M4
-
-            case 3: m.sourceMatchId2 = 'wb-r2-m1'; break; // Mid-High Slot gets WB M1
-            case 4: m.sourceMatchId2 = 'wb-r2-m2'; break; // Mid-High Slot gets WB M2
-
-            case 5: m.sourceMatchId2 = 'wb-r2-m7'; break; // Mid-Low Slot gets WB M7
-            case 6: m.sourceMatchId2 = 'wb-r2-m8'; break; // Mid-Low Slot gets WB M8
-
-            case 7: m.sourceMatchId2 = 'wb-r2-m5'; break; // Bottom Slot gets WB M5
-            case 8: m.sourceMatchId2 = 'wb-r2-m6'; break; // Bottom Slot gets WB M6
-
-            default: m.sourceMatchId2 = null;
-        }
+        console.log(`LB Match ${i + 1} [${m.id}] <== Winner LB R1 M${i + 1} + Loser WB R2 M${wbMatchNum}`);
     });
+    console.groupEnd();
     // LB R3
     allMatches.filter(m => m.bracket === 'lb' && m.round === 3).forEach((m, i) => {
         m.sourceMatchId1 = `lb-r2-m${i * 2 + 1}`; m.sourceType1 = 'winner';
