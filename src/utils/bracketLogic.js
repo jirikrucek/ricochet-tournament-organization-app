@@ -15,22 +15,106 @@ export const getBracketBlueprint = () => {
 
     // NUCLEAR WIPE: ONLY WB R1 ALLOWED
     // WB (5 Rounds) -> NOW ONLY R1
-    // [16, 8, 4, 2, 1].forEach((count, rIdx) => {
-    [16].forEach((count, rIdx) => {
-        const round = rIdx + 1;
-        for (let m = 1; m <= count; m++) {
-            allMatches.push({ id: `wb-r${round}-m${m}`, round: round, bracket: 'wb', sourceMatchId1: null, sourceType1: null, sourceMatchId2: null, sourceType2: null });
-        }
+
+    // Hardcoded Player List (Mock Data for Reconstruction)
+    const wbR1Config = [
+        { id: 'wb-r1-m1', p1: 'Krůček Jiří', p2: 'Zaborowska Magda' },
+        { id: 'wb-r1-m2', p1: 'van Delden Nick', p2: 'de Ruiter Sonja' },
+        { id: 'wb-r1-m3', p1: 'Jacob Stefan', p2: 'Gober Kacper' },
+        { id: 'wb-r1-m4', p1: 'Lachacz Marta', p2: 'Andulewicz Bartosz' },
+        { id: 'wb-r1-m5', p1: 'Dylak Aleksandra', p2: 'Falada Labos' }, // Note: Names might be transposed in real data, adhering to list implies Order
+        { id: 'wb-r1-m6', p1: 'Pomian Adam', p2: 'Danielewicz Mateusz' },
+        { id: 'wb-r1-m7', p1: 'Leksowicz Maciej', p2: 'Kwiatkowska Daria' },
+        { id: 'wb-r1-m8', p1: 'Bąkowski Patryk', p2: 'Słab Joz' },
+        { id: 'wb-r1-m9', p1: 'Pretzschner Ralf', p2: 'Leśkiewicz Maciej' },
+        { id: 'wb-r1-m10', p1: 'Gober Igor', p2: 'Kołodziej-Gościej Beata' }, // Using best guess for "Kołodzie.."
+        { id: 'wb-r1-m11', p1: 'van Noort Michael', p2: 'Świdzicki Arkadiusz' },
+        { id: 'wb-r1-m12', p1: 'Bibin Daniel', p2: 'Förster Felix' },
+        { id: 'wb-r1-m13', p1: 'Gober Szymon', p2: 'Witkowski Szymon' },
+        { id: 'wb-r1-m14', p1: 'Różycki Sylwester', p2: 'Andzel Adam' },
+        { id: 'wb-r1-m15', p1: 'Klemm Rocco', p2: 'Groh Jeanette' },
+        { id: 'wb-r1-m16', p1: 'Waszkiewicz Kamil', p2: 'Faust Elisabeth' }
+    ];
+
+    wbR1Config.forEach(cfg => {
+        allMatches.push({
+            id: cfg.id,
+            round: 1,
+            bracket: 'wb',
+            // Pre-fill mock data for visual reconstruction
+            player1: { id: cfg.p1, full_name: cfg.p1 },
+            player2: { id: cfg.p2, full_name: cfg.p2 },
+            player1Id: cfg.p1,
+            player2Id: cfg.p2,
+            score1: 3,
+            score2: 0,
+            winnerId: cfg.p1,
+            // Sources
+            sourceMatchId1: null, sourceType1: null, sourceMatchId2: null, sourceType2: null
+        });
     });
 
-    /* COMMENTED OUT FOR RESET
-    // LB (8 Rounds)
-    const lbCounts = [8, 8, 4, 4, 2, 2, 1, 1];
+    // NUCLEAR WIPE: ONLY WB R1 ALLOWED
+    // ... WB R1 Config existing ...
+
+    // FASE 2: ADD LOSERS ROUND 1 (17-32) - EXTREME MIRROR 1vs16
+    const lbCounts = [8]; // Activate Round 1 only
     lbCounts.forEach((count, rIdx) => {
         const round = rIdx + 1;
         for (let m = 1; m <= count; m++) {
             allMatches.push({ id: `lb-r${round}-m${m}`, round: round, bracket: 'lb', sourceMatchId1: null, sourceType1: null, sourceMatchId2: null, sourceType2: null });
         }
+    });
+
+    // --- FASE 3: WINNERS ROUND 2 (8 Matches) ---
+    // Standard Progression: W(M1)+W(M2) -> M1, etc.
+    for (let m = 1; m <= 8; m++) {
+        allMatches.push({
+            id: `wb-r2-m${m}`, round: 2, bracket: 'wb',
+            score1: 3, score2: 0, // Auto-resolve P1 as winner
+            sourceMatchId1: `wb-r1-m${m * 2 - 1}`, sourceType1: 'winner',
+            sourceMatchId2: `wb-r1-m${m * 2}`, sourceType2: 'winner'
+        });
+    }
+
+    // --- FASE 3: LOSERS ROUND 2 (Placement 9-16) ---
+    for (let m = 1; m <= 8; m++) {
+        allMatches.push({ id: `lb-r2-m${m}`, round: 2, bracket: 'lb', sourceMatchId1: null, sourceType1: null, sourceMatchId2: null, sourceType2: null });
+    }
+
+    // LB R2 Logic: Full Vertical Inversion
+    // LB Match 1 (Top) <- LB R1 M1 (Winner) + WB R2 M8 (Loser)
+    // LB Match 8 (Bottom) <- LB R1 M8 (Winner) + WB R2 M1 (Loser)
+    console.group("LB R2 Inversion Check");
+    allMatches.filter(m => m.bracket === 'lb' && m.round === 2).forEach((m, i) => {
+        const matchNum = i + 1; // 1-8
+
+        // Source 1: Winner from LB R1 (Straight)
+        m.sourceMatchId1 = `lb-r1-m${matchNum}`; m.sourceType1 = 'winner';
+
+        // Source 2: Loser from WB R2 (INVERTED)
+        // Formula: Target WB Match = 9 - LB Match Num
+        // 9-1 = 8
+        // 9-8 = 1
+        const wbMatchNum = 9 - matchNum;
+        m.sourceMatchId2 = `wb-r2-m${wbMatchNum}`; m.sourceType2 = 'loser';
+
+        console.log(`Inversion confirmed: WB M${wbMatchNum} -> LB M${matchNum}`);
+    });
+    console.groupEnd();
+
+    // --- MAPPING LOGIC ---
+    // LB R1 Maps Losers from WB R1
+    // Logic: Match i (1-8) takes L(WB i) + L(WB 17-i)
+    // M1: WB L1 + WB L16
+    // M2: WB L2 + WB L15
+    // ...
+    allMatches.filter(m => m.bracket === 'lb' && m.round === 1).forEach((m, i) => {
+        const matchNum = i + 1;
+        const lowSeedInverted = 17 - matchNum; // if i=0(M1) -> 16
+
+        m.sourceMatchId1 = `wb-r1-m${matchNum}`; m.sourceType1 = 'loser';
+        m.sourceMatchId2 = `wb-r1-m${lowSeedInverted}`; m.sourceType2 = 'loser';
     });
     // GF
     allMatches.push({ id: 'gf-m1', round: 1, bracket: 'gf' });
