@@ -5,7 +5,7 @@ import { supabase, isSupabaseConfigured } from '../lib/supabase';
 import { db, isFirebaseConfigured } from '../lib/firebase';
 import { collection, onSnapshot, getDocs, addDoc, updateDoc, deleteDoc, doc, query, where, writeBatch } from 'firebase/firestore';
 
-const BASE_KEY = 'ricochet_bracket_v5_RESET';
+const BASE_KEY = 'ricochet_bracket_v6_EMPTY';
 
 export const useMatches = () => {
     const [matches, setMatches] = useState([]);

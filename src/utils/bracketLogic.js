@@ -9,16 +9,21 @@ const SEEDING_ORDER = [
 
 // Helper: Define static structure of match sources
 // Helper: Define static structure of match sources
+// Helper: Define static structure of match sources
 export const getBracketBlueprint = () => {
     const allMatches = [];
 
-    // WB (5 Rounds)
-    [16, 8, 4, 2, 1].forEach((count, rIdx) => {
+    // NUCLEAR WIPE: ONLY WB R1 ALLOWED
+    // WB (5 Rounds) -> NOW ONLY R1
+    // [16, 8, 4, 2, 1].forEach((count, rIdx) => {
+    [16].forEach((count, rIdx) => {
         const round = rIdx + 1;
         for (let m = 1; m <= count; m++) {
             allMatches.push({ id: `wb-r${round}-m${m}`, round: round, bracket: 'wb', sourceMatchId1: null, sourceType1: null, sourceMatchId2: null, sourceType2: null });
         }
     });
+
+    /* COMMENTED OUT FOR RESET
     // LB (8 Rounds)
     const lbCounts = [8, 8, 4, 4, 2, 2, 1, 1];
     lbCounts.forEach((count, rIdx) => {
@@ -79,8 +84,10 @@ export const getBracketBlueprint = () => {
 
     // Place 5-6 (Losers of LB R6)
     allMatches.push({ id: 'p5-f', round: 1, bracket: 'p5', label: '5th Place' });
+    */
 
-    // --- DEFINE SOURCES ---
+    // --- SOURCES (COMMENTED OUT) ---
+    /*
     // WB R2-R5 (Winner Sources)
     for (let r = 2; r <= 5; r++) {
         const matches = allMatches.filter(m => m.bracket === 'wb' && m.round === r);
@@ -270,8 +277,10 @@ export const getBracketBlueprint = () => {
     // 5-6 Match (from LB R6 Losers)
     const p5f = allMatches.find(m => m.id === 'p5-f');
     if (p5f) { p5f.sourceMatchId1 = 'lb-r6-m1'; p5f.sourceType1 = 'loser'; p5f.sourceMatchId2 = 'lb-r6-m2'; p5f.sourceType2 = 'loser'; }
+    */
 
     // --- POST-PROCESSING: LINK DESTINATIONS ---
+    /*
     // Iterate to set nextMatchId (winner path) and consolationMatchId (loser path)
     // Create a quick lookup map
     const matchMap = new Map();
@@ -295,6 +304,7 @@ export const getBracketBlueprint = () => {
             }
         }
     });
+    */
 
     return allMatches;
 };
