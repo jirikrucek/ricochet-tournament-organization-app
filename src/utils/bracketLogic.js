@@ -106,24 +106,19 @@ export const getBracketBlueprint = () => {
     // LB R2 - BIG 'X' CROSS-OVER (Placement 9-16)
     // Top LB (1-4) <- Bottom WB (5-8)
     // Bottom LB (5-8) <- Top WB (1-4)
+    // LB R2 (9-16) - RECOVERY ROUND
+    // Pair Winners from LB R1 vs Losers from WB R2
+    // Logic: Big X Mirror (Top LB gets Bottom WB Losers, Bottom LB gets Top WB Losers)
+    // Formula: LB Match i (0-7) vs WB Match (8-i)
     allMatches.filter(m => m.bracket === 'lb' && m.round === 2).forEach((m, i) => {
-        // LB R2 (9-16) - BIG 'X' CROSS-OVER
-        if (i === 0) { // Match 1 (Top) <- WB 7+8 (Bottom)
-            m.sourceMatchId1 = 'wb-r2-m7'; m.sourceType1 = 'loser';
-            m.sourceMatchId2 = 'wb-r2-m8'; m.sourceType2 = 'loser';
-        } else if (i === 1) { // Match 2 (Top) <- WB 5+6 (Bottom)
-            m.sourceMatchId1 = 'wb-r2-m5'; m.sourceType1 = 'loser';
-            m.sourceMatchId2 = 'wb-r2-m6'; m.sourceType2 = 'loser';
-        } else if (i === 2) { // Match 3 (Bottom) <- WB 3+4 (Top)
-            m.sourceMatchId1 = 'wb-r2-m3'; m.sourceType1 = 'loser';
-            m.sourceMatchId2 = 'wb-r2-m4'; m.sourceType2 = 'loser';
-        } else if (i === 3) { // Match 4 (Bottom) <- WB 1+2 (Top)
-            m.sourceMatchId1 = 'wb-r2-m1'; m.sourceType1 = 'loser';
-            m.sourceMatchId2 = 'wb-r2-m2'; m.sourceType2 = 'loser';
-        } else {
-            m.sourceMatchId1 = null;
-            m.sourceMatchId2 = null;
-        }
+        // Source 1: Winner from previous LB round (Sequential/Straight)
+        m.sourceMatchId1 = `lb-r1-m${i + 1}`; m.sourceType1 = 'winner';
+
+        // Source 2: Loser from WB R2 (Cross Mirror)
+        // i=0 (LB 1) <- WB 8
+        // i=7 (LB 8) <- WB 1
+        const wbTarget = 8 - i;
+        m.sourceMatchId2 = `wb-r2-m${wbTarget}`; m.sourceType2 = 'loser';
     });
     // LB R3
     allMatches.filter(m => m.bracket === 'lb' && m.round === 3).forEach((m, i) => {
