@@ -91,16 +91,36 @@ export const getBracketBlueprint = () => {
     }
 
     // LB Sources (Standard DE Logic)
-    // LB R1
+    // LB R1 - FULL MIRROR CROSS-OVER
+    // LB 1 (Top) <- WB 15, 16 (Bottom)
+    // LB 8 (Bottom) <- WB 1, 2 (Top)
     allMatches.filter(m => m.bracket === 'lb' && m.round === 1).forEach((m, i) => {
-        m.sourceMatchId1 = `wb-r1-m${i * 2 + 1}`; m.sourceType1 = 'loser';
-        m.sourceMatchId2 = `wb-r1-m${i * 2 + 2}`; m.sourceType2 = 'loser';
+        // i: 0..7
+        // Mirror Group Index: 7 - i
+        const groupIdx = 7 - i;
+        const s1 = groupIdx * 2 + 1;
+        const s2 = groupIdx * 2 + 2;
+
+        m.sourceMatchId1 = `wb-r1-m${s1}`; m.sourceType1 = 'loser';
+        m.sourceMatchId2 = `wb-r1-m${s2}`; m.sourceType2 = 'loser';
     });
-    // LB R2
+
+    // LB R2 - SECTION CROSS-OVER
+    // Top LB (1-4) <- Bottom WB (5-8)
+    // Bottom LB (5-8) <- Top WB (1-4)
     allMatches.filter(m => m.bracket === 'lb' && m.round === 2).forEach((m, i) => {
-        // Cross-Pool: Top WB (0-3) -> Bottom LB (4-7) | Bottom WB -> Top LB
-        const wbIndex = (i < 4) ? (i + 4) : (i - 4);
+        // Winner from previous LB round (straight)
         m.sourceMatchId1 = `lb-r1-m${i + 1}`; m.sourceType1 = 'winner';
+
+        // Loser Drop from WB R2 (Cross)
+        let wbIndex;
+        if (i < 4) {
+            // LB 1..4 <- WB 5..8
+            wbIndex = i + 4;
+        } else {
+            // LB 5..8 <- WB 1..4
+            wbIndex = i - 4;
+        }
         m.sourceMatchId2 = `wb-r2-m${wbIndex + 1}`; m.sourceType2 = 'loser';
     });
     // LB R3
