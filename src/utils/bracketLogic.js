@@ -149,19 +149,16 @@ export const getBracketBlueprint = () => {
         });
     }
 
-    // --- LB R6 (2 Matches) - WB R4 Losers (MIRROR) ---
+    // --- LB R6 (2 Matches) - WB R4 Losers (DIRECT MAPPING) ---
     // User Requirement:
-    // WB SF1 (Top, M1) -> LB M2 (Bottom)
-    // WB SF2 (Bottom, M2) -> LB M1 (Top)
+    // WB SF1 (Top, M1) -> LB M1 (Top)
+    // WB SF2 (Bottom, M2) -> LB M2 (Bottom)
+    // No mirror here.
     for (let i = 1; i <= 2; i++) {
-        // If i=1 (Top LB), source is WB M2 (Bottom WB)
-        // If i=2 (Bottom LB), source is WB M1 (Top WB)
-        const wbSource = (i === 1) ? 2 : 1;
-
         allMatches.push({
             id: `lb-r6-m${i}`, round: 6, bracket: 'lb',
             sourceMatchId1: `lb-r5-m${i}`, sourceType1: 'winner',
-            sourceMatchId2: `wb-r4-m${wbSource}`, sourceType2: 'loser',
+            sourceMatchId2: `wb-r4-m${i}`, sourceType2: 'loser',
             nextMatchId: `lb-r7-m1`
         });
     }
