@@ -129,6 +129,11 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
         const isClickable = !readonly && onMatchClick && !match.player1?.isBye && !match.player2?.isBye;
         const showScore = match.status === 'finished' || (match.status === 'live' && (match.score1 > 0 || match.score2 > 0));
 
+        // Restore missing definitions
+        const racketCfg = getRacketPathConfig(match.id);
+        const displayId = customHeader || getMatchNumber(match.id);
+        const getSourceColor = (sourceId) => sourceId ? getMatchColor(sourceId) : '#555';
+
         // Styling for placement brackets
         const isPlacement = match.bracket.startsWith('p');
         const borderColor = isPlacement ? '#f97316' : racketCfg.color; // Orange for placement
@@ -183,16 +188,21 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
                             displayColor = getSourceColor(row.src);
                         }
 
+                        // Bold winner
+                        const fontWeight = row.w ? 600 : 300;
+                        const rowOpacity = (match.status === 'finished' && !row.w) ? 0.5 : 1;
+
                         return (
                             <div key={idx} style={{
                                 display: 'flex', justifyContent: 'space-between', alignItems: 'center',
                                 padding: '4px 12px',
-                                background: 'transparent'
+                                background: 'transparent',
+                                opacity: rowOpacity
                             }}>
                                 <span style={{
                                     whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                                     color: displayColor,
-                                    fontWeight: 300,
+                                    fontWeight: fontWeight,
                                     fontSize: '0.75rem',
                                     letterSpacing: '0.5px',
                                 }}>
