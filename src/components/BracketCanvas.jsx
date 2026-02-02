@@ -206,6 +206,10 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
         );
     };
 
+    if (!enrichedMatches || enrichedMatches.length === 0) {
+        return <div style={{ color: '#fff', padding: '40px' }}>{t('brackets.noData') || 'No bracket data available. Please generate a new bracket.'}</div>;
+    }
+
     return (
         <div className="bracket-scroll-container" style={{ width: '100%', height: '100%', overflowX: 'auto', background: '#09090b', position: 'relative' }}>
             <svg style={{ position: 'absolute', top: 0, left: 0, width: '8000px', height: '100%', pointerEvents: 'none', zIndex: 0 }}>

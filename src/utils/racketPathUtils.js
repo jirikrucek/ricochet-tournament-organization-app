@@ -41,10 +41,11 @@ export const getMatchColor = (matchId) => {
  * Use this for the Match Header Racket.
  */
 export const getRacketPathConfig = (matchId) => {
+    if (!matchId || typeof matchId !== 'string') return { showBadge: false, color: '#666', text: '?' };
     return {
         showBadge: true,
         color: getMatchColor(matchId),
-        text: matchId.split('-m')[1] || '?', // Just match number
+        text: matchId.split('-m')[1] || '?',
     };
 };
 
