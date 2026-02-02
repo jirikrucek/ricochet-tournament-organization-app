@@ -150,11 +150,14 @@ export const getBracketBlueprint = () => {
     }
 
     // --- LB R6 (2 Matches) - WB R4 Losers (MIRROR) ---
-    // WB Semis -> LB Semis
-    // WB M1 -> LB M2
-    // WB M2 -> LB M1
+    // User Requirement:
+    // WB SF1 (Top, M1) -> LB M2 (Bottom)
+    // WB SF2 (Bottom, M2) -> LB M1 (Top)
     for (let i = 1; i <= 2; i++) {
-        const wbSource = i === 1 ? 2 : 1;
+        // If i=1 (Top LB), source is WB M2 (Bottom WB)
+        // If i=2 (Bottom LB), source is WB M1 (Top WB)
+        const wbSource = (i === 1) ? 2 : 1;
+
         allMatches.push({
             id: `lb-r6-m${i}`, round: 6, bracket: 'lb',
             sourceMatchId1: `lb-r5-m${i}`, sourceType1: 'winner',
