@@ -227,7 +227,7 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
                                 </div>
                             ))}
                             {visibleSections.includes('mid') && gfMatches.length > 0 && (
-                                <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '20px', marginLeft: '10px' }}>
+                                <div className="section-mid" style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: '20px', marginLeft: '10px' }}>
                                     {gfMatches.map(m => renderMatch(m, "FIN"))}
                                     <div style={{ alignSelf: 'center', opacity: 0.4 }}><Trophy size={48} color="#fbbf24" /></div>
                                 </div>
