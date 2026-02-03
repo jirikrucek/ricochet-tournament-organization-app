@@ -144,17 +144,24 @@ export const useMatches = () => {
     };
 
     const saveMatches = async (newMatches) => {
-        if (!isAuthenticated || !activeTournamentId) return;
+        if (!isAuthenticated || !activeTournamentId) {
+            console.warn("Save skipped: Auth/TournamentID missing");
+            return;
+        }
+
+        // OPTIMISTIC UPDATE: Update local state immediately
+        setMatches(newMatches);
 
         if (isFirebaseConfigured) {
             try {
-                setIsSaving(true);
-                const { setDoc } = await import('firebase/firestore');
+                // setIsSaving(true); // removed to avoid flickering if needed, or keep. 
+                // User asked for immediate log.
+                console.log("Saving matches to Firebase...", newMatches.length);
 
+                const { setDoc } = await import('firebase/firestore');
                 const payload = newMatches.map(m => mapToSnake(m));
 
                 // Parallel Optimization for Blaze Plan
-                // Use Promise.all to fire all writes simultaneously
                 const promises = payload.map(match => {
                     if (!match.id) return Promise.resolve();
                     const docRef = doc(db, "matches", match.id);
@@ -162,6 +169,7 @@ export const useMatches = () => {
                 });
 
                 await Promise.all(promises);
+                console.log("Firebase Save Success!");
 
             } catch (e) {
                 console.error("Error saving matches (Firebase):", e);
@@ -171,7 +179,6 @@ export const useMatches = () => {
 
         } else {
             // LS
-            setMatches(newMatches);
             const { migrated } = migrateDataLS(newMatches);
             localStorage.setItem(lsKey, JSON.stringify(migrated));
         }

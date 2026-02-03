@@ -309,7 +309,9 @@ const Matches = () => {
             return { ...m, court: old?.court || m.court };
         });
 
+        console.log("Próba zapisu meczu:", matchId, data);
         saveMatches(finalState);
+        console.log("Zapis wysłany do hooka!");
 
         // Close modal only if manual save
         if (!options.autoSave) {
