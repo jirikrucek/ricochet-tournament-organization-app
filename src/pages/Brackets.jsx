@@ -26,7 +26,7 @@ const SCORE_MODAL_STYLES = {
 const Brackets = () => {
     const { t } = useTranslation();
     const { players } = usePlayers();
-    const { matches, saveMatches, resetMatches } = useMatches();
+    const { matches, saveMatches, resetMatches, isSaving } = useMatches();
     const [selectedMatch, setSelectedMatch] = useState(null);
     const [scoreA, setScoreA] = useState('');
     const [scoreB, setScoreB] = useState('');
@@ -152,6 +152,20 @@ const Brackets = () => {
                             </div>
                         </form>
                     </div>
+                </div>
+            )}
+            {/* Save Indicator */}
+            {isSaving && (
+                <div className="fade-in" style={{
+                    position: 'absolute', bottom: '20px', right: '20px',
+                    background: 'rgba(9, 9, 11, 0.8)', padding: '8px 16px', borderRadius: '20px',
+                    border: '1px solid var(--border-color)',
+                    display: 'flex', alignItems: 'center', gap: '8px',
+                    color: '#10b981', fontSize: '0.8rem', fontWeight: 600,
+                    zIndex: 1000, backdropFilter: 'blur(4px)'
+                }}>
+                    <RefreshCw size={14} className="spin" />
+                    {t('common.saving') || 'Saving...'}
                 </div>
             )}
         </div>

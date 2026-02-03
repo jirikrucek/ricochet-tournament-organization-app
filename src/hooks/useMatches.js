@@ -123,9 +123,12 @@ export const useMatches = () => {
         };
     }, [activeTournamentId, lsKey]);
 
+    const [isSaving, setIsSaving] = useState(false);
+
     const resetMatches = async () => {
         if (!isAuthenticated || !activeTournamentId || !isFirebaseConfigured) return;
         try {
+            setIsSaving(true);
             const q = query(collection(db, "matches"), where("tournament_id", "==", activeTournamentId));
             const snapshot = await getDocs(q);
             const batch = writeBatch(db);
@@ -135,6 +138,8 @@ export const useMatches = () => {
             await batch.commit();
         } catch (e) {
             console.error("Error resetting matches:", e);
+        } finally {
+            setIsSaving(false);
         }
     };
 
@@ -143,24 +148,25 @@ export const useMatches = () => {
 
         if (isFirebaseConfigured) {
             try {
+                setIsSaving(true);
                 const { setDoc } = await import('firebase/firestore');
 
-                // If this seems like a full regeneration (many matches), we might want to clear old ones first
-                // to avoid ID conflicts or stale data. But saveMatches is also used for updates.
-                // We'll leave that decision to the caller (use resetMatches() before saveMatches() if needed).
+                const payload = newMatches.map(m => mapToSnake(m));
 
-                const payload = newMatches.map(m => {
-                    const snake = mapToSnake(m);
-                    return snake;
+                // Parallel Optimization for Blaze Plan
+                // Use Promise.all to fire all writes simultaneously
+                const promises = payload.map(match => {
+                    if (!match.id) return Promise.resolve();
+                    const docRef = doc(db, "matches", match.id);
+                    return setDoc(docRef, match);
                 });
 
-                for (const match of payload) {
-                    if (!match.id) continue;
-                    const docRef = doc(db, "matches", match.id);
-                    await setDoc(docRef, match);
-                }
+                await Promise.all(promises);
+
             } catch (e) {
                 console.error("Error saving matches (Firebase):", e);
+            } finally {
+                setIsSaving(false);
             }
 
         } else {
@@ -172,5 +178,5 @@ export const useMatches = () => {
     };
 
 
-    return { matches, saveMatches, resetMatches };
+    return { matches, saveMatches, resetMatches, isSaving };
 };
