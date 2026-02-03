@@ -61,8 +61,8 @@ const Layout = () => {
         <div className="app-container">
             {/* Top Header */}
             <header className="top-header glass">
-                <div className="header-title">
-                    <Activity className="text-accent" size={24} color="var(--accent-primary)" />
+                <div className="header-title" style={{ display: 'flex', alignItems: 'center' }}>
+                    <img src="/c.png" alt="Logo" style={{ height: '32px', marginRight: '12px' }} />
                     <span>{t('common.appName')}</span>
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
