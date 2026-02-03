@@ -11,29 +11,6 @@ import { updateBracketMatch } from '../utils/bracketLogic';
 import { getCountryCode } from '../constants/countries';
 import './Live.css';
 
-// Helper Component for Score Controls
-const ScoreControls = ({ onIncrement, onDecrement, size = 'normal', style = {} }) => {
-    return (
-        <div className={`score-controls ${size}`} style={style}>
-            <button
-                onClick={(e) => { e.stopPropagation(); onIncrement(); }}
-                className="control-btn plus"
-                title="Add Point"
-            >
-                <Plus size={size === 'small' ? 10 : 14} strokeWidth={3} />
-            </button>
-            <button
-                onClick={(e) => { e.stopPropagation(); onDecrement(); }}
-                className="control-btn minus"
-                title="Subtract Point"
-            >
-                <Minus size={size === 'small' ? 10 : 14} strokeWidth={3} />
-            </button>
-        </div>
-    );
-};
-
-
 // Helper Component for Flag
 const PlayerFlag = ({ countryCode }) => {
     if (!countryCode) return null;
@@ -70,13 +47,10 @@ const splitName = (fullName) => {
 const Live = () => {
     const { t } = useTranslation();
     const { isAuthenticated } = useAuth();
-    const { saveMatches } = useMatches(); // Ensure saveMatches is destructured if not already
+    const { saveMatches } = useMatches();
 
     const { matches } = useMatches();
     const { players } = usePlayers();
-
-    // DEBUG LOG
-    // console.log("LIVE DATA CHECK:", matches);
 
     const { activeTournamentId, tournaments, isLoading: isTournamentLoading } = useTournament();
     const location = useLocation();
@@ -121,7 +95,7 @@ const Live = () => {
 
     const secondsAgo = Math.floor((Date.now() - lastUpdate) / 1000);
 
-    // --- LOGIC CENTRAL (Reuse existing logic) ---
+    // --- LOGIC CENTRAL ---
     const { pinkQueue, cyanQueue, finishedMatches } = useMemo(() => {
         if (!matches || matches.length === 0) {
             return { pinkQueue: [], cyanQueue: [], finishedMatches: [] };
@@ -180,7 +154,6 @@ const Live = () => {
     }, [matches, players]);
 
     const getCourtState = (queue) => {
-        // Prefer a match that has started scoring or is explicitly set to live
         const liveMatch = queue.find(m => (m.score1 > 0 || m.score2 > 0 || (m.status && m.status.toLowerCase() === 'live')));
         const current = liveMatch || queue[0] || null;
         let upcoming = [];
@@ -200,10 +173,9 @@ const Live = () => {
 
         console.log(`[JUDGE] Update Request: ${type} ${playerKey} ${change}`);
 
-        // 1. DEEP CLONE (Critical for React/Firestore references)
+        // 1. DEEP CLONE (Critical)
         let newScore1 = match.score1 ?? 0;
         let newScore2 = match.score2 ?? 0;
-        // Deep clone array AND objects inside
         let newMicroPoints = (match.microPoints || []).map(s => ({ ...s }));
 
         if (type === 'set') {
@@ -235,7 +207,7 @@ const Live = () => {
             }
         }
 
-        // Validate Sets
+        // Validate Scores
         if (newScore1 < 0) newScore1 = 0;
         if (newScore2 < 0) newScore2 = 0;
 
@@ -253,7 +225,7 @@ const Live = () => {
             winnerId = match.player2.id;
         }
 
-        // Force Update via Context
+        // Context Update
         const nextState = updateBracketMatch(
             matches,
             match.id,
@@ -273,20 +245,40 @@ const Live = () => {
         });
     };
 
+    const renderEmptyLive = (courtColor) => (
+        <div className="live-match-display empty" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '200px' }}>
+            <div style={{ color: courtColor, opacity: 0.5, fontStyle: 'italic', fontSize: '1.2rem' }}>
+                {t('live.waitingForMatch') || "Waiting for match..."}
+            </div>
+        </div>
+    );
+
+    // Universal small button style
+    const btnStyle = (color) => ({
+        background: 'rgba(255,255,255,0.1)',
+        border: `1px solid ${color ? color : 'rgba(255,255,255,0.2)'}`,
+        color: color || 'white',
+        borderRadius: '4px',
+        width: '24px',
+        height: '24px',
+        cursor: 'pointer',
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        margin: '0 2px'
+    });
+
     const renderLiveMatch = (match, courtColor) => {
         if (!match) return renderEmptyLive(courtColor);
         const bestOf = getBestOf(match.bracket);
 
-        // Check Status using Helper
         const format = bestOf === 5 ? 'BO5' : 'BO3';
         const isStillPlaying = checkMatchStatus({ score1: match.score1, score2: match.score2 }, format);
         const showLive = isStillPlaying && !match.winnerId;
 
-        // Prepare micro points (sets)
         const sets = match.microPoints || [];
         const sortedSets = [...sets].sort((a, b) => a.set - b.set);
         const currentSet = sortedSets.length > 0 ? sortedSets[sortedSets.length - 1] : null;
-
         const canAddSet = isAuthenticated && isStillPlaying && (sortedSets.length < bestOf);
 
         return (
@@ -307,121 +299,90 @@ const Live = () => {
 
 
                 <div className="players-versus">
+                    {/* LEFT PLAYER */}
                     <div className="player-container left" style={{ color: match.score1 > match.score2 ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
                         <div className="player-surname">
                             <PlayerFlag countryCode={match.player1.country} />
                             {splitName(match.player1.full_name).surname}
                         </div>
                         <div className="player-firstname">{splitName(match.player1.full_name).firstName}</div>
-                        {/* Current Set Points Display */}
+                        {/* Current Set POINTS Controls */}
                         {isStillPlaying && (isAuthenticated || currentSet) && (
                             <div style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '5px', color: courtColor, display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 {currentSet ? currentSet.a : 0}
                                 {isAuthenticated && (
-                                    <>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleLiveScoreUpdate(match, 'point', 'a', 1); }}
-                                            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: courtColor, borderRadius: '4px', width: '28px', height: '28px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                        >
-                                            <Plus size={16} />
-                                        </button>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleLiveScoreUpdate(match, 'point', 'a', -1); }}
-                                            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: courtColor, borderRadius: '4px', width: '28px', height: '28px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                        >
-                                            <Minus size={16} />
-                                        </button>
-                                    </>
+                                    <div style={{ display: 'flex', gap: '2px' }}>
+                                        <button onClick={(e) => { e.stopPropagation(); handleLiveScoreUpdate(match, 'point', 'a', 1); }} style={btnStyle(courtColor)}><Plus size={14} /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); handleLiveScoreUpdate(match, 'point', 'a', -1); }} style={btnStyle(courtColor)}><Minus size={14} /></button>
+                                    </div>
                                 )}
                             </div>
                         )}
                     </div>
 
+                    {/* CENTER (SETS) */}
                     <div className="score-center-col" style={{ minWidth: '100px' }}>
                         <div className="score-display">
 
-                            {/* Score 1 Controls (Sets) */}
+                            {/* P1 SETS +/- */}
                             {isAuthenticated && (
-                                <ScoreControls
-                                    onIncrement={() => handleLiveScoreUpdate(match, 'set', 'score1', 1)}
-                                    onDecrement={() => handleLiveScoreUpdate(match, 'set', 'score1', -1)}
-                                    style={{ marginRight: '8px' }}
-                                    size="small"
-                                />
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginRight: '8px' }}>
+                                    <button onClick={() => handleLiveScoreUpdate(match, 'set', 'score1', 1)} style={btnStyle('rgba(255,255,255,0.5)')}><Plus size={10} /></button>
+                                    <button onClick={() => handleLiveScoreUpdate(match, 'set', 'score1', -1)} style={btnStyle('rgba(255,255,255,0.5)')}><Minus size={10} /></button>
+                                </div>
                             )}
 
-                            <span className="big-score" style={{
-                                color: courtColor,
-                                transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                                display: 'inline-block'
-                            }}>
+                            <span className="big-score" style={{ color: courtColor }}>
                                 {(match.winnerId || match.score1 > 0 || match.score2 > 0 || showLive) ? (match.score1 ?? 0) : '-'}
                             </span>
                             <span className="vs-divider"> : </span>
-                            <span className="big-score" style={{
-                                color: courtColor,
-                                transition: 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                                display: 'inline-block'
-                            }}>
+                            <span className="big-score" style={{ color: courtColor }}>
                                 {(match.winnerId || match.score1 > 0 || match.score2 > 0 || showLive) ? (match.score2 ?? 0) : '-'}
                             </span>
 
-                            {/* Score 2 Controls (Sets) */}
+                            {/* P2 SETS +/- */}
                             {isAuthenticated && (
-                                <ScoreControls
-                                    onIncrement={() => handleLiveScoreUpdate(match, 'set', 'score2', 1)}
-                                    onDecrement={() => handleLiveScoreUpdate(match, 'set', 'score2', -1)}
-                                    style={{ marginLeft: '8px' }}
-                                    size="small"
-                                />
+                                <div style={{ display: 'flex', flexDirection: 'column', gap: '2px', marginLeft: '8px' }}>
+                                    <button onClick={() => handleLiveScoreUpdate(match, 'set', 'score2', 1)} style={btnStyle('rgba(255,255,255,0.5)')}><Plus size={10} /></button>
+                                    <button onClick={() => handleLiveScoreUpdate(match, 'set', 'score2', -1)} style={btnStyle('rgba(255,255,255,0.5)')}><Minus size={10} /></button>
+                                </div>
                             )}
                         </div>
                         {isAuthenticated && <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', marginTop: '-5px' }}>SETS</div>}
                     </div>
 
+                    {/* RIGHT PLAYER */}
                     <div className="player-container right" style={{ color: match.score2 > match.score1 ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
                         <div className="player-surname">
                             <PlayerFlag countryCode={match.player2.country} />
                             {splitName(match.player2.full_name).surname}
                         </div>
                         <div className="player-firstname">{splitName(match.player2.full_name).firstName}</div>
-                        {/* Current Set Points Display */}
+                        {/* Current Set POINTS Controls */}
                         {isStillPlaying && (isAuthenticated || currentSet) && (
                             <div style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '5px', color: courtColor, display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 {currentSet ? currentSet.b : 0}
                                 {isAuthenticated && (
-                                    <>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleLiveScoreUpdate(match, 'point', 'b', 1); }}
-                                            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: courtColor, borderRadius: '4px', width: '28px', height: '28px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                        >
-                                            <Plus size={16} />
-                                        </button>
-                                        <button
-                                            onClick={(e) => { e.stopPropagation(); handleLiveScoreUpdate(match, 'point', 'b', -1); }}
-                                            style={{ background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.2)', color: courtColor, borderRadius: '4px', width: '28px', height: '28px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                        >
-                                            <Minus size={16} />
-                                        </button>
-                                    </>
+                                    <div style={{ display: 'flex', gap: '2px' }}>
+                                        <button onClick={(e) => { e.stopPropagation(); handleLiveScoreUpdate(match, 'point', 'b', 1); }} style={btnStyle(courtColor)}><Plus size={14} /></button>
+                                        <button onClick={(e) => { e.stopPropagation(); handleLiveScoreUpdate(match, 'point', 'b', -1); }} style={btnStyle(courtColor)}><Minus size={14} /></button>
+                                    </div>
                                 )}
                             </div>
                         )}
                     </div>
                 </div>
 
-                {/* Sets Display */}
+                {/* Sets History Display */}
                 {(sortedSets.length > 0 || canAddSet) && (
                     <div className="sets-container">
                         {sortedSets.map((s, idx) => (
-                            <div key={idx} className={`set-box ${idx === sortedSets.length - 1 ? 'active' : ''}`} style={{ animation: 'fadeIn 0.5s ease-out', position: 'relative', opacity: idx === sortedSets.length - 1 ? 1 : 0.6 }}>
+                            <div key={idx} className={`set-box ${idx === sortedSets.length - 1 ? 'active' : ''}`} style={{ opacity: idx === sortedSets.length - 1 ? 1 : 0.6 }}>
                                 <div className="set-label">SET {s.set}</div>
                                 <div className="set-score" style={{ alignItems: 'center' }}>
-
                                     <span className={s.a > s.b ? 'set-winner' : ''}>{s.a}</span>
                                     <span style={{ margin: '0 2px' }}>:</span>
                                     <span className={s.b > s.a ? 'set-winner' : ''}>{s.b}</span>
-
                                 </div>
                             </div>
                         ))}
@@ -448,19 +409,14 @@ const Live = () => {
     };
 
     const renderUpcomingList = (matchesList, currentMatch) => {
-        // Trigger Logic
         let showReadinessAlert = false;
-
         if (currentMatch && !currentMatch.winnerId) {
             const bestOf = getBestOf(currentMatch.bracket);
             const s1 = currentMatch.score1 || 0;
             const s2 = currentMatch.score2 || 0;
-
             if (bestOf === 3) {
-                // BO3: Trigger if score is 1:0, 0:1 or 1:1 (i.e. someone has 1 set)
                 if (s1 === 1 || s2 === 1) showReadinessAlert = true;
             } else {
-                // BO5: Trigger if someone has 2 sets (2:0, 2:1, 2:2 etc)
                 if (s1 === 2 || s2 === 2) showReadinessAlert = true;
             }
         }
@@ -475,30 +431,20 @@ const Live = () => {
         return matchesList.map((match, idx) => {
             const isFirst = idx === 0;
             const alertActive = isFirst && showReadinessAlert;
-
             return (
                 <div key={match.id} className={`upcoming-item-grid ${alertActive ? 'readiness-alert' : ''}`}>
-                    {alertActive && (
-                        <div className="alert-badge">
-                            {t('live.readinessAlert')}
-                        </div>
-                    )}
-
-                    {/* Grid Layout: P1 vs P2 | Meta */}
+                    {alertActive && (<div className="alert-badge">{t('live.readinessAlert')}</div>)}
                     <div className="upcoming-match-content">
                         <div className="upcoming-player start">
                             <PlayerFlag countryCode={match.player1?.country} />
                             <span className="name-truncate">{match.player1?.full_name || 'TBD'}</span>
                         </div>
-
                         <div className="upcoming-vs">vs</div>
-
                         <div className="upcoming-player start">
                             <PlayerFlag countryCode={match.player2?.country} />
                             <span className="name-truncate">{match.player2?.full_name || 'TBD'}</span>
                         </div>
                     </div>
-
                     <div className="upcoming-meta-right">
                         {(match.bracket || '').toUpperCase()} R{match.round}
                     </div>
@@ -509,7 +455,6 @@ const Live = () => {
 
     return (
         <div className={`live-container ${isTvMode ? 'tv-mode' : ''}`}>
-
             {/* TV Mode Controls */}
             <div className="tv-controls" style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 10000 }}>
                 {isTvMode ? (
@@ -526,17 +471,12 @@ const Live = () => {
             <header className="live-header" style={{ paddingRight: isTvMode ? '120px' : '0' }}>
                 <div>
                     <h1 className="live-title">{t('live.title')}</h1>
-                    {/* DEBUG INDICATOR */}
                     <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)' }}>
                         Loaded: {matches.length} | ID: {activeTournamentId || 'None'} | {isTournamentLoading ? 'Loading...' : 'Ready'}
                     </div>
                 </div>
                 <div style={{ textAlign: 'right', display: 'flex', gap: '1rem', alignItems: 'center' }}>
-                    {/* Digital Clock */}
-                    <div className="digital-clock">
-                        {formatTime(currentTime)}
-                    </div>
-
+                    <div className="digital-clock">{formatTime(currentTime)}</div>
                     <div className="last-updated" style={{ justifyContent: 'flex-end', marginBottom: '0.5rem' }}>
                         <Activity size={14} />
                         {t('live.lastUpdate')} {secondsAgo < 5 ? t('live.justNow') : `${secondsAgo}${t('live.secondsAgo')}`}
@@ -544,13 +484,10 @@ const Live = () => {
                 </div>
             </header>
 
-            {/* View Layers Wrapper */}
             <div className="live-content-wrapper dashboard-grid">
-
-                {/* LEFT COLUMN: ACTIVE COURTS */}
                 <div className="dashboard-column main-column">
                     <div className="courts-container">
-                        {/* 1. KORT RÓŻOWY */}
+                        {/* KORT RÓŻOWY */}
                         <div className="court-card compact glass-panel" style={{ borderLeft: '4px solid var(--accent-pink)' }}>
                             <div className="court-header-slim">
                                 <span className="court-label" style={{ color: 'var(--accent-pink)' }}>{t('live.courtPink').toUpperCase()}</span>
@@ -565,7 +502,7 @@ const Live = () => {
                             </div>
                         </div>
 
-                        {/* 2. KORT TURKUSOWY */}
+                        {/* KORT TURKUSOWY */}
                         <div className="court-card compact glass-panel" style={{ borderLeft: '4px solid var(--accent-cyan)' }}>
                             <div className="court-header-slim">
                                 <span className="court-label" style={{ color: 'var(--accent-cyan)' }}>{t('live.courtCyan').toUpperCase()}</span>
@@ -581,7 +518,6 @@ const Live = () => {
                         </div>
                     </div>
 
-                    {/* RECENT RESULTS (Now Bigger & Below Courts) */}
                     <section className="recent-results-section glass-panel">
                         <h2 className="section-header-slim">
                             <Trophy size={16} style={{ marginRight: '8px', color: '#fbbf24' }} /> {t('live.recentResults').toUpperCase()}
@@ -613,7 +549,6 @@ const Live = () => {
                     </section>
                 </div>
 
-                {/* RIGHT COLUMN: UPCOMING MATCHES (Dedicated Panel) */}
                 <div className="dashboard-column side-column">
                     <div className="upcoming-panel glass-panel">
                         <div className="panel-header">
@@ -632,10 +567,8 @@ const Live = () => {
                         </div>
                     </div>
                 </div>
-
             </div>
 
-            {/* QR Code Widget */}
             <div className="qr-widget">
                 <div className="qr-box">
                     <img
