@@ -440,4 +440,5 @@ export const clearBracketMatch = (matches, matchId, playersSource) => {
     return rebuildBracketState(playersSource, resultsMap);
 };
 / /   S e s s i o n :   0 2 / 0 3 / 2 0 2 6   1 1 : 4 3 : 1 3  
+ } ;  
  
