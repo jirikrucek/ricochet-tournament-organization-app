@@ -46,6 +46,10 @@ const Live = () => {
     const { t } = useTranslation();
     const { matches } = useMatches();
     const { players } = usePlayers();
+
+    // DEBUG LOG
+    console.log("LIVE DATA CHECK:", matches);
+
     const { activeTournamentId, tournaments, isLoading: isTournamentLoading } = useTournament();
     const location = useLocation();
     const navigate = useNavigate();
@@ -105,17 +109,22 @@ const Live = () => {
                 player1: p1 || { full_name: 'TBD', id: null, isBye: false },
                 player2: p2 || { full_name: 'TBD', id: null, isBye: false }
             };
-        }).filter(m => m.player1Id && m.player2Id && !m.player1.isBye && !m.player2.isBye);
+        });
+        // Removed strict filter: .filter(m => m.player1Id && m.player2Id ...) to allow TBD/Scheduling matches to appear.
+        // We only filter if it is a BYE (implied by player data, but safe to show placeholder for now if needed)
+        // actually if isBye is true, we might want to hide, but let's be permissive first.
 
         // Separate finished and active matches
         const finished = enriched.filter(m => m.winnerId);
 
-        // Active matches: Live, Pending, OR Finished
-        // User Request: Case-insensitive check
+        // Active matches: Live, Pending, Finished OR Scheduled
+        // User Request: Case-insensitive check and relax filters
         const activeMatches = enriched.filter(m => {
-            if (!m.status) return false;
+            // If no status, assume pending/scheduled if active? Match might be fresh.
+            if (!m.status) return true;
             const s = m.status.toLowerCase();
-            return s === 'live' || s === 'finished' || s === 'pending';
+            // Broaden filter to include 'scheduled' as well
+            return s === 'live' || s === 'finished' || s === 'pending' || s === 'scheduled';
         })
             .sort((a, b) => {
                 const sA = (a.status || '').toLowerCase();
