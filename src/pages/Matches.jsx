@@ -116,19 +116,16 @@ const MatchEditModal = ({ match, onClose, onSave, onClear }) => {
         onSaveRef.current = onSave;
     }, [onSave]);
 
-    // AGGRESSIVE AUTO-SAVE EFFECT
+    // AGGRESSIVE AUTO-SAVE (DIRECT BYPASS - NO DEBOUNCE)
     useEffect(() => {
         if (!isMounted.current) {
             isMounted.current = true;
             return;
         }
 
-        // Debounce to avoid write-spam on rapid input
-        const timer = setTimeout(() => {
-            onSaveRef.current(match.id, getSavePayload(), { autoSave: true });
-        }, 500);
+        // Direct call without timeout
+        onSaveRef.current(match.id, getSavePayload(), { autoSave: true });
 
-        return () => clearTimeout(timer);
     }, [score1, score2, microPoints, status, court]);
 
     const handleSave = (e) => {

@@ -143,9 +143,15 @@ export const MatchesProvider = ({ children }) => {
                 const { setDoc } = await import('firebase/firestore');
                 const payload = newMatches.map(m => mapToSnake(m));
 
+                // Optimization: Parallel Write
                 const promises = payload.map(match => {
                     if (!match.id) return Promise.resolve();
+
+                    // DIRECT BYPASS LOGGING
+                    console.log("DEBUG: Sending to Firestore:", match.id, match);
+
                     const docRef = doc(db, "matches", match.id);
+                    // Force using setDoc directly without conditions
                     return setDoc(docRef, match);
                 });
 
