@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { Maximize, Trophy, Clock, Activity, X } from 'lucide-react';
 import { useMatches } from '../hooks/useMatches';
 import { usePlayers } from '../hooks/usePlayers';
+import { useTournament } from '../contexts/TournamentContext';
 import { getBestOf, compareMatchIds } from '../utils/matchUtils';
 import { getCountryCode } from '../constants/countries';
 import './Live.css';
@@ -45,8 +46,11 @@ const Live = () => {
     const { t } = useTranslation();
     const { matches } = useMatches();
     const { players } = usePlayers();
+    const { activeTournamentId, tournaments, isLoading: isTournamentLoading } = useTournament();
     const location = useLocation();
     const navigate = useNavigate();
+
+    const activeTournament = tournaments.find(t => t.id === activeTournamentId);
 
     // TV Mode Detection
     const isTvMode = new URLSearchParams(location.search).get('mode') === 'tv';
@@ -365,7 +369,7 @@ const Live = () => {
                     <h1 className="live-title">{t('live.title')}</h1>
                     {/* DEBUG INDICATOR */}
                     <div style={{ fontSize: '0.7rem', color: 'rgba(255,255,255,0.3)' }}>
-                        Loaded: {matches.length} | Active Context
+                        Loaded: {matches.length} | ID: {activeTournamentId || 'None'} | {isTournamentLoading ? 'Loading...' : 'Ready'}
                     </div>
                 </div>
                 <div style={{ textAlign: 'right', display: 'flex', gap: '1rem', alignItems: 'center' }}>
