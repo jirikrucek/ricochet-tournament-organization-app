@@ -214,15 +214,22 @@ const Live = () => {
         if (type === 'set') {
             if (playerKey === 'score1') newScore1 += change;
             if (playerKey === 'score2') newScore2 += change;
-        } else if (type === 'point' && setIndex !== null) {
-            // Find or create set
-            const existingSet = newMicroPoints.find(s => s.set === setIndex);
-            if (existingSet) {
-                if (playerKey === 'a') existingSet.a = Math.max(0, (existingSet.a || 0) + change);
-                if (playerKey === 'b') existingSet.b = Math.max(0, (existingSet.b || 0) + change);
+        } else if (type === 'point') {
+            // SMART POINT LOGIC (Auto-create Set if needed)
+            let targetSet;
+            if (setIndex !== null) {
+                targetSet = newMicroPoints.find(s => s.set === setIndex);
             } else {
-                // Should exist if we clicked it, but safety check
-                // If creating new set logic needed, we'd do it here, but sticking to visible sets for now
+                // If no index provided, target LAST set or create NEW one
+                if (newMicroPoints.length === 0) {
+                    newMicroPoints.push({ set: 1, a: 0, b: 0 });
+                }
+                targetSet = newMicroPoints[newMicroPoints.length - 1];
+            }
+
+            if (targetSet) {
+                if (playerKey === 'a') targetSet.a = Math.max(0, (targetSet.a || 0) + change);
+                if (playerKey === 'b') targetSet.b = Math.max(0, (targetSet.b || 0) + change);
             }
         }
 
@@ -231,8 +238,6 @@ const Live = () => {
         if (newScore2 < 0) newScore2 = 0;
 
         // Calc Status
-        // Use logic similar to MatchEditModal to determine finish
-        // checkMatchStatus returns TRUE if LIVE.
         const bestOf = getBestOf(match.bracket);
         const winThreshold = Math.ceil(bestOf / 2);
         let status = 'live';
@@ -244,10 +249,12 @@ const Live = () => {
         } else if (newScore2 >= winThreshold) {
             status = 'finished';
             winnerId = match.player2.id;
+        } else {
+            // If dropping below threshold, ensure match is active
+            winnerId = null;
         }
 
         // Force Update via Context
-        // We use updateBracketMatch util to ensure consistency
         const nextState = updateBracketMatch(
             matches,
             match.id,
@@ -273,21 +280,13 @@ const Live = () => {
 
         // Prepare micro points (sets)
         const sets = match.microPoints || [];
-        // Ensure continuous sets for display if needed, but here just sort
         const sortedSets = [...sets].sort((a, b) => a.set - b.set);
+        const currentSet = sortedSets.length > 0 ? sortedSets[sortedSets.length - 1] : null;
 
-        // Auto-add next set placeholder if Live and authorized? 
-        // Optional: If authenticated and last set is "finished" (e.g. 11 points), maybe show next?
-        // Simpler: Just show controls on existing sets. If user needs new set, they add it in detailed view OR 
-        // we assume sets are pre-generated or we add a "Add Set" button. 
-        // For compliance with "minimalist", let's assume sets appear as points are added?
-        // Wait, if no sets exist, how to add points?
-        // User said "small buttons... near small points".
-        // If 0 sets, we might need a button to "Start Set 1".
         const canAddSet = isAuthenticated && isStillPlaying && (sortedSets.length < bestOf);
 
         return (
-            <div className="live-match-display">
+            <div className="live-match-display" style={{ position: 'relative' }}>
                 {showLive && (
                     <div style={{
                         background: '#ef4444', color: 'white', display: 'inline-block',
@@ -301,6 +300,34 @@ const Live = () => {
                 <div className="match-bracket-info">
                     {match.bracket === 'wb' ? t('live.wb') : match.bracket === 'lb' ? t('live.lb') : t('live.gf')} • {t('live.round')} {match.round} • BO{bestOf}
                 </div>
+
+                {/* JUDGE OVERLAY FOR SMART POINTS */}
+                {isAuthenticated && (
+                    <div className="judge-overlay-controls" style={{
+                        position: 'absolute', top: '10px', left: 0, right: 0, bottom: 'auto',
+                        display: 'flex', justifyContent: 'space-between', padding: '0 1rem', pointerEvents: 'none'
+                    }}>
+                        {/* P1 Point */}
+                        <button
+                            className="judge-point-btn-large"
+                            style={{ pointerEvents: 'auto', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', borderRadius: '50%', width: '40px', height: '40px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(4px)' }}
+                            onClick={(e) => { e.stopPropagation(); handleLiveScoreUpdate(match, 'point', 'a', 1); }}
+                            title="Add Point P1"
+                        >
+                            +
+                        </button>
+                        {/* P2 Point */}
+                        <button
+                            className="judge-point-btn-large"
+                            style={{ pointerEvents: 'auto', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', borderRadius: '50%', width: '40px', height: '40px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(4px)' }}
+                            onClick={(e) => { e.stopPropagation(); handleLiveScoreUpdate(match, 'point', 'b', 1); }}
+                            title="Add Point P2"
+                        >
+                            +
+                        </button>
+                    </div>
+                )}
+
                 <div className="players-versus">
                     <div className="player-container left" style={{ color: match.score1 > match.score2 ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
                         <div className="player-surname">
@@ -308,17 +335,24 @@ const Live = () => {
                             {splitName(match.player1.full_name).surname}
                         </div>
                         <div className="player-firstname">{splitName(match.player1.full_name).firstName}</div>
+                        {/* Current Set Points Display */}
+                        {isStillPlaying && (isAuthenticated || currentSet) && (
+                            <div style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '5px', color: courtColor }}>
+                                {currentSet ? currentSet.a : 0}
+                            </div>
+                        )}
                     </div>
 
-                    <div className="score-center-col">
+                    <div className="score-center-col" style={{ minWidth: '100px' }}>
                         <div className="score-display">
 
-                            {/* Score 1 Controls */}
+                            {/* Score 1 Controls (Sets) */}
                             {isAuthenticated && (
                                 <ScoreControls
                                     onIncrement={() => handleLiveScoreUpdate(match, 'set', 'score1', 1)}
                                     onDecrement={() => handleLiveScoreUpdate(match, 'set', 'score1', -1)}
                                     style={{ marginRight: '8px' }}
+                                    size="small"
                                 />
                             )}
 
@@ -338,15 +372,17 @@ const Live = () => {
                                 {(match.winnerId || match.score1 > 0 || match.score2 > 0 || showLive) ? (match.score2 ?? 0) : '-'}
                             </span>
 
-                            {/* Score 2 Controls */}
+                            {/* Score 2 Controls (Sets) */}
                             {isAuthenticated && (
                                 <ScoreControls
                                     onIncrement={() => handleLiveScoreUpdate(match, 'set', 'score2', 1)}
                                     onDecrement={() => handleLiveScoreUpdate(match, 'set', 'score2', -1)}
                                     style={{ marginLeft: '8px' }}
+                                    size="small"
                                 />
                             )}
                         </div>
+                        {isAuthenticated && <div style={{ fontSize: '0.6rem', color: 'rgba(255,255,255,0.4)', marginTop: '-5px' }}>SETS</div>}
                     </div>
 
                     <div className="player-container right" style={{ color: match.score2 > match.score1 ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
@@ -355,6 +391,12 @@ const Live = () => {
                             {splitName(match.player2.full_name).surname}
                         </div>
                         <div className="player-firstname">{splitName(match.player2.full_name).firstName}</div>
+                        {/* Current Set Points Display */}
+                        {isStillPlaying && (isAuthenticated || currentSet) && (
+                            <div style={{ fontSize: '1.5rem', fontWeight: 800, marginTop: '5px', color: courtColor }}>
+                                {currentSet ? currentSet.b : 0}
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -362,7 +404,7 @@ const Live = () => {
                 {(sortedSets.length > 0 || canAddSet) && (
                     <div className="sets-container">
                         {sortedSets.map((s, idx) => (
-                            <div key={idx} className="set-box" style={{ animation: 'fadeIn 0.5s ease-out', position: 'relative' }}>
+                            <div key={idx} className={`set-box ${idx === sortedSets.length - 1 ? 'active' : ''}`} style={{ animation: 'fadeIn 0.5s ease-out', position: 'relative', opacity: idx === sortedSets.length - 1 ? 1 : 0.6 }}>
                                 <div className="set-label">SET {s.set}</div>
                                 <div className="set-score" style={{ alignItems: 'center' }}>
 
@@ -395,7 +437,6 @@ const Live = () => {
                                     e.stopPropagation();
                                     const nextSetNum = sortedSets.length + 1;
                                     const newMicro = [...(match.microPoints || []), { set: nextSetNum, a: 0, b: 0 }];
-                                    // Optimization: call update directly
                                     const nextState = updateBracketMatch(matches, match.id, match.score1, match.score2, newMicro, players, match.winnerId, match.status);
                                     saveMatches(nextState, match.id);
                                 }}
