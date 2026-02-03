@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, useCallback } from 'react';
+import React, { createContext, useContext, useState, useEffect, useCallback, useRef } from 'react';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { useTournament } from './TournamentContext';
 import { db, isFirebaseConfigured } from '../lib/firebase';
