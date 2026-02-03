@@ -484,23 +484,37 @@ export const rebuildBracketState = (players, existingMatchesMap = {}) => {
                 newState.winnerId = saved.winnerId;
 
                 // Auto-determine winner
+                // SCORING LOGIC - STRICT BO3/BO5
                 if (!newState.winnerId && (newState.score1 !== null && newState.score2 !== null)) {
-                    // BO5 Logic for Finals
-                    const isBo5 = match.bracket === 'wb' || match.bracket === 'gf' || match.id === 'lb-final';
-                    const bestOf = isBo5 ? 5 : 3;
-                    const thresh = Math.ceil(bestOf / 2);
-                    if (newState.score1 >= thresh) newState.winnerId = match.player1Id;
-                    else if (newState.score2 >= thresh) newState.winnerId = match.player2Id;
+                    // MatchUtils: WB or GF is BO5 (Win 3). Rest LB is BO3 (Win 2).
+                    const isBo5 = (match.bracket === 'wb' || match.bracket === 'gf');
+                    const winThresh = isBo5 ? 3 : 2;
+
+                    if (newState.score1 >= winThresh) {
+                        newState.winnerId = match.player1Id;
+                        newState.status = 'finished';
+                    } else if (newState.score2 >= winThresh) {
+                        newState.winnerId = match.player2Id;
+                        newState.status = 'finished';
+                    } else {
+                        // Not won yet
+                        newState.winnerId = null;
+
+                        // If any score exists (even 0:0 but edited), treat as live
+                        // Check explicit values > 0 or microPoints presence
+                        if (newState.score1 > 0 || newState.score2 > 0 || (newState.microPoints && newState.microPoints.length > 0)) {
+                            newState.status = 'live';
+                        } else {
+                            // Fallback: If score is 0:0 and no micro points, it might be just initialized.
+                            // But checking 'saved.status' helps preserve intent.
+                            newState.status = saved.status === 'finished' ? 'finished' : 'live';
+                        }
+                    }
                 }
 
-                // FORCE LIVE STATUS if scores exist but no winner
+                // Final Safeguard: Consistency
                 if (newState.winnerId) {
                     newState.status = 'finished';
-                } else if (newState.score1 > 0 || newState.score2 > 0 || (newState.microPoints && newState.microPoints.length > 0)) {
-                    newState.status = 'live';
-                } else {
-                    // Keep existing status if provided (e.g. from saved) or default to live if strictly score present
-                    newState.status = saved.status === 'finished' ? 'finished' : 'live';
                 }
             } else {
                 newState.status = (match.player1Id && match.player2Id) ? 'pending' : 'scheduled';
