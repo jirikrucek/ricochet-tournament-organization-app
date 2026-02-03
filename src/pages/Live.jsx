@@ -302,31 +302,7 @@ const Live = () => {
                 </div>
 
                 {/* JUDGE OVERLAY FOR SMART POINTS */}
-                {isAuthenticated && (
-                    <div className="judge-overlay-controls" style={{
-                        position: 'absolute', top: '10px', left: 0, right: 0, bottom: 'auto',
-                        display: 'flex', justifyContent: 'space-between', padding: '0 1rem', pointerEvents: 'none'
-                    }}>
-                        {/* P1 Point */}
-                        <button
-                            className="judge-point-btn-large"
-                            style={{ pointerEvents: 'auto', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', borderRadius: '50%', width: '40px', height: '40px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(4px)' }}
-                            onClick={(e) => { e.stopPropagation(); handleLiveScoreUpdate(match, 'point', 'a', 1); }}
-                            title="Add Point P1"
-                        >
-                            +
-                        </button>
-                        {/* P2 Point */}
-                        <button
-                            className="judge-point-btn-large"
-                            style={{ pointerEvents: 'auto', background: 'rgba(255,255,255,0.1)', border: '1px solid rgba(255,255,255,0.3)', color: 'white', borderRadius: '50%', width: '40px', height: '40px', fontSize: '1.2rem', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(4px)' }}
-                            onClick={(e) => { e.stopPropagation(); handleLiveScoreUpdate(match, 'point', 'b', 1); }}
-                            title="Add Point P2"
-                        >
-                            +
-                        </button>
-                    </div>
-                )}
+
 
                 <div className="players-versus">
                     <div className="player-container left" style={{ color: match.score1 > match.score2 ? 'var(--text-primary)' : 'var(--text-secondary)' }}>
