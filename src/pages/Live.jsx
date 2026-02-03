@@ -11,8 +11,6 @@ import { updateBracketMatch } from '../utils/bracketLogic';
 import { getCountryCode } from '../constants/countries';
 import './Live.css';
 
-// ... (rest of imports)
-
 // Helper Component for Score Controls
 const ScoreControls = ({ onIncrement, onDecrement, size = 'normal', style = {} }) => {
     return (
@@ -34,12 +32,6 @@ const ScoreControls = ({ onIncrement, onDecrement, size = 'normal', style = {} }
         </div>
     );
 };
-
-
-// Possible helper for flags...
-// ... (rest of imports are fine, I will target specific chunks)
-
-// I will target the imports first.
 
 
 // Helper Component for Flag
@@ -84,7 +76,7 @@ const Live = () => {
     const { players } = usePlayers();
 
     // DEBUG LOG
-    console.log("LIVE DATA CHECK:", matches);
+    // console.log("LIVE DATA CHECK:", matches);
 
     const { activeTournamentId, tournaments, isLoading: isTournamentLoading } = useTournament();
     const location = useLocation();
@@ -206,9 +198,7 @@ const Live = () => {
     const handleLiveScoreUpdate = (match, type, playerKey, change, setIndex = null) => {
         if (!match) return;
 
-        console.log(`[JUDGE] Update: ${type} ${playerKey} ${change}`);
-        // Removed debug alert per request
-
+        console.log(`[JUDGE] Update Request: ${type} ${playerKey} ${change}`);
 
         // 1. DEEP CLONE (Critical for React/Firestore references)
         let newScore1 = match.score1 ?? 0;
@@ -241,6 +231,7 @@ const Live = () => {
 
                 if (playerKey === 'a') targetSet.a = nextVal;
                 if (playerKey === 'b') targetSet.b = nextVal;
+                console.log(`[JUDGE] Set ${targetSet.set} updated to ${targetSet.a}:${targetSet.b}`);
             }
         }
 
@@ -262,7 +253,7 @@ const Live = () => {
             winnerId = match.player2.id;
         }
 
-        // Update Context
+        // Force Update via Context
         const nextState = updateBracketMatch(
             matches,
             match.id,
@@ -274,7 +265,12 @@ const Live = () => {
             status
         );
 
-        saveMatches(nextState, match.id);
+        console.log("FIREBASE UPDATE START", match.id);
+        saveMatches(nextState, match.id).then(() => {
+            console.log("FIREBASE UPDATE SUCCESS");
+        }).catch(err => {
+            console.error("FIREBASE UPDATE FAILED", err);
+        });
     };
 
     const renderLiveMatch = (match, courtColor) => {
@@ -308,8 +304,6 @@ const Live = () => {
                 <div className="match-bracket-info">
                     {match.bracket === 'wb' ? t('live.wb') : match.bracket === 'lb' ? t('live.lb') : t('live.gf')} • {t('live.round')} {match.round} • BO{bestOf}
                 </div>
-
-                {/* JUDGE OVERLAY FOR SMART POINTS */}
 
 
                 <div className="players-versus">
@@ -424,23 +418,10 @@ const Live = () => {
                                 <div className="set-label">SET {s.set}</div>
                                 <div className="set-score" style={{ alignItems: 'center' }}>
 
-                                    {isAuthenticated && (
-                                        <div style={{ display: 'flex', flexDirection: 'column', marginRight: '4px' }}>
-                                            <button className="tiny-btn" onClick={(e) => { e.stopPropagation(); handleLiveScoreUpdate(match, 'point', 'a', 1, s.set); }}>+</button>
-                                            <button className="tiny-btn" onClick={(e) => { e.stopPropagation(); handleLiveScoreUpdate(match, 'point', 'a', -1, s.set); }}>-</button>
-                                        </div>
-                                    )}
-
                                     <span className={s.a > s.b ? 'set-winner' : ''}>{s.a}</span>
                                     <span style={{ margin: '0 2px' }}>:</span>
                                     <span className={s.b > s.a ? 'set-winner' : ''}>{s.b}</span>
 
-                                    {isAuthenticated && (
-                                        <div style={{ display: 'flex', flexDirection: 'column', marginLeft: '4px' }}>
-                                            <button className="tiny-btn" onClick={(e) => { e.stopPropagation(); handleLiveScoreUpdate(match, 'point', 'b', 1, s.set); }}>+</button>
-                                            <button className="tiny-btn" onClick={(e) => { e.stopPropagation(); handleLiveScoreUpdate(match, 'point', 'b', -1, s.set); }}>-</button>
-                                        </div>
-                                    )}
                                 </div>
                             </div>
                         ))}
@@ -460,33 +441,6 @@ const Live = () => {
                                 <Plus size={12} /> Set {sortedSets.length + 1}
                             </button>
                         )}
-                    </div>
-                )}
-                {/* JUDGE OVERLAY FOR SMART POINTS (Fixed Z-Index & Position) */}
-                {isAuthenticated && (
-                    <div className="judge-overlay-controls" style={{
-                        position: 'absolute', top: 0, left: 0, right: 0, bottom: 0,
-                        display: 'flex', justifyContent: 'space-between', padding: '0 1rem', pointerEvents: 'none',
-                        zIndex: 9999, alignItems: 'center'
-                    }}>
-                        {/* P1 Point */}
-                        <button
-                            className="judge-point-btn-large"
-                            style={{ pointerEvents: 'auto', background: 'rgba(34, 197, 94, 0.4)', border: '2px solid rgba(255,255,255,0.8)', color: 'white', borderRadius: '50%', width: '80px', height: '80px', fontSize: '2rem', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(4px)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                            onClick={(e) => { e.stopPropagation(); e.preventDefault(); console.log('Click P1'); handleLiveScoreUpdate(match, 'point', 'a', 1); }}
-                            title="Add Point P1"
-                        >
-                            +
-                        </button>
-                        {/* P2 Point */}
-                        <button
-                            className="judge-point-btn-large"
-                            style={{ pointerEvents: 'auto', background: 'rgba(34, 197, 94, 0.4)', border: '2px solid rgba(255,255,255,0.8)', color: 'white', borderRadius: '50%', width: '80px', height: '80px', fontSize: '2rem', fontWeight: 'bold', cursor: 'pointer', backdropFilter: 'blur(4px)', boxShadow: '0 4px 12px rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                            onClick={(e) => { e.stopPropagation(); e.preventDefault(); console.log('Click P2'); handleLiveScoreUpdate(match, 'point', 'b', 1); }}
-                            title="Add Point P2"
-                        >
-                            +
-                        </button>
                     </div>
                 )}
             </div>
@@ -555,16 +509,6 @@ const Live = () => {
 
     return (
         <div className={`live-container ${isTvMode ? 'tv-mode' : ''}`}>
-
-            {/* TV Mode Controls */}
-            {/* ... */}
-
-            {/* Note: I need to update finishedMatches too. It's further down. */}
-            {/* I will break this into two chunks if needed, or target specific lines. */}
-            {/* The tool allows one large chunk replacement if contiguous, but these are separate functions. */}
-            {/* Wait, renderUpcomingList is defined before return. finishedMatches is inside return. */}
-            {/* I'll trigger separate replacements for safety or include enough context? */}
-            {/* I'll replace renderUpcomingList first. */}
 
             {/* TV Mode Controls */}
             <div className="tv-controls" style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 10000 }}>
