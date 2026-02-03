@@ -355,86 +355,94 @@ const Live = () => {
             </header>
 
             {/* View Layers Wrapper */}
-            <div className="live-content-wrapper">
-                {/* 1. Panel View (Always Visible) */}
-                <div className={`view-layer panel-content active`}>
-                    <div className="courts-grid">
+            <div className="live-content-wrapper dashboard-grid">
+
+                {/* LEFT COLUMN: ACTIVE COURTS */}
+                <div className="dashboard-column main-column">
+                    <div className="courts-container">
                         {/* 1. KORT RÓŻOWY */}
-                        <div className="court-card" style={{ borderTop: '4px solid var(--accent-pink)' }}>
-                            <div className="court-header" style={{ color: 'var(--accent-pink)' }}>
-                                {t('live.courtPink')}
+                        <div className="court-card compact glass-panel" style={{ borderLeft: '4px solid var(--accent-pink)' }}>
+                            <div className="court-header-slim">
+                                <span className="court-label" style={{ color: 'var(--accent-pink)' }}>{t('live.courtPink').toUpperCase()}</span>
+                                {pinkState.current && (
+                                    <span className="match-meta">
+                                        {(pinkState.current.bracket || '').toUpperCase()} R{pinkState.current.round} • BO{getBestOf(pinkState.current.bracket)}
+                                    </span>
+                                )}
                             </div>
-                            <div className="court-content">
+                            <div className="court-content-compact">
                                 {renderLiveMatch(pinkState.current, 'var(--accent-pink)')}
-                            </div>
-                            <div className="upcoming-section">
-                                <div className="upcoming-title"><Clock size={12} style={{ marginRight: '6px' }} /> {t('live.upcomingMatches')}</div>
-                                {renderUpcomingList(pinkState.upcoming, pinkState.current)}
                             </div>
                         </div>
 
                         {/* 2. KORT TURKUSOWY */}
-                        <div className="court-card" style={{ borderTop: '4px solid var(--accent-cyan)' }}>
-                            <div className="court-header" style={{ color: 'var(--accent-cyan)' }}>
-                                {t('live.courtCyan')}
+                        <div className="court-card compact glass-panel" style={{ borderLeft: '4px solid var(--accent-cyan)' }}>
+                            <div className="court-header-slim">
+                                <span className="court-label" style={{ color: 'var(--accent-cyan)' }}>{t('live.courtCyan').toUpperCase()}</span>
+                                {cyanState.current && (
+                                    <span className="match-meta">
+                                        {(cyanState.current.bracket || '').toUpperCase()} R{cyanState.current.round} • BO{getBestOf(cyanState.current.bracket)}
+                                    </span>
+                                )}
                             </div>
-                            <div className="court-content">
+                            <div className="court-content-compact">
                                 {renderLiveMatch(cyanState.current, 'var(--accent-cyan)')}
-                            </div>
-                            <div className="upcoming-section">
-                                <div className="upcoming-title"><Clock size={12} style={{ marginRight: '6px' }} /> {t('live.upcomingMatches')}</div>
-                                {renderUpcomingList(cyanState.upcoming, cyanState.current)}
                             </div>
                         </div>
                     </div>
 
-                    {/* 3. OSTATNIE WYNIKI */}
-                    <section className="recent-results-section">
-                        <h2 className="section-title text-gradient">
-                            <Trophy size={24} /> {t('live.recentResults')}
+                    {/* RECENT RESULTS (Now Bigger & Below Courts) */}
+                    <section className="recent-results-section glass-panel">
+                        <h2 className="section-header-slim">
+                            <Trophy size={16} style={{ marginRight: '8px', color: '#fbbf24' }} /> {t('live.recentResults').toUpperCase()}
                         </h2>
-                        <div className="recent-grid">
+                        <div className="recent-list-clean">
                             {finishedMatches.length > 0 ? finishedMatches.map(match => (
-                                <div key={match.id} className="result-card">
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.5rem' }}>
-                                        <span className="result-court-badge"
-                                            style={{
-                                                background: match.assignedCourt === 'courtPink' ? 'rgba(236, 72, 153, 0.1)' : 'rgba(6, 182, 212, 0.1)',
-                                                color: match.assignedCourt === 'courtPink' ? 'var(--accent-pink)' : 'var(--accent-cyan)'
-                                            }}>
-                                            {t(`live.${match.assignedCourt}`)}
+                                <div key={match.id} className="recent-item-clean">
+                                    <div className="recent-meta">
+                                        <span className={`court-dot ${match.assignedCourt === 'courtPink' ? 'pink' : 'cyan'}`}></span>
+                                        <span className="match-id">{(match.bracket || '').toUpperCase()} R{match.round}</span>
+                                    </div>
+                                    <div className="recent-players">
+                                        <span className={match.winnerId === match.player1?.id ? 'winner' : ''}>
+                                            {match.player1?.full_name}
                                         </span>
-                                        <span style={{ fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                                            {(match.bracket || '').toUpperCase()} R{match.round}
+                                        <span className="vs">vs</span>
+                                        <span className={match.winnerId === match.player2?.id ? 'winner' : ''}>
+                                            {match.player2?.full_name}
                                         </span>
                                     </div>
-
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600 }}>
-                                        <span style={{ display: 'flex', alignItems: 'center', color: match.winnerId === match.player1?.id ? 'var(--accent-green)' : 'inherit' }}>
-                                            <PlayerFlag countryCode={match.player1?.country} /> {match.player1?.full_name || 'TBD'}
-                                        </span>
-                                        <span>{match.score1}</span>
+                                    <div className="recent-score">
+                                        {match.score1}:{match.score2}
                                     </div>
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 600 }}>
-                                        <span style={{ display: 'flex', alignItems: 'center', color: match.winnerId === match.player2?.id ? 'var(--accent-green)' : 'inherit' }}>
-                                            <PlayerFlag countryCode={match.player2?.country} /> {match.player2?.full_name || 'TBD'}
-                                        </span>
-                                        <span>{match.score2}</span>
-                                    </div>
-                                    {match.microPoints && match.microPoints.length > 0 && (
-                                        <div style={{ marginTop: '0.5rem', fontSize: '0.75rem', color: '#9ca3af', display: 'flex', justifyContent: 'flex-end', gap: '0.25rem' }}>
-                                            {match.microPoints.sort((a, b) => a.set - b.set).map((mp, i) => (
-                                                <span key={i}>{mp.a}:{mp.b}{i < match.microPoints.length - 1 ? ',' : ''}</span>
-                                            ))}
-                                        </div>
-                                    )}
                                 </div>
                             )) : (
-                                <p style={{ color: 'var(--text-secondary)', fontStyle: 'italic' }}>{t('live.noResults')}</p>
+                                <div className="empty-state">{t('live.noResults')}</div>
                             )}
                         </div>
                     </section>
                 </div>
+
+                {/* RIGHT COLUMN: UPCOMING MATCHES (Dedicated Panel) */}
+                <div className="dashboard-column side-column">
+                    <div className="upcoming-panel glass-panel">
+                        <div className="panel-header">
+                            <Clock size={16} /> {t('live.upcomingMatches').toUpperCase()}
+                        </div>
+                        <div className="upcoming-list-scroll">
+                            <div className="upcoming-group">
+                                <div className="group-label" style={{ color: 'var(--accent-pink)' }}>{t('live.courtPink')} Queue</div>
+                                {renderUpcomingList(pinkState.upcoming, pinkState.current)}
+                            </div>
+                            <div className="divider-line"></div>
+                            <div className="upcoming-group">
+                                <div className="group-label" style={{ color: 'var(--accent-cyan)' }}>{t('live.courtCyan')} Queue</div>
+                                {renderUpcomingList(cyanState.upcoming, cyanState.current)}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
             </div>
 
             {/* QR Code Widget */}
