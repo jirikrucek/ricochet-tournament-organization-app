@@ -54,11 +54,13 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
 
     // Monrad Groups
     const monradConfig = [
-        { id: '25-32', brackets: ['p25', 'p27', 'p29', 'p31'], title: 'Places 25-32' },
-        { id: '17-24', brackets: ['p17', 'p19', 'p21', 'p23'], title: 'Places 17-32' },
-        { id: '13-16', brackets: ['p13', 'p15'], title: 'Places 13-16' },
-        { id: '9-12', brackets: ['p9', 'p11'], title: 'Places 9-16' },
-        { id: '5-8', brackets: ['p5', 'p7'], title: 'Places 5-8' }
+        { id: '25-32', brackets: ['lb'], rounds: [1], title: 'Places 25-32' },
+        { id: '17-24', brackets: ['lb'], rounds: [2], title: 'Places 17-24' },
+        { id: '13-16', brackets: ['lb'], rounds: [3], title: 'Places 13-16' },
+        { id: '9-12', brackets: ['lb'], rounds: [4], title: 'Places 9-12' },
+        { id: '7-8', brackets: ['lb'], rounds: [5], title: 'Places 7-8' },
+        { id: '5-6', brackets: ['lb'], rounds: [6], title: 'Places 5-6' },
+        { id: '3rd', brackets: ['p3'], title: '3rd Place Match' }
     ];
 
     // --- 2. Path Calculation ---
@@ -280,7 +282,14 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
                                 }
                                 if (!groupMatches.length) return null;
                                 const rounds = [];
-                                groupMatches.forEach(m => { if (!rounds[m.round]) rounds[m.round] = []; rounds[m.round].push(m); });
+                                groupMatches.forEach(m => {
+                                    if (group.rounds && !group.rounds.includes(m.round)) return;
+                                    if (!rounds[m.round]) rounds[m.round] = [];
+                                    rounds[m.round].push(m);
+                                });
+                                // Filter out empty rounds if we filtered by round
+                                if (group.rounds && Object.keys(rounds).length === 0) return null;
+
                                 return (
                                     <div key={group.id} style={{ display: 'flex', flexDirection: 'column', gap: '10px', minWidth: '180px', marginRight: '20px' }}>
                                         <div style={{ color: '#fff', fontWeight: 600, fontSize: '0.65rem', opacity: 0.3, letterSpacing: '2px', marginBottom: '15px' }}>{group.title.toUpperCase()}</div>

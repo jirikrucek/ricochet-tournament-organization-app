@@ -74,7 +74,7 @@ const getTargetDropId = (sourceId) => {
         if (m === 2) return 'lb-r6-m1';
     }
 
-    // WB R5 (Final) -> No drop (Grand Final winner is champion, loser is 2nd)
+    // WB R5 (Final) -> Usually drops to LB Final, but User requested strict connection to Grand Final directly.
     return null;
 };
 
@@ -120,31 +120,25 @@ export const getBracketBlueprint = () => {
             loserMatchId: getTargetDropId(id)
         }));
     }
-    // R5 (1 match) - Final
+    // R5 (1 match) - WB Final
     matches.push(mkMatch(`wb-r5-m1`, 'wb', 5, {
         sourceMatchId1: `wb-r4-m1`, sourceType1: 'winner',
-        sourceMatchId2: `wb-r4-m2`, sourceType2: 'winner'
+        sourceMatchId2: `wb-r4-m2`, sourceType2: 'winner',
+        nextMatchId: `grand-final` // USER REQUEST: Winner goes to Grand Final
     }));
 
     // --- LOSERS BRACKET (LB) ---
-
-    // Reverse Map for "Source Pull" convenience (optional but good for consistency)
-    // We strictly use the getTargetDropId logic to verify, 
-    // but here we set sources for standard "Winner flows" too.
 
     // LB R1 (8 matches): Fed by WB R1 Losers
     for (let i = 1; i <= 8; i++) {
         matches.push(mkMatch(`lb-r1-m${i}`, 'lb', 1, {
             sourceMatchId1: `wb-r1-m${i * 2 - 1}`, sourceType1: 'loser',
             sourceMatchId2: `wb-r1-m${i * 2}`, sourceType2: 'loser',
-            nextMatchId: `lb-r2-m${i}` // 1-to-1 feeding to R2 (waiting for WB R2 drops)
+            nextMatchId: `lb-r2-m${i}`
         }));
     }
 
     // LB R2 (8 matches): Fed by LB R1 Winners AND WB R2 Losers (Diagonal)
-    // We must find which WB R2 match drops here based on rules.
-    // Rule: wb-r2-mX drops to lb-r2-m(9-X)
-    // So lb-r2-mY receives wb-r2-m(9-Y)
     for (let i = 1; i <= 8; i++) {
         const wbSourceIndex = 9 - i;
         matches.push(mkMatch(`lb-r2-m${i}`, 'lb', 2, {
@@ -159,13 +153,11 @@ export const getBracketBlueprint = () => {
         matches.push(mkMatch(`lb-r3-m${i}`, 'lb', 3, {
             sourceMatchId1: `lb-r2-m${i * 2 - 1}`, sourceType1: 'winner',
             sourceMatchId2: `lb-r2-m${i * 2}`, sourceType2: 'winner',
-            nextMatchId: `lb-r4-m${i}` // 1-to-1 feeding to R4 (waiting for WB R3 drops)
+            nextMatchId: `lb-r4-m${i}`
         }));
     }
 
     // LB R4 (4 matches): Fed by LB R3 Winners AND WB R3 Losers (Cross)
-    // Rule: 1->2, 2->1, 3->4, 4->3
-    // Inverse: 2 from 1, 1 from 2, 4 from 3, 3 from 4
     const getWbSourceR3 = (lbIdx) => {
         if (lbIdx === 1) return 2;
         if (lbIdx === 2) return 1;
@@ -186,12 +178,12 @@ export const getBracketBlueprint = () => {
         matches.push(mkMatch(`lb-r5-m${i}`, 'lb', 5, {
             sourceMatchId1: `lb-r4-m${i * 2 - 1}`, sourceType1: 'winner',
             sourceMatchId2: `lb-r4-m${i * 2}`, sourceType2: 'winner',
-            nextMatchId: `lb-r6-m${i}` // 1-to-1 to R6 (waiting for WB R4 drops)
+            nextMatchId: `lb-r6-m${i}`
         }));
     }
 
-    // LB R6 (2 matches): Fed by LB R5 Winners AND WB R4 Losers (Cross)
-    // Rule: 1->2, 2->1
+    // LB R6 (2 matches) - Semifinals of Losers
+    // Fed by LB R5 Winners AND WB R4 Losers (Cross)
     const getWbSourceR4 = (lbIdx) => {
         if (lbIdx === 1) return 2;
         if (lbIdx === 2) return 1;
@@ -201,20 +193,31 @@ export const getBracketBlueprint = () => {
         matches.push(mkMatch(`lb-r6-m${i}`, 'lb', 6, {
             sourceMatchId1: `lb-r5-m${i}`, sourceType1: 'winner',
             sourceMatchId2: `wb-r4-m${getWbSourceR4(i)}`, sourceType2: 'loser',
-            // Next match? Usually LB Final (R7)
-            nextMatchId: `lb-r7-m1`
+            // USER REQUEST: Winners to lb-final, Losers to p3-f
+            nextMatchId: `lb-final`,
+            loserMatchId: `p3-f`
         }));
     }
 
-    // LB R7 (1 match): Losers Final
-    matches.push(mkMatch(`lb-r7-m1`, 'lb', 7, {
+    // LB Final (1 match) - The "Losers Final"
+    matches.push(mkMatch(`lb-final`, 'lb', 7, {
         sourceMatchId1: `lb-r6-m1`, sourceType1: 'winner',
-        sourceMatchId2: `lb-r6-m2`, sourceType2: 'winner'
-        // Winner usually goes to Grand Final, but let's leave it as terminal for LB view for now
+        sourceMatchId2: `lb-r6-m2`, sourceType2: 'winner',
+        nextMatchId: `grand-final` // USER REQUEST: Winner to Grand Final
     }));
 
-    // --- PLACEMENT / EXTRA (Optional but good to keep clean) ---
-    // 3rd Place Match is essentially LB R7 in this structure.
+    // Grand Final
+    matches.push(mkMatch(`grand-final`, 'gf', 1, {
+        sourceMatchId1: `wb-r5-m1`, sourceType1: 'winner',
+        sourceMatchId2: `lb-final`, sourceType2: 'winner'
+    }));
+
+    // 3rd Place Match (p3-f)
+    // USER REQUEST: Fed by losers of LB R6
+    matches.push(mkMatch(`p3-f`, 'p3', 1, {
+        sourceMatchId1: `lb-r6-m1`, sourceType1: 'loser',
+        sourceMatchId2: `lb-r6-m2`, sourceType2: 'loser'
+    }));
 
     return matches;
 };
@@ -252,7 +255,7 @@ export const rebuildBracketState = (players, existingMatchesMap = {}) => {
     });
 
     // 4. Processing Order
-    // WB Matches first, then LB
+    // WB Matches first, then LB, then GF/P3
     const sortedMatches = [...allMatches].sort((a, b) => {
         if (a.bracket === 'wb' && b.bracket !== 'wb') return -1;
         if (a.bracket !== 'wb' && b.bracket === 'wb') return 1;
@@ -289,20 +292,12 @@ export const rebuildBracketState = (players, existingMatchesMap = {}) => {
                 if (loserId && targetId) {
                     const targetMatch = matchMap.get(targetId);
                     if (targetMatch) {
-                        // Determine which slot to fill. 
-                        // By convention and our blueprint:
-                        // LB R1: strictly mapped indices.
-                        // LB R2: Source2 is the drop.
-                        // LB R4: Source2 is the drop.
-                        // LB R6: Source2 is the drop.
-
-                        // We check if targetMatch expects this source
+                        // Priority Check
                         let slot = 0;
                         if (targetMatch.sourceMatchId1 === match.id) slot = 1;
                         else if (targetMatch.sourceMatchId2 === match.id) slot = 2;
 
-                        // If blueprint doesn't match explicitly (should exclude this case if blueprint is perfect), 
-                        // we force it into empty slot or specific slot based on role.
+                        // Force update
                         if (slot === 1 && targetMatch.player1Id !== loserId) {
                             targetMatch.player1Id = loserId;
                             changed = true;
@@ -341,9 +336,8 @@ export const rebuildBracketState = (players, existingMatchesMap = {}) => {
                 newState.winnerId = saved.winnerId;
 
                 if (!newState.winnerId && (newState.score1 !== null && newState.score2 !== null)) {
-                    // BO5 for WB and Finals/Late LB, BO3 early LB? 
-                    // Let's stick to BO5 for WB and BO3 for LB early
-                    const isBo5 = match.bracket === 'wb' || match.bracket === 'gf' || match.round >= 6;
+                    // BO5 for WB, GF, LB Final
+                    const isBo5 = match.bracket === 'wb' || match.bracket === 'gf' || match.id === 'lb-final';
                     const bestOf = isBo5 ? 5 : 3;
                     const thresh = Math.ceil(bestOf / 2);
                     if (newState.score1 >= thresh) newState.winnerId = match.player1Id;
