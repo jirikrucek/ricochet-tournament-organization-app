@@ -28,34 +28,37 @@ const ProtectedRoute = () => {
   return <Outlet />;
 };
 
+import { MatchesProvider } from './contexts/MatchesContext';
 import { TournamentProvider } from './contexts/TournamentContext';
 
 function App() {
   return (
     <TournamentProvider>
-      <Routes>
-        <Route path="/login" element={<Login />} />
-        <Route path="/" element={<Welcome />} />
-        <Route path="/tournaments" element={<TournamentSelect />} />
+      <MatchesProvider>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route path="/" element={<Welcome />} />
+          <Route path="/tournaments" element={<TournamentSelect />} />
 
-        <Route element={<Layout />}>
-          {/* Public View Routes (Read-Only for Guests, Edit for Admin) */}
-          <Route path="live" element={<Live />} />
-          <Route path="matches" element={<Matches />} />
-          <Route path="brackets" element={<Brackets />} />
-          <Route path="standings" element={<Standings />} />
-          <Route path="players" element={<Players />} />
+          <Route element={<Layout />}>
+            {/* Public View Routes (Read-Only for Guests, Edit for Admin) */}
+            <Route path="live" element={<Live />} />
+            <Route path="matches" element={<Matches />} />
+            <Route path="brackets" element={<Brackets />} />
+            <Route path="standings" element={<Standings />} />
+            <Route path="players" element={<Players />} />
 
-          {/* Protected Admin Routes */}
-          <Route element={<ProtectedRoute />}>
-            <Route path="organizer" element={<Organizer />} />
-            <Route path="settings" element={<Settings />} />
+            {/* Protected Admin Routes */}
+            <Route element={<ProtectedRoute />}>
+              <Route path="organizer" element={<Organizer />} />
+              <Route path="settings" element={<Settings />} />
+            </Route>
           </Route>
-        </Route>
 
-        {/* Catch-all */}
-        <Route path="*" element={<Navigate to="/" replace />} />
-      </Routes>
+          {/* Catch-all */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+      </MatchesProvider>
     </TournamentProvider>
   );
 }
