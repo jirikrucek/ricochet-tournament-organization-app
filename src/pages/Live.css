@@ -144,8 +144,8 @@
 
 @media (min-width: 1200px) {
     .dashboard-grid {
-        grid-template-columns: 1fr 450px;
-        /* Fixed width for Sidebar (moved right), rest for courts */
+        grid-template-columns: 1fr 400px;
+        /* Reduced to 400px for better fit */
         align-items: start;
     }
 }
@@ -175,7 +175,8 @@
     gap: 1.5rem;
 }
 
-@media (min-width: 768px) {
+/* Only show side-by-side courts on VERY wide screens to prevent overlap */
+@media (min-width: 1600px) {
     .courts-container {
         grid-template-columns: 1fr 1fr;
     }
@@ -187,6 +188,10 @@
     /* Ensure enough height for the new layout */
     display: flex;
     flex-direction: column;
+    overflow: hidden;
+    /* Prevent burst */
+    border-radius: 12px;
+    /* Ensure cleaner corners */
 }
 
 .court-header-slim {
