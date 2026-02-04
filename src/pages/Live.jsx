@@ -241,8 +241,8 @@ const Live = () => {
                         {isStillPlaying && isAuthenticated && (
                             <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
                                 <span style={{ fontSize: '2rem', fontWeight: 800, color: courtColor, minWidth: '40px' }}>{currentSet.a}</span>
-                                <button onClick={(e) => { e.stopPropagation(); console.log('P1 Point +'); handleUpdate(match, 'point', 'a', 1); }} style={btnStyle(courtColor)}><Plus size={18} /></button>
-                                <button onClick={(e) => { e.stopPropagation(); console.log('P1 Point -'); handleUpdate(match, 'point', 'a', -1); }} style={btnStyle(courtColor)}><Minus size={18} /></button>
+                                <button onClick={(e) => { e.stopPropagation(); console.log('P1 Point +'); handleUpdate(match, 'point', 'a', 1); }} style={btnStyle(courtColor)}><Plus size={18} style={{ pointerEvents: 'none' }} /></button>
+                                <button onClick={(e) => { e.stopPropagation(); console.log('P1 Point -'); handleUpdate(match, 'point', 'a', -1); }} style={btnStyle(courtColor)}><Minus size={18} style={{ pointerEvents: 'none' }} /></button>
                             </div>
                         )}
                         {!isAuthenticated && isStillPlaying && (
@@ -261,12 +261,12 @@ const Live = () => {
                         {isAuthenticated && isStillPlaying && (
                             <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '10px' }}>
                                 <div style={{ display: 'flex', gap: '2px', flexDirection: 'column', alignItems: 'center' }}>
-                                    <button onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score1', 1); }} style={{ ...btnStyle(courtColor), width: '24px', height: '24px' }}><Plus size={12} /></button>
-                                    <button onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score1', -1); }} style={{ ...btnStyle(courtColor), width: '24px', height: '24px' }}><Minus size={12} /></button>
+                                    <button onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score1', 1); }} style={{ ...btnStyle(courtColor), width: '24px', height: '24px' }}><Plus size={12} style={{ pointerEvents: 'none' }} /></button>
+                                    <button onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score1', -1); }} style={{ ...btnStyle(courtColor), width: '24px', height: '24px' }}><Minus size={12} style={{ pointerEvents: 'none' }} /></button>
                                 </div>
                                 <div style={{ display: 'flex', gap: '2px', flexDirection: 'column', alignItems: 'center' }}>
-                                    <button onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score2', 1); }} style={{ ...btnStyle(courtColor), width: '24px', height: '24px' }}><Plus size={12} /></button>
-                                    <button onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score2', -1); }} style={{ ...btnStyle(courtColor), width: '24px', height: '24px' }}><Minus size={12} /></button>
+                                    <button onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score2', 1); }} style={{ ...btnStyle(courtColor), width: '24px', height: '24px' }}><Plus size={12} style={{ pointerEvents: 'none' }} /></button>
+                                    <button onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score2', -1); }} style={{ ...btnStyle(courtColor), width: '24px', height: '24px' }}><Minus size={12} style={{ pointerEvents: 'none' }} /></button>
                                 </div>
                             </div>
                         )}
@@ -279,8 +279,8 @@ const Live = () => {
                         </div>
                         {isStillPlaying && isAuthenticated && (
                             <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
-                                <button onClick={(e) => { e.stopPropagation(); console.log('P2 Point -'); handleUpdate(match, 'point', 'b', -1); }} style={btnStyle(courtColor)}><Minus size={18} /></button>
-                                <button onClick={(e) => { e.stopPropagation(); console.log('P2 Point +'); handleUpdate(match, 'point', 'b', 1); }} style={btnStyle(courtColor)}><Plus size={18} /></button>
+                                <button onClick={(e) => { e.stopPropagation(); console.log('P2 Point -'); handleUpdate(match, 'point', 'b', -1); }} style={btnStyle(courtColor)}><Minus size={18} style={{ pointerEvents: 'none' }} /></button>
+                                <button onClick={(e) => { e.stopPropagation(); console.log('P2 Point +'); handleUpdate(match, 'point', 'b', 1); }} style={btnStyle(courtColor)}><Plus size={18} style={{ pointerEvents: 'none' }} /></button>
                                 <span style={{ fontSize: '2rem', fontWeight: 800, color: courtColor, minWidth: '40px' }}>{currentSet.b}</span>
                             </div>
                         )}
