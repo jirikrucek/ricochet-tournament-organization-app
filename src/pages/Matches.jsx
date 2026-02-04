@@ -254,7 +254,7 @@ const Matches = () => {
     const { isAuthenticated } = useAuth();
 
     const processedMatches = useMemo(() => {
-        if (!matches || matches.length === 0) return { current: null, pending: [], finished: [] };
+        if (!matches || matches.length === 0) return { active: [], pending: [], finished: [] };
 
         // 1. Enrich Matches with Player Data
         const enriched = matches.map(m => {
@@ -274,47 +274,30 @@ const Matches = () => {
             };
         }).filter(m => m.player1Id && m.player2Id && !m.player1.isBye && !m.player2.isBye);
 
-        const liveMatches = enriched.filter(m => m.status === 'live');
-        // Sort pending matches by ID so they appear in logical bracket order (e.g. WB R1 M1, M2...)
-        const pendingMatches = enriched.filter(m => m.status === 'pending').sort((a, b) => compareMatchIds(a.id, b.id));
-        const doneMatches = enriched.filter(m => m.status === 'finished');
+        // 2. Filter by Status
+        // Explicitly check for 'live' status from the data or inferred
+        const active = enriched.filter(m => m.status === 'live');
 
-        let current = null;
-        let pending = [];
-        let finished = doneMatches.reverse();
+        // Sort pending matches by ID
+        const pending = enriched.filter(m => m.status === 'pending').sort((a, b) => compareMatchIds(a.id, b.id));
 
-        if (liveMatches.length > 0) {
-            current = liveMatches[0];
-            pending = [...liveMatches.slice(1), ...pendingMatches];
-        } else if (pendingMatches.length > 0) {
-            current = pendingMatches[0];
-            pending = pendingMatches.slice(1);
-        }
+        const finished = enriched.filter(m => m.status === 'finished').reverse();
 
-        return { current, pending, finished, all: [...pending, ...finished] };
+        return { active, pending, finished };
     }, [matches, players]);
 
     const handleSaveScore = (matchId, data, options = {}) => {
-        // Update local state is tricky because useMatches holds raw data.
-        // We calculate next state using util.
         const status = data.forceFinished ? 'finished' : 'live';
         const newState = updateBracketMatch(matches, matchId, data.score1, data.score2, data.microPoints, players, data.winnerId, status);
 
-        // Also update court manually if needed since bracket logic might not track it?
-        // BracketLogic focuses on bracket progression. Court is metadata.
-        // We should merge court info back.
         const finalState = newState.map(m => {
             if (m.id === matchId) return { ...m, court: data.court };
-            // Persist existing court info for others
             const old = matches.find(oldM => oldM.id === m.id);
             return { ...m, court: old?.court || m.court };
         });
 
-        console.log("Próba zapisu meczu:", matchId, data);
-        saveMatches(finalState, matchId); // Pass matchId for targeted saving
-        console.log("Zapis wysłany do hooka!");
+        saveMatches(finalState, matchId);
 
-        // Close modal only if manual save
         if (!options.autoSave) {
             setEditingMatch(null);
         }
@@ -326,107 +309,85 @@ const Matches = () => {
         setEditingMatch(null);
     };
 
-    const renderMatchCard = (match, isCompact = false, index = 0) => {
-        if (!match) return null;
-        const isWB = match.bracket === 'wb';
-        const isGF = match.bracket === 'gf';
-        const bracketLabel = isGF ? t('brackets.finals') : (isWB ? t('brackets.wb') : t('brackets.lb'));
-        const roundLabel = match.round ? `${t('brackets.round')} ${match.round}` : '';
-        const bestOf = getBestOf(match.bracket);
-        const accentColor = index % 2 === 0 ? 'var(--accent-pink)' : 'var(--accent-cyan)';
+    // --- RENDERERS ---
+
+    const renderActiveMatch = (match, index) => {
+        const isPink = match.court === 'Kort Różowy' || (!match.court && index % 2 === 0);
+        const accentColor = isPink ? 'var(--accent-pink)' : 'var(--accent-cyan)';
 
         return (
-            <div key={match.id} className={isCompact ? "finished-item" : "match-card"} style={{ '--accent-primary': accentColor }}>
-                {!isCompact && (
-                    <div className="match-meta">
-                        <div>
-                            <span className="match-type" style={{ color: accentColor, fontWeight: 700 }}>{bracketLabel}</span>
-                            <span style={{ margin: '0 0.5rem' }}>•</span>
-                            <span>{roundLabel}</span>
-                            <span style={{ margin: '0 0.5rem' }}>•</span>
-                            <span>{t('matches.match', { id: match.id.split('-m')[1] })}</span>
-                        </div>
-                        <div className={`match-status status-${match.status}`}>
-                            {match.court && <span style={{ marginRight: '0.5rem', fontWeight: 600, color: 'var(--text-secondary)' }}>{match.court} | </span>}
-                            {match.status} • BO{bestOf}
-                        </div>
-                    </div>
-                )}
-
-                <div className="match-teams" style={isCompact ? { flex: 1 } : {}}>
-                    <div className={`team-row ${match.winnerId === match.player1.id ? 'winner' : ''}`}>
-                        <span className="team-name" title={match.player1.full_name}>
-                            <PlayerFlag countryCode={match.player1.country} /> {match.player1.full_name}
-                        </span>
-                        <span className="team-score">{match.score1 ?? 0}</span>
-                    </div>
-
-                    <span className="vs-separator">vs</span>
-
-                    <div className={`team-row ${match.winnerId === match.player2.id ? 'winner' : ''}`}>
-                        <span className="team-score">{match.score2 ?? 0}</span>
-                        <span className="team-name" title={match.player2.full_name}>
-                            <PlayerFlag countryCode={match.player2.country} /> {match.player2.full_name}
-                        </span>
-                    </div>
-
-                    {isCompact && (
-                        <div style={{ marginLeft: '1rem', fontSize: '0.8rem', color: 'var(--text-secondary)' }}>
-                            {bracketLabel} {roundLabel}
-                        </div>
-                    )}
+            <div key={match.id} className="active-match-card" style={{ '--accent-color': accentColor }}>
+                <div className="active-match-header">
+                    <span style={{ color: accentColor }}>{match.court || (isPink ? 'PINK COURT' : 'CYAN COURT')}</span>
+                    <span className="live-badge">LIVE</span>
                 </div>
 
-                {match.microPoints && match.microPoints.length > 0 && (
-                    <div style={{
-                        marginTop: isCompact ? '0' : '0.5rem',
-                        marginLeft: isCompact ? '1rem' : '0',
-                        fontSize: '0.75rem',
-                        color: '#9ca3af',
-                        display: 'flex',
-                        gap: '0.25rem',
-                        flexWrap: 'wrap',
-                        alignItems: 'center'
-                    }}>
-                        {match.microPoints.sort((a, b) => a.set - b.set).map((mp, i) => (
-                            <span key={i}>
-                                {mp.a}:{mp.b}{i < match.microPoints.length - 1 ? ',' : ''}
-                            </span>
-                        ))}
+                <div className="active-score-board">
+                    <div className="active-player left">
+                        <PlayerFlag countryCode={match.player1.country} />
+                        <span className="active-player-name">{match.player1.full_name}</span>
+                    </div>
+                    <div className="active-set-score">{match.score1 ?? 0}</div>
+                    <div className="vs-divider">:</div>
+                    <div className="active-set-score">{match.score2 ?? 0}</div>
+                    <div className="active-player right">
+                        <PlayerFlag countryCode={match.player2.country} />
+                        <span className="active-player-name">{match.player2.full_name}</span>
+                    </div>
+                </div>
+
+                <div style={{ textAlign: 'center', fontSize: '0.8rem', opacity: 0.6 }}>
+                    {(match.bracket || '').toUpperCase()} ROUND {match.round} • MATCH {match.id.split('-m')[1]}
+                </div>
+
+                {isAuthenticated && (
+                    <div className="active-actions">
+                        <button className="edit-btn" onClick={() => setEditingMatch(match)} style={{ borderColor: accentColor, color: accentColor }}>
+                            <Edit2 size={16} style={{ marginRight: '6px' }} /> Control Match
+                        </button>
                     </div>
                 )}
+            </div>
+        );
+    };
 
-                {isCompact && isAuthenticated && (
-                    <div style={{ marginLeft: '1rem' }}>
-                        <button
-                            className="edit-btn"
-                            onClick={(e) => {
-                                e.stopPropagation();
-                                setEditingMatch(match);
-                            }}
-                            style={{
-                                borderColor: 'var(--border-color)',
-                                color: 'var(--text-secondary)',
-                                padding: '0.4rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                            }}
-                            title={t('common.edit')}
-                        >
+    const renderMatchRow = (match) => {
+        const isWB = match.bracket === 'wb';
+        const isGF = match.bracket === 'gf';
+        const bracketClass = isGF ? 'gf' : (isWB ? 'wb' : 'lb');
+        const bracketLabel = isGF ? 'FINAL' : (isWB ? 'WINNERS' : 'LOSERS');
+
+        return (
+            <div key={match.id} className="match-list-row">
+                <div className="row-id">#{match.id.split('-m')[1]}</div>
+                <div className="row-bracket">
+                    <span className={`bracket-badge ${bracketClass}`}>{bracketLabel}</span>
+                    <span style={{ opacity: 0.5 }}>R{match.round}</span>
+                </div>
+
+                <div className="row-players">
+                    <div className="list-player p1">
+                        <span>{match.player1.full_name}</span>
+                        <PlayerFlag countryCode={match.player1.country} />
+                    </div>
+                    {match.status === 'finished' ? (
+                        <div className="list-score">{match.score1} : {match.score2}</div>
+                    ) : (
+                        <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>vs</div>
+                    )}
+                    <div className="list-player p2">
+                        <PlayerFlag countryCode={match.player2.country} />
+                        <span>{match.player2.full_name}</span>
+                    </div>
+                </div>
+
+                <div className="row-action">
+                    {isAuthenticated && (
+                        <button className="edit-icon-btn" onClick={() => setEditingMatch(match)} title="Edit">
                             <Edit2 size={16} />
                         </button>
-                    </div>
-                )}
-
-                {!isCompact && isAuthenticated && (
-                    <div className="match-footer" style={{ marginTop: '0.5rem' }}>
-                        <div></div>
-                        <button className="edit-btn" onClick={() => setEditingMatch(match)} style={{ borderColor: accentColor, color: accentColor }}>
-                            <Edit2 size={14} /> {t('common.edit')}
-                        </button>
-                    </div>
-                )}
+                    )}
+                </div>
             </div>
         );
     };
@@ -482,30 +443,26 @@ const Matches = () => {
                 </div>
             </div>
 
-            {/* 1. Current Match Section */}
-            {processedMatches.current && (filter === 'all' || filter === 'pending' || filter === 'live') && (
+            {/* 1. Live Arena */}
+            {(processedMatches.active.length > 0) && (filter === 'all' || filter === 'pending') && (
                 <section>
-                    <div className="section-header text-gradient">
-                        <Activity size={20} /> {t('matches.currentMatch')}
+                    <div className="section-header">
+                        <Activity size={20} color="#ef4444" /> Live Arena
                     </div>
-                    {/* Force Pink for Current Match Highlight */}
-                    <div className="current-match-card" style={{ '--accent-primary': 'var(--accent-pink)' }}>
-                        <div className="current-match-badge" style={{ background: 'var(--accent-pink)' }}>LIVE / UP NEXT</div>
-                        <div style={{ opacity: 0.9 }}>
-                            {renderMatchCard(processedMatches.current, false, 0)}
-                        </div>
+                    <div className="active-matches-grid">
+                        {processedMatches.active.map((m, i) => renderActiveMatch(m, i))}
                     </div>
                 </section>
             )}
 
-            {/* 2. Pending Matches Grid */}
+            {/* 2. Upcoming / Pending List */}
             {(processedMatches.pending.length > 0) && (filter === 'all' || filter === 'pending') && (
                 <section>
                     <div className="section-header">
                         <Clock size={20} /> {t('matches.nextMatches')}
                     </div>
-                    <div className="matches-grid">
-                        {processedMatches.pending.map((m, i) => renderMatchCard(m, false, i))}
+                    <div className="match-list-container">
+                        {processedMatches.pending.map(m => renderMatchRow(m))}
                     </div>
                 </section>
             )}
@@ -514,16 +471,16 @@ const Matches = () => {
             {(processedMatches.finished.length > 0) && (filter === 'all' || filter === 'finished') && (
                 <section>
                     <div className="section-header">
-                        <CheckCircle size={20} /> {t('matches.played')}
+                        <CheckCircle size={20} color="#10b981" /> {t('matches.played')}
                     </div>
-                    <div className="finished-list">
-                        {processedMatches.finished.map((m, i) => renderMatchCard(m, true, i))}
+                    <div className="match-list-container">
+                        {processedMatches.finished.map(m => renderMatchRow(m))}
                     </div>
                 </section>
             )}
 
-            {(processedMatches.pending.length === 0 && processedMatches.finished.length === 0 && !processedMatches.current) && (
-                <div className="empty-matches">{t('matches.allFinished')}</div>
+            {(processedMatches.active.length === 0 && processedMatches.pending.length === 0 && processedMatches.finished.length === 0) && (
+                <div className="empty-state-text">{t('matches.allFinished')}</div>
             )}
 
             {editingMatch && (
