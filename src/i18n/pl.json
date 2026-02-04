@@ -30,7 +30,7 @@
             "fullName": "Imię i nazwisko",
             "photo": "FOTO",
             "country": "Kraj",
-            "elo": "ELO"
+            "elo": "POINTS"
         },
         "empty": {
             "notFound": "Nie znaleziono zawodników.",
@@ -43,7 +43,7 @@
                 "fullName": "Imię i nazwisko *",
                 "photo": "Link do zdjęcia",
                 "country": "Kraj",
-                "elo": "ELO"
+                "elo": "POINTS"
             },
             "placeholders": {
                 "fullName": "np. Jan Kowalski",
