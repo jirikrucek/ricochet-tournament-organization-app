@@ -276,31 +276,7 @@ const Live = () => {
                             ))}
                         </div>
 
-                        {/* Admin Controls on top of overlay */}
-                        {isAuthenticated && isStillPlaying && (
-                            <div className="admin-controls">
-                                <button className="add-set-btn"
-                                    onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score1', 1) }}>
-                                    +S1
-                                </button>
-                                <button className="add-set-btn"
-                                    onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score2', 1) }}>
-                                    +S2
-                                </button>
-                            </div>
-                        )}
-                        {isAuthenticated && isStillPlaying && (match.microPoints?.length < bestOf) && (
-                            <button className="add-set-btn" style={{ marginTop: '4px' }}
-                                onClick={(e) => {
-                                    e.stopPropagation();
-                                    const newMicro = [...(match.microPoints || [])];
-                                    newMicro.push({ set: newMicro.length + 1, a: 0, b: 0 });
-                                    const nextState = updateBracketMatch(matches, match.id, match.score1, match.score2, newMicro, players, match.winnerId, match.status);
-                                    saveMatches(nextState, match.id);
-                                }}>
-                                New Set
-                            </button>
-                        )}
+                        {/* Admin Controls removed as per request */}
                     </div>
 
                     {/* PLAYER 2 (Right) */}
