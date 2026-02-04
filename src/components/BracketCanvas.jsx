@@ -10,6 +10,30 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
     const { t } = useTranslation();
     const containerRef = useRef(null);
     const matchRefs = useRef({});
+    // --- 1. Data Preparation ---
+    const enrichedMatches = useMemo(() => {
+        const baseMatches = (matches && matches.length > 0) ? matches : getBracketBlueprint();
+        const blueprint = getBracketBlueprint();
+        const blueprintMap = new Map();
+        blueprint.forEach(m => blueprintMap.set(m.id, m));
+
+        return baseMatches.map(m => {
+            const bp = blueprintMap.get(m.id);
+            return {
+                ...m,
+                player1: players.find(p => p.id === m.player1Id) || null,
+                player2: players.find(p => p.id === m.player2Id) || null,
+                sourceMatchId1: m.sourceMatchId1 || (bp ? bp.sourceMatchId1 : null),
+                sourceMatchId2: m.sourceMatchId2 || (bp ? bp.sourceMatchId2 : null),
+                sourceType1: m.sourceType1 || (bp ? bp.sourceType1 : null),
+                sourceType2: m.sourceType2 || (bp ? bp.sourceType2 : null),
+                nextMatchId: m.nextMatchId || (bp ? bp.nextMatchId : null),
+                loserMatchId: m.loserMatchId || (bp ? bp.loserMatchId : null),
+                court: m.court // Ensure court is passed through
+            };
+        });
+    }, [matches, players]);
+
     // --- 4. Interactive Highlight (Path to Final) ---
     const [hoveredMatchId, setHoveredMatchId] = useState(null);
 
