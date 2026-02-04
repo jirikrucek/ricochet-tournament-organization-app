@@ -30,7 +30,8 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
                 sourceType1: m.sourceType1 || (bp ? bp.sourceType1 : null),
                 sourceType2: m.sourceType2 || (bp ? bp.sourceType2 : null),
                 nextMatchId: m.nextMatchId || (bp ? bp.nextMatchId : null),
-                loserMatchId: m.loserMatchId || (bp ? bp.loserMatchId : null)
+                loserMatchId: m.loserMatchId || (bp ? bp.loserMatchId : null),
+                court: m.court // Ensure court is passed through
             };
         });
     }, [matches, players]);
@@ -50,7 +51,7 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
         const b = parts[0].toUpperCase();
         const r = parts[1].replace('r', '');
         const m = parts[2].replace('m', '');
-        if (b === 'P25') return `25-32 #1.${m}`; // Custom logic if needed, but simplistic is fine
+        if (b === 'P25') return `25-32 #1.${m}`;
         return `${b} ${r}.${m}`;
     };
 
@@ -149,6 +150,15 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
         const displayId = customHeader || getMatchNumber(match.id);
         const isLive = match.status === 'live';
 
+        // --- Court Display Logic ---
+        // Map long Polish names to short codes if needed or just display
+        let courtLabel = '';
+        if (match.court) {
+            if (match.court.includes('Różowy')) courtLabel = 'PINK';
+            else if (match.court.includes('Turkusowy')) courtLabel = 'CYAN';
+            else courtLabel = match.court;
+        }
+
         // Theme Constants
         const COLOR_PINK = '#ec4899';
         const COLOR_CYAN = '#06b6d4';
@@ -205,7 +215,17 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
                     letterSpacing: '1px',
                     textTransform: 'uppercase'
                 }}>
-                    <span>{match.bracket} • R{match.round}</span>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                        <span>{match.bracket} • R{match.round}</span>
+                        {courtLabel && (
+                            <span style={{
+                                color: courtLabel === 'PINK' ? COLOR_PINK : (courtLabel === 'CYAN' ? COLOR_CYAN : '#fff'),
+                                fontSize: '0.6rem', border: '1px solid currentColor', borderRadius: '3px', padding: '0 3px'
+                            }}>
+                                {courtLabel}
+                            </span>
+                        )}
+                    </div>
                     {isLive && <span style={{
                         background: COLOR_PINK, color: 'white', padding: '2px 6px',
                         borderRadius: '4px', fontSize: '0.6rem', fontWeight: 800,
