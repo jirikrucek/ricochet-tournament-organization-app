@@ -142,10 +142,10 @@
     margin: 0 auto;
 }
 
-@media (min-width: 1024px) {
+@media (min-width: 1200px) {
     .dashboard-grid {
-        grid-template-columns: 55% 1fr;
-        /* Distinct ratio: Main vs Sidebar */
+        grid-template-columns: 1fr 450px;
+        /* Fixed width for Sidebar (moved right), rest for courts */
         align-items: start;
     }
 }
@@ -154,6 +154,8 @@
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    min-width: 0;
+    /* Critical for preventing grid overflow */
 }
 
 /* Glass Panel Style */
