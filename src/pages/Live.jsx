@@ -194,18 +194,6 @@ const Live = () => {
 
     // --- RENDERERS ---
 
-    const btnStyle = (color) => ({
-        background: 'rgba(255,255,255,0.1)',
-        border: `1px solid ${color || 'white'}`,
-        color: color || 'white',
-        borderRadius: '4px',
-        width: '32px', height: '32px',
-        cursor: 'pointer',
-        display: 'flex', alignItems: 'center', justifyContent: 'center',
-        margin: '0 4px',
-        pointerEvents: 'auto', zIndex: 99999, position: 'relative' // Force clickable
-    });
-
     const renderEmptyLive = (courtColor) => (
         <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '250px', opacity: 0.5, fontStyle: 'italic', color: courtColor }}>
             {t('live.waitingForMatch') || "Waiting for match..."}
@@ -218,13 +206,23 @@ const Live = () => {
         const bestOf = getBestOf(match.bracket);
         const isStillPlaying = !match.winnerId;
         const currentSet = (match.microPoints || []).slice(-1)[0] || { a: 0, b: 0 };
-
-        // Name Split
         const p1Name = splitNameForDisplay(formatName(match.player1));
         const p2Name = splitNameForDisplay(formatName(match.player2));
 
+        // INTERACTIVE HANDLERS
+        const handlePointAction = (e, playerKey, delta) => {
+            if (!isStillPlaying || !isAuthenticated) return;
+            e.preventDefault();
+            e.stopPropagation();
+            console.log(`[ZONE] ${playerKey} Point ${delta > 0 ? '+' : '-'}`);
+            handleUpdate(match, 'point', playerKey, delta);
+        };
+
+        const zoneStyle = isAuthenticated && isStillPlaying ? { cursor: 'pointer', transition: 'background 0.2s' } : {};
+        const hoverClass = isAuthenticated && isStillPlaying ? 'interactive-zone' : '';
+
         return (
-            <div style={{ position: 'relative', padding: '1rem' }}>
+            <div style={{ position: 'relative', padding: '1rem', userSelect: 'none' }}>
                 {isStillPlaying && <div className="live-badge">LIVE</div>}
 
                 <div style={{ textAlign: 'center', marginBottom: '1rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', fontFamily: 'monospace' }}>
@@ -233,72 +231,75 @@ const Live = () => {
 
                 <div className="players-versus" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
 
-                    {/* LEFT PLAYER */}
-                    <div style={{ flex: 1, textAlign: 'left' }}>
+                    {/* LEFT PLAYER ZONE (Player A) */}
+                    <div
+                        className={hoverClass}
+                        style={{ flex: 1, textAlign: 'left', padding: '10px', borderRadius: '8px', ...zoneStyle }}
+                        onClick={(e) => handlePointAction(e, 'a', 1)}
+                        onContextMenu={(e) => handlePointAction(e, 'a', -1)}
+                    >
                         <div style={{ fontSize: '1.4rem', fontWeight: 700, lineHeight: 1.2 }}>
                             <PlayerFlag countryCode={match.player1.country} /> {p1Name.first} {p1Name.last}
                         </div>
-                        {isStillPlaying && isAuthenticated && (
-                            <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                                <span style={{ fontSize: '2rem', fontWeight: 800, color: courtColor, minWidth: '40px' }}>{currentSet.a}</span>
-                                <button onClick={(e) => { e.stopPropagation(); console.log('P1 Point +'); handleUpdate(match, 'point', 'a', 1); }} style={btnStyle(courtColor)}><Plus size={18} style={{ pointerEvents: 'none' }} /></button>
-                                <button onClick={(e) => { e.stopPropagation(); console.log('P1 Point -'); handleUpdate(match, 'point', 'a', -1); }} style={btnStyle(courtColor)}><Minus size={18} style={{ pointerEvents: 'none' }} /></button>
+                        {isStillPlaying && (
+                            <div style={{ marginTop: '0.5rem', fontSize: '3.5rem', fontWeight: 800, color: courtColor, lineHeight: 1 }}>
+                                {currentSet.a}
                             </div>
                         )}
-                        {!isAuthenticated && isStillPlaying && (
-                            <div style={{ marginTop: '0.5rem', fontSize: '2rem', fontWeight: 800, color: courtColor }}>{currentSet.a}</div>
-                        )}
+                        {/* Validation hint for admin */}
+                        {isAuthenticated && isStillPlaying && <div style={{ fontSize: '0.7rem', opacity: 0.3, marginTop: '4px' }}>L-Click (+), R-Click (-)</div>}
                     </div>
 
-                    {/* SCORE CENTER */}
-                    <div style={{ padding: '0 1rem', textAlign: 'center', minWidth: '120px' }}>
-                        <div style={{ fontSize: '3.5rem', fontWeight: 800, color: courtColor, lineHeight: 1 }}>
+                    {/* SCORE CENTER (Sets) */}
+                    <div style={{ padding: '0 1rem', textAlign: 'center', minWidth: '100px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+                        <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'white', opacity: 0.9 }}>
                             {match.score1}:{match.score2}
                         </div>
                         <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', opacity: 0.5 }}>SETS</div>
 
-                        {/* Set Controls */}
+                        {/* Set adjustment tiny buttons (only minimal controls left) */}
                         {isAuthenticated && isStillPlaying && (
-                            <div style={{ display: 'flex', justifyContent: 'center', gap: '15px', marginTop: '10px' }}>
-                                <div style={{ display: 'flex', gap: '2px', flexDirection: 'column', alignItems: 'center' }}>
-                                    <button onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score1', 1); }} style={{ ...btnStyle(courtColor), width: '24px', height: '24px' }}><Plus size={12} style={{ pointerEvents: 'none' }} /></button>
-                                    <button onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score1', -1); }} style={{ ...btnStyle(courtColor), width: '24px', height: '24px' }}><Minus size={12} style={{ pointerEvents: 'none' }} /></button>
-                                </div>
-                                <div style={{ display: 'flex', gap: '2px', flexDirection: 'column', alignItems: 'center' }}>
-                                    <button onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score2', 1); }} style={{ ...btnStyle(courtColor), width: '24px', height: '24px' }}><Plus size={12} style={{ pointerEvents: 'none' }} /></button>
-                                    <button onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score2', -1); }} style={{ ...btnStyle(courtColor), width: '24px', height: '24px' }}><Minus size={12} style={{ pointerEvents: 'none' }} /></button>
-                                </div>
+                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '8px' }}>
+                                <button style={{ background: 'none', border: '1px solid rgba(255,255,255,0.2)', color: match.score1 > 0 ? courtColor : '#555', cursor: 'pointer', padding: '0 4px', fontSize: '0.7rem', borderRadius: '4px' }}
+                                    onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score1', -1) }} onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); handleUpdate(match, 'set', 'score1', 1) }}>
+                                    adj
+                                </button>
+                                <button style={{ background: 'none', border: '1px solid rgba(255,255,255,0.2)', color: match.score2 > 0 ? courtColor : '#555', cursor: 'pointer', padding: '0 4px', fontSize: '0.7rem', borderRadius: '4px' }}
+                                    onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score2', -1) }} onContextMenu={(e) => { e.preventDefault(); e.stopPropagation(); handleUpdate(match, 'set', 'score2', 1) }}>
+                                    adj
+                                </button>
                             </div>
                         )}
                     </div>
 
-                    {/* RIGHT PLAYER */}
-                    <div style={{ flex: 1, textAlign: 'right' }}>
+                    {/* RIGHT PLAYER ZONE (Player B) */}
+                    <div
+                        className={hoverClass}
+                        style={{ flex: 1, textAlign: 'right', padding: '10px', borderRadius: '8px', ...zoneStyle }}
+                        onClick={(e) => handlePointAction(e, 'b', 1)}
+                        onContextMenu={(e) => handlePointAction(e, 'b', -1)}
+                    >
                         <div style={{ fontSize: '1.4rem', fontWeight: 700, lineHeight: 1.2 }}>
                             {p2Name.first} {p2Name.last} <PlayerFlag countryCode={match.player2.country} />
                         </div>
-                        {isStillPlaying && isAuthenticated && (
-                            <div style={{ marginTop: '1rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px' }}>
-                                <button onClick={(e) => { e.stopPropagation(); console.log('P2 Point -'); handleUpdate(match, 'point', 'b', -1); }} style={btnStyle(courtColor)}><Minus size={18} style={{ pointerEvents: 'none' }} /></button>
-                                <button onClick={(e) => { e.stopPropagation(); console.log('P2 Point +'); handleUpdate(match, 'point', 'b', 1); }} style={btnStyle(courtColor)}><Plus size={18} style={{ pointerEvents: 'none' }} /></button>
-                                <span style={{ fontSize: '2rem', fontWeight: 800, color: courtColor, minWidth: '40px' }}>{currentSet.b}</span>
+                        {isStillPlaying && (
+                            <div style={{ marginTop: '0.5rem', fontSize: '3.5rem', fontWeight: 800, color: courtColor, lineHeight: 1 }}>
+                                {currentSet.b}
                             </div>
                         )}
-                        {!isAuthenticated && isStillPlaying && (
-                            <div style={{ marginTop: '0.5rem', fontSize: '2rem', fontWeight: 800, color: courtColor }}>{currentSet.b}</div>
-                        )}
+                        {isAuthenticated && isStillPlaying && <div style={{ fontSize: '0.7rem', opacity: 0.3, marginTop: '4px' }}>L-Click (+), R-Click (-)</div>}
                     </div>
                 </div>
 
                 {/* SET HISTORY */}
-                <div style={{ marginTop: '2rem', display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+                <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                     {(match.microPoints || []).map((s, idx) => (
                         <div key={idx} style={{ padding: '4px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', opacity: idx === (match.microPoints.length - 1) ? 1 : 0.6 }}>
                             <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', opacity: 0.7 }}>SET {s.set}</div>
                             <div style={{ fontWeight: 700, fontSize: '1.2rem' }}>{s.a} - {s.b}</div>
                         </div>
                     ))}
-                    {/* Add Set Button */}
+                    {/* Add Set Button - Clean */}
                     {isAuthenticated && isStillPlaying && (match.microPoints?.length < bestOf) && (
                         <button onClick={(e) => {
                             e.stopPropagation();
@@ -308,8 +309,8 @@ const Live = () => {
                             // Save with new set
                             const nextState = updateBracketMatch(matches, match.id, match.score1, match.score2, newMicro, players, match.winnerId, match.status);
                             saveMatches(nextState, match.id);
-                        }} style={{ ...btnStyle('rgba(255,255,255,0.3)'), width: 'auto', padding: '0 12px', fontSize: '0.8rem', height: '48px' }}>
-                            <Plus size={14} style={{ marginRight: '4px' }} /> NEW SET
+                        }} style={{ background: 'transparent', border: '1px dashed rgba(255,255,255,0.3)', color: 'rgba(255,255,255,0.7)', borderRadius: '4px', padding: '0 12px', cursor: 'pointer', height: '46px', fontSize: '0.8rem' }}>
+                            + SET
                         </button>
                     )}
                 </div>
