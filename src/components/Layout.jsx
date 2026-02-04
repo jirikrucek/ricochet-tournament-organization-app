@@ -61,7 +61,7 @@ const Layout = () => {
         <div className="app-container">
             {/* Top Header */}
             <header className="top-header glass">
-                <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
+                <div className="header-branding">
                     <img src="/c.png" alt="Logo" style={{ height: '32px' }} />
                     <div className="brand-text">
                         <span>RICOCHET</span>

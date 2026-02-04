@@ -10,9 +10,9 @@
     height: 64px;
     display: flex;
     align-items: center;
-    justify-content: space-between;
+    justify-content: flex-end;
     padding: 0 1.5rem;
-    position: fixed;
+    position: relative;
     top: 0;
     left: 0;
     right: 0;
@@ -21,6 +21,24 @@
     backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--border-color);
     transition: all 0.3s ease;
+}
+
+.header-branding {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    height: 100%;
+    pointer-events: none;
+    /* Let clicks pass through if partially overlapping non-interactive areas, although logo might be link later */
+}
+
+/* Ensure Logo and Text are clickable if needed, revert pointer-events if so. Assuming purely decorative for now or wide enough spacing */
+.header-branding>* {
+    pointer-events: auto;
+
 }
 
 .header-title {
