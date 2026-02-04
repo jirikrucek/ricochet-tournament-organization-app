@@ -304,13 +304,22 @@ const Live = () => {
     const renderUpcomingList = (queue) => {
         if (!queue || queue.length === 0) return <div className="upcoming-item empty">{t('live.noUpcoming')}</div>;
         return queue.map(m => (
-            <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px dashed rgba(255,255,255,0.1)' }}>
-                <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <PlayerFlag countryCode={m.player1.country} /> <span>{formatName(m.player1)}</span>
-                    <span style={{ opacity: 0.5, fontSize: '0.8rem' }}>vs</span>
-                    <span>{formatName(m.player2)}</span> <PlayerFlag countryCode={m.player2.country} />
+            <div key={m.id} className="upcoming-row">
+                {/* P1 Section: Flag then Name (Right aligned towards Center) */}
+                <div className="upcoming-p1">
+                    <PlayerFlag countryCode={m.player1.country} />
+                    <span className="upcoming-name">{formatName(m.player1)}</span>
                 </div>
-                <div style={{ fontSize: '0.8rem', opacity: 0.5, fontFamily: 'monospace' }}>{(m.bracket || '').toUpperCase()} R{m.round}</div>
+
+                <div className="upcoming-vs">vs</div>
+
+                {/* P2 Section: Name then Flag (Left aligned from Center) */}
+                <div className="upcoming-p2">
+                    <span className="upcoming-name">{formatName(m.player2)}</span>
+                    <PlayerFlag countryCode={m.player2.country} />
+                </div>
+
+                <div className="upcoming-meta">{(m.bracket || '').toUpperCase()} R{m.round}</div>
             </div>
         ));
     };
