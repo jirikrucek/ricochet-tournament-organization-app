@@ -54,6 +54,9 @@ const Layout = () => {
         return isAuthenticated;
     });
 
+    // Check if we are in Live View Presentation Mode (TV Mode)
+    const isLiveView = location.pathname === '/live' && new URLSearchParams(location.search).get('mode') === 'tv';
+
     // Check local path
     const isBracketsPage = location.pathname === '/brackets';
 
