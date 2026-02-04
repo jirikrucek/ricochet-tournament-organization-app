@@ -322,9 +322,9 @@ const Live = () => {
         return queue.map(m => (
             <div key={m.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '0.5rem 0', borderBottom: '1px dashed rgba(255,255,255,0.1)' }}>
                 <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-                    <PlayerFlag countryCode={m.player1.country} /> <span>{splitNameForDisplay(formatName(m.player1)).last}</span>
+                    <PlayerFlag countryCode={m.player1.country} /> <span>{formatName(m.player1)}</span>
                     <span style={{ opacity: 0.5, fontSize: '0.8rem' }}>vs</span>
-                    <span>{splitNameForDisplay(formatName(m.player2)).last}</span> <PlayerFlag countryCode={m.player2.country} />
+                    <span>{formatName(m.player2)}</span> <PlayerFlag countryCode={m.player2.country} />
                 </div>
                 <div style={{ fontSize: '0.8rem', opacity: 0.5, fontFamily: 'monospace' }}>{(m.bracket || '').toUpperCase()} R{m.round}</div>
             </div>
