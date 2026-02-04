@@ -1,4 +1,3 @@
-```javascript
 import React, { useState, useEffect, useMemo } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
@@ -23,9 +22,9 @@ const PlayerFlag = ({ countryCode }) => {
     return (
         <img
             src={`https://flagcdn.com/w40/${code.toLowerCase()}.png`}
-alt = { countryCode }
-className = "player-flag"
-onError = {(e) => { e.target.style.display = 'none'; }}
+            alt={countryCode}
+            className="player-flag"
+            onError={(e) => { e.target.style.display = 'none'; }}
         />
     );
 };
