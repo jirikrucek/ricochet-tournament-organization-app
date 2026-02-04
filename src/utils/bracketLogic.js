@@ -521,7 +521,15 @@ export const rebuildBracketState = (players, existingMatchesMap = {}) => {
                 newState.winnerId = null;
             }
 
-            if (newState.winnerId !== match.winnerId || newState.player1Id !== match.player1Id || newState.player2Id !== match.player2Id) {
+            if (
+                newState.winnerId !== match.winnerId ||
+                newState.player1Id !== match.player1Id ||
+                newState.player2Id !== match.player2Id ||
+                newState.score1 !== match.score1 ||
+                newState.score2 !== match.score2 ||
+                newState.status !== match.status ||
+                JSON.stringify(newState.microPoints) !== JSON.stringify(match.microPoints)
+            ) {
                 Object.assign(match, newState);
                 changed = true;
             }
