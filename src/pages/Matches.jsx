@@ -373,6 +373,29 @@ const Matches = () => {
                 <div className="row-bracket">
                     <span className={`bracket-badge ${bracketClass}`}>{bracketLabel}</span>
                     <span style={{ opacity: 0.5 }}>R{match.round}</span>
+                    {(() => {
+                        let courtBadge = null;
+                        if (match.court) {
+                            const isPink = match.court.includes('Różowy');
+                            const isCyan = match.court.includes('Turkusowy');
+                            const courtName = isPink ? 'PINK' : (isCyan ? 'CYAN' : 'CRT');
+                            const badgeStyle = {
+                                fontSize: '0.65rem',
+                                fontWeight: '800',
+                                padding: '1px 5px',
+                                borderRadius: '4px',
+                                marginLeft: '6px',
+                                backgroundColor: isPink ? 'rgba(236, 72, 153, 0.15)' : (isCyan ? 'rgba(6, 182, 212, 0.15)' : 'rgba(255,255,255,0.1)'),
+                                color: isPink ? 'var(--accent-pink)' : (isCyan ? 'var(--accent-cyan)' : 'var(--text-secondary)'),
+                                border: `1px solid ${isPink ? 'var(--accent-pink)' : (isCyan ? 'var(--accent-cyan)' : 'var(--border-color)')}`,
+                                whiteSpace: 'nowrap',
+                                display: 'inline-block',
+                                lineHeight: '1'
+                            };
+                            return <span style={badgeStyle} title={match.court}>{courtName}</span>;
+                        }
+                        return null;
+                    })()}
                 </div>
 
                 <div className="row-players">
