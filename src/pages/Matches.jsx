@@ -346,20 +346,30 @@ const Matches = () => {
                             <Edit2 size={16} style={{ marginRight: '6px' }} /> Control Match
                         </button>
                     </div>
+
                 )}
             </div>
         );
     };
 
-    const renderMatchRow = (match) => {
+    const renderMatchRow = (match, index) => {
         const isWB = match.bracket === 'wb';
         const isGF = match.bracket === 'gf';
         const bracketClass = isGF ? 'gf' : (isWB ? 'wb' : 'lb');
         const bracketLabel = isGF ? 'FINAL' : (isWB ? 'WINNERS' : 'LOSERS');
 
+        // Determine court color (predictive or assigned)
+        // If court is explicitly assigned, use that. Otherwise alternate based on index.
+        let colorType = 'pink'; // default
+        if (match.court === 'Kort Różowy') colorType = 'pink';
+        else if (match.court === 'Kort Turkusowy') colorType = 'cyan';
+        else colorType = index % 2 === 0 ? 'pink' : 'cyan';
+
+        const rowBorderColor = colorType === 'pink' ? 'var(--accent-pink)' : 'var(--accent-cyan)';
+
         return (
-            <div key={match.id} className="match-list-row">
-                <div className="row-id">#{match.id.split('-m')[1]}</div>
+            <div key={match.id} className="match-list-row" style={{ borderLeft: `4px solid ${rowBorderColor}` }}>
+                <div className="row-id" style={{ color: rowBorderColor }}>#{match.id.split('-m')[1]}</div>
                 <div className="row-bracket">
                     <span className={`bracket-badge ${bracketClass}`}>{bracketLabel}</span>
                     <span style={{ opacity: 0.5 }}>R{match.round}</span>
