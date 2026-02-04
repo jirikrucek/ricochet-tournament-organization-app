@@ -193,7 +193,7 @@ const Live = () => {
         const handleZoneClick = (e, playerKey) => {
             if (!isStillPlaying || !isAuthenticated) return;
             e.preventDefault();
-            e.stopPropagation(); // Stop propagation to avoid bubbling
+            e.stopPropagation();
             console.log(`[ZONE] ${playerKey} Point +`);
             handleUpdate(match, 'point', playerKey, 1);
         };
@@ -206,76 +206,91 @@ const Live = () => {
             handleUpdate(match, 'point', playerKey, -1);
         };
 
-        return (
-            <div style={{ position: 'relative', padding: '1rem', userSelect: 'none', overflow: 'hidden' }}>
-                {isStillPlaying && <div className="live-badge">LIVE</div>}
+        const gradientBg = `linear-gradient(135deg, color-mix(in srgb, ${courtColor}, transparent 85%) 0%, transparent 100%)`;
 
-                {/* --- CLICK-TO-SCORE OVERLAY (ABSOLUTE) --- */}
+        return (
+            <div className="broadcast-card" style={{ background: gradientBg }}>
+                {isStillPlaying && <div className="broadcast-badge-live">LIVE</div>}
+
+                {/* CLICK OVERLAY */}
                 {isStillPlaying && isAuthenticated && (
-                    <div style={{
-                        position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-                        zIndex: 100, display: 'flex'
-                    }}>
+                    <div className="click-overlay">
                         {/* P1 Zone */}
                         <div
-                            style={{ flex: 1, height: '100%', cursor: 'pointer' }}
+                            className="click-zone"
                             onClick={(e) => handleZoneClick(e, 'a')}
                             onContextMenu={(e) => handleZoneContext(e, 'a')}
-                            className="score-zone-activator" // For CSS scaling/hover effects if needed
                         />
                         {/* P2 Zone */}
                         <div
-                            style={{ flex: 1, height: '100%', cursor: 'pointer' }}
+                            className="click-zone"
                             onClick={(e) => handleZoneClick(e, 'b')}
                             onContextMenu={(e) => handleZoneContext(e, 'b')}
-                            className="score-zone-activator"
                         />
                     </div>
                 )}
 
-                <div style={{ textAlign: 'center', marginBottom: '1rem', color: 'rgba(255,255,255,0.5)', fontSize: '0.8rem', fontFamily: 'monospace', position: 'relative', zIndex: 10 }}>
-                    {(match.bracket || '').toUpperCase()} R{match.round} • BO{bestOf}
+                {/* HEADER */}
+                <div className="broadcast-header">
+                    <span style={{ marginRight: '1rem' }}>{(match.bracket || '').toUpperCase()} R{match.round}</span>
+                    <span style={{ opacity: 0.5 }}>BO{bestOf}</span>
                 </div>
 
-                <div className="players-versus" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', position: 'relative', zIndex: 10, pointerEvents: 'none' }}>
-
-                    {/* LEFT PLAYER VISUALS */}
-                    <div style={{ flex: 1, textAlign: 'left', padding: '10px' }}>
-                        <div style={{ fontSize: '1.4rem', fontWeight: 700, lineHeight: 1.2, display: 'flex', alignItems: 'center', gap: '10px' }}>
+                {/* MAIN CONTENT */}
+                <div className="broadcast-content">
+                    {/* PLAYER 1 (Left) */}
+                    <div className="broadcast-player left">
+                        <div className="player-name-group">
+                            <span className="player-first">{p1Name.first}</span>
+                            <span className="player-last">{p1Name.last}</span>
+                        </div>
+                        <div className="player-flag-row">
                             <PlayerFlag countryCode={match.player1.country} />
-                            <span>{p1Name.first} {p1Name.last}</span>
+                            <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>{match.player1.country}</span>
                         </div>
                         {isStillPlaying && (
-                            <div style={{ marginTop: '0.5rem', fontSize: '3.5rem', fontWeight: 800, color: courtColor, lineHeight: 1 }}>
+                            <div className="current-points" style={{ color: courtColor }}>
                                 {currentSet.a}
                             </div>
                         )}
-                        {/* Validation hint for admin */}
-                        {isAuthenticated && isStillPlaying && <div style={{ fontSize: '0.7rem', opacity: 0.3, marginTop: '4px' }}>L-Click(+), R-Click(-)</div>}
+                        {isAuthenticated && isStillPlaying && <div style={{ fontSize: '0.6rem', opacity: 0.3, marginTop: '4px' }}>L-Click / R-Click</div>}
                     </div>
 
-                    {/* SCORE CENTER */}
-                    <div style={{ padding: '0 1rem', textAlign: 'center', minWidth: '100px', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-                        <div style={{ fontSize: '2.5rem', fontWeight: 800, color: 'white', opacity: 0.9 }}>
+                    {/* SCORE BOARD (Center) */}
+                    <div className="broadcast-center">
+                        <div className="sets-score-main">
                             {match.score1}:{match.score2}
                         </div>
-                        <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', opacity: 0.5 }}>SETS</div>
+                        <div className="sets-label">SETS</div>
 
-                        {/* Manual Set Adjust (Only interactive element on top of overlay) */}
+                        <div className="set-dots">
+                            {/* Render visual dots for played sets? Or just mini scores */}
+                            {(match.microPoints || []).map((s, idx) => (
+                                <div key={idx} style={{
+                                    fontSize: '0.7rem',
+                                    opacity: 0.7,
+                                    color: idx === (match.microPoints.length - 1) ? 'white' : '#aaa'
+                                }}>
+                                    {s.a}-{s.b}
+                                </div>
+                            ))}
+                        </div>
+
+                        {/* Admin Controls on top of overlay */}
                         {isAuthenticated && isStillPlaying && (
-                            <div style={{ display: 'flex', gap: '8px', justifyContent: 'center', marginTop: '8px', pointerEvents: 'auto' }}>
-                                <button style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#aaa', cursor: 'pointer', padding: '2px 6px', fontSize: '0.6rem', borderRadius: '4px', zIndex: 101 }}
+                            <div className="admin-controls">
+                                <button className="add-set-btn"
                                     onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score1', 1) }}>
                                     +S1
                                 </button>
-                                <button style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#aaa', cursor: 'pointer', padding: '2px 6px', fontSize: '0.6rem', borderRadius: '4px', zIndex: 101 }}
+                                <button className="add-set-btn"
                                     onClick={(e) => { e.stopPropagation(); handleUpdate(match, 'set', 'score2', 1) }}>
                                     +S2
                                 </button>
                             </div>
                         )}
                         {isAuthenticated && isStillPlaying && (match.microPoints?.length < bestOf) && (
-                            <button style={{ background: 'rgba(0,0,0,0.5)', border: '1px solid rgba(255,255,255,0.2)', color: '#aaa', cursor: 'pointer', padding: '2px 6px', fontSize: '0.6rem', borderRadius: '4px', marginTop: '4px', zIndex: 101, pointerEvents: 'auto' }}
+                            <button className="add-set-btn" style={{ marginTop: '4px' }}
                                 onClick={(e) => {
                                     e.stopPropagation();
                                     const newMicro = [...(match.microPoints || [])];
@@ -283,34 +298,28 @@ const Live = () => {
                                     const nextState = updateBracketMatch(matches, match.id, match.score1, match.score2, newMicro, players, match.winnerId, match.status);
                                     saveMatches(nextState, match.id);
                                 }}>
-                                +SET
+                                New Set
                             </button>
                         )}
                     </div>
 
-                    {/* RIGHT PLAYER VISUALS */}
-                    <div style={{ flex: 1, textAlign: 'right', padding: '10px' }}>
-                        <div style={{ fontSize: '1.4rem', fontWeight: 700, lineHeight: 1.2, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '10px' }}>
-                            <span>{p2Name.first} {p2Name.last}</span>
+                    {/* PLAYER 2 (Right) */}
+                    <div className="broadcast-player right">
+                        <div className="player-name-group">
+                            <span className="player-first">{p2Name.first}</span>
+                            <span className="player-last">{p2Name.last}</span>
+                        </div>
+                        <div className="player-flag-row" style={{ justifyContent: 'flex-end' }}>
+                            <span style={{ fontSize: '0.8rem', opacity: 0.5 }}>{match.player2.country}</span>
                             <PlayerFlag countryCode={match.player2.country} />
                         </div>
                         {isStillPlaying && (
-                            <div style={{ marginTop: '0.5rem', fontSize: '3.5rem', fontWeight: 800, color: courtColor, lineHeight: 1 }}>
+                            <div className="current-points" style={{ color: courtColor }}>
                                 {currentSet.b}
                             </div>
                         )}
-                        {isAuthenticated && isStillPlaying && <div style={{ fontSize: '0.7rem', opacity: 0.3, marginTop: '4px' }}>L-Click(+), R-Click(-)</div>}
+                        {isAuthenticated && isStillPlaying && <div style={{ fontSize: '0.6rem', opacity: 0.3, marginTop: '4px' }}>L-Click / R-Click</div>}
                     </div>
-                </div>
-
-                {/* SET HISTORY */}
-                <div style={{ marginTop: '1.5rem', display: 'flex', justifyContent: 'center', gap: '0.5rem', flexWrap: 'wrap', position: 'relative', zIndex: 10, pointerEvents: 'none' }}>
-                    {(match.microPoints || []).map((s, idx) => (
-                        <div key={idx} style={{ padding: '4px 12px', background: 'rgba(255,255,255,0.05)', borderRadius: '4px', opacity: idx === (match.microPoints.length - 1) ? 1 : 0.6 }}>
-                            <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', opacity: 0.7 }}>SET {s.set}</div>
-                            <div style={{ fontWeight: 700, fontSize: '1.2rem' }}>{s.a} - {s.b}</div>
-                        </div>
-                    ))}
                 </div>
             </div>
         );
