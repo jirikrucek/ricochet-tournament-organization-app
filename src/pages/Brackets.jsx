@@ -89,7 +89,9 @@ const Brackets = () => {
                 initialScale={0.8}
                 minScale={0.4}
                 maxScale={2}
-                centerOnInit={true}
+                centerOnInit={false}
+                initialPositionX={50}
+                initialPositionY={50}
                 limitToBounds={false}
             >
                 {({ zoomIn, zoomOut, resetTransform }) => (
