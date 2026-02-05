@@ -82,11 +82,11 @@
         "tickerEmpty": "No matches finished yet. Waiting for results...",
         "upcomingHeader": "UPCOMING",
         "pinkQueue": "PINK QUEUE",
-        "cyanQueue": "CYAN QUEUE",
+        "cyanQueue": "TURQUOISE QUEUE",
         "recentHeader": "RECENT RESULTS",
         "recentEmpty": "No results yet.",
         "courtPinkLabel": "PINK COURT",
-        "courtCyanLabel": "CYAN COURT",
+        "courtCyanLabel": "TURQUOISE COURT",
         "waitingForMatch": "Waiting for match...",
         "sets": "SETS",
         "clickHint": "L-Click / R-Click (Points)"
