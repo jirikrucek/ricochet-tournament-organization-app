@@ -829,6 +829,51 @@
         text-align: center;
     }
 
+    /* MATCH CARD FIXES FOR MOBILE */
+    .broadcast-card {
+        padding: 0.75rem !important;
+    }
+
+    .broadcast-content {
+        grid-template-columns: 1fr 70px 1fr !important;
+        /* Reduced center column significantly */
+        gap: 0.25rem !important;
+    }
+
+    .broadcast-center {
+        padding: 0.5rem 0.25rem !important;
+    }
+
+    .player-last {
+        font-size: 1.1rem !important;
+        white-space: normal;
+        /* Allow wrapping if needed */
+        overflow: hidden;
+        text-overflow: ellipsis;
+        line-height: 1.1;
+    }
+
+    .player-first {
+        font-size: 0.7rem !important;
+    }
+
+    .current-points {
+        font-size: 2.5rem !important;
+        margin-top: 0.25rem !important;
+    }
+
+    .sets-score-main {
+        font-size: 1.8rem !important;
+    }
+
+    .sets-label {
+        font-size: 0.5rem !important;
+    }
+
+    .broadcast-player {
+        padding: 0 !important;
+    }
+
     /* Compact Courts on Mobile */
     .court-card.compact {
         min-height: auto;
