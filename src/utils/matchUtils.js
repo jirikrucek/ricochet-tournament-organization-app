@@ -33,42 +33,14 @@ export const canEditMatch = (match) => {
     return match.player1 && match.player2 && !match.player1.isBye && !match.player2.isBye;
 };
 
-// --- NEW SORTING LOGIC ---
-// Helper to assign a "Phase ID" to group comparable rounds from WB and LB together
-const getPhaseId = (bracket, round) => {
-    if (bracket === 'wb') {
-        if (round === 1) return 10;
-        if (round === 2) return 20; // Concurrent with LB R1
-        if (round === 3) return 40; // Concurrent with LB R3
-        if (round === 4) return 60; // Concurrent with LB R5
-        if (round === 5) return 80; // WB Final
-    }
-    if (bracket === 'lb') {
-        if (round === 1) return 20; // Phase 1: Matches dropped from WB R1 + WB R2 logic
-        if (round === 2) return 30; // Between WB R2 and R3
-        if (round === 3) return 40; // Concurrent with WB R3
-        if (round === 4) return 50;
-        if (round === 5) return 60; // Concurrent with WB R4
-        if (round === 6) return 70;
-        if (round >= 90) return 80; // LB Final (Phase 80 matches WB Final)
-    }
-    if (bracket === 'cf') return 90;  // Consolation
-    if (bracket === 'gf') return 100; // Grand Final
-    
-    // Placement matches (push to end or specific slots if needed)
-    return 200; 
-};
-
-// Helper to sort matches by ID (Interleaved: Phase > MatchNum > Bracket)
+// --- SAFE INTERLEAVED SORTING ---
 export const compareMatchIds = (idA, idB) => {
     // 1. Parse IDs
     const parseId = (id) => {
-        // Special Finals
         if (id === 'grand-final') return { bracket: 'gf', round: 100, number: 1 };
         if (id === 'consolation-final') return { bracket: 'cf', round: 100, number: 1 };
         if (id === 'lb-final') return { bracket: 'lb', round: 99, number: 1 };
 
-        // Standard & Placement
         const matchStd = id.match(/^([a-z0-9]+)-r(\d+)-m(\d+)$/);
         if (matchStd) {
             return {
@@ -77,26 +49,42 @@ export const compareMatchIds = (idA, idB) => {
                 number: parseInt(matchStd[3], 10)
             };
         }
-        // Placement Final
         const matchFin = id.match(/^([a-z0-9]+)-f$/);
-        if (matchFin) {
-            return { bracket: matchFin[1], round: 99, number: 1 };
-        }
+        if (matchFin) return { bracket: matchFin[1], round: 99, number: 1 };
+        
         return { bracket: id, round: 999, number: 999 };
     };
 
     const A = parseId(idA);
     const B = parseId(idB);
 
-    // 2. Compare Phase (This groups WB R2 with LB R1)
-    const phaseA = getPhaseId(A.bracket, A.round);
-    const phaseB = getPhaseId(B.bracket, B.round);
+    // 2. Bracket Priority
+    const getBracketScore = (b) => {
+        if (b === 'wb') return 10;
+        if (b === 'lb') return 20;
+        if (b === 'gf') return 100;
+        if (b === 'cf') return 90;
+        if (b.startsWith('p')) {
+             const num = parseInt(b.slice(1), 10) || 50;
+             return 30 + num; 
+        }
+        return 50; 
+    };
+
+    // 3. Virtual Phase (Map LB R1 to same level as WB R2 to mix them)
+    let phaseA = A.round;
+    let phaseB = B.round;
+    
+    // TRICK: Move LB R1 to "Round 2" so it sorts WITH WB R2
+    if (A.bracket === 'lb' && A.round === 1) phaseA = 2;
+    if (B.bracket === 'lb' && B.round === 1) phaseB = 2;
+    // Same for later rounds if needed, e.g. WB R3 vs LB R3?
+    
     if (phaseA !== phaseB) return phaseA - phaseB;
 
-    // 3. Compare Match Number (Interleaves them! M1(WB), M1(LB), M2(WB)...)
+    // 4. Same Phase -> Sort by Match Number
     if (A.number !== B.number) return A.number - B.number;
 
-    // 4. Tie-breaker: Bracket Priority (WB before LB if same match number)
-    const getBracketWeight = (b) => (b === 'wb' ? 1 : 2);
-    return getBracketWeight(A.bracket) - getBracketWeight(B.bracket);
+    // 5. Same Number -> WB First
+    return getBracketScore(A.bracket) - getBracketScore(B.bracket);
 };
