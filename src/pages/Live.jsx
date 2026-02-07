@@ -86,16 +86,47 @@ const Live = () => {
         }).sort((a, b) => {
             const sA = (a.status || '').toLowerCase();
             const sB = (b.status || '').toLowerCase();
+            
+            // Priority 1: LIVE matches always first
             if (sA === 'live' && sB !== 'live') return -1;
             if (sA !== 'live' && sB === 'live') return 1;
+
+            // Priority 2: PENDING (ready with players) before SCHEDULED (waiting)
+            const isReadyA = (sA === 'pending');
+            const isReadyB = (sB === 'pending');
+            if (isReadyA && !isReadyB) return -1;
+            if (!isReadyA && isReadyB) return 1;
+
+            // Priority 3: Standard logical sort
             return compareMatchIds(a.id, b.id);
         });
 
         const pink = [];
         const cyan = [];
 
-        active.forEach((m, idx) => {
-            const court = idx % 2 === 0 ? 'courtPink' : 'courtCyan';
+        active.forEach((m) => {
+            let court = m.court;
+
+            // Normalize court name from DB
+            if (court === 'pink') court = 'courtPink';
+            if (court === 'cyan') court = 'courtCyan';
+
+            // Fallback if no court assigned (Stable Assignment)
+            if (!court || (court !== 'courtPink' && court !== 'courtCyan')) {
+                // Try to parse match number for parity assignment
+                const parts = m.id.match(/-m(\d+)$/);
+                const num = parts ? parseInt(parts[1], 10) : 0;
+
+                if (num > 0) {
+                    // Odd -> Pink, Even -> Cyan
+                    court = num % 2 !== 0 ? 'courtPink' : 'courtCyan';
+                } else {
+                    // Fallback hash for non-standard IDs
+                    const hash = m.id.split('').reduce((acc, c) => acc + c.charCodeAt(0), 0);
+                    court = hash % 2 === 0 ? 'courtPink' : 'courtCyan';
+                }
+            }
+
             const mWithCourt = { ...m, assignedCourt: court };
             if (court === 'courtPink') pink.push(mWithCourt);
             else cyan.push(mWithCourt);
