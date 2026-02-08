@@ -91,8 +91,18 @@ const Live = () => {
         }).sort((a, b) => {
             const sA = (a.status || '').toLowerCase();
             const sB = (b.status || '').toLowerCase();
+
+            // Priority 1: LIVE matches always first
             if (sA === 'live' && sB !== 'live') return -1;
             if (sA !== 'live' && sB === 'live') return 1;
+
+            // Priority 2: PENDING (ready with players) before SCHEDULED (waiting)
+            const isReadyA = (sA === 'pending');
+            const isReadyB = (sB === 'pending');
+            if (isReadyA && !isReadyB) return -1;
+            if (!isReadyA && isReadyB) return 1;
+
+            // Priority 3: Standard logical sort
             return compareMatchIds(a.id, b.id);
         });
 
@@ -103,10 +113,11 @@ const Live = () => {
             let court = '';
 
             // 1. Respect Existing Court Assignment
+            // Normalize court name from DB or Strings
             if (m.court) {
                 const cUpper = m.court.toUpperCase();
-                if (cUpper.includes('RÓŻOWY') || cUpper.includes('LEWY') || cUpper.includes('PINK')) court = 'courtPink';
-                else if (cUpper.includes('TURKUSOWY') || cUpper.includes('PRAWY') || cUpper.includes('CYAN')) court = 'courtCyan';
+                if (cUpper.includes('RÓŻOWY') || cUpper.includes('LEWY') || cUpper.includes('PINK') || m.court === 'pink') court = 'courtPink';
+                else if (cUpper.includes('TURKUSOWY') || cUpper.includes('PRAWY') || cUpper.includes('CYAN') || m.court === 'cyan') court = 'courtCyan';
             }
 
             // 2. Auto-Assign if Missing (Balance queues)
