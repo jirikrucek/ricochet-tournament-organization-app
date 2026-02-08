@@ -140,22 +140,20 @@ export const MatchesProvider = ({ children }) => {
                 // Identify what to save
                 let changesToSave = [];
 
-                if (specificMatchId) {
-                    const target = newMatches.find(m => m.id === specificMatchId);
-                    if (target) {
-                        changesToSave = [mapToSnake(target)];
-                    }
-                } else {
-                    // Save All / Diff
-                    const currentMatches = matchesRef.current;
-                    const payload = newMatches.map(m => mapToSnake(m));
-                    changesToSave = payload.filter(p => {
-                        const old = currentMatches.find(m => m.id === p.id);
-                        if (!old) return true;
-                        const oldSnake = mapToSnake(old);
-                        return JSON.stringify(oldSnake) !== JSON.stringify(p);
-                    });
-                }
+                // ALWAYS perform a diff check.
+                // We cannot optimize by saving only 'specificMatchId' because
+                // a single match update might propagate changes to other matches (winners/losers advancing).
+                // The diff logic below detects exactly which matches changed.
+
+                const currentMatches = matchesRef.current;
+                const payload = newMatches.map(m => mapToSnake(m));
+                changesToSave = payload.filter(p => {
+                    const old = currentMatches.find(m => m.id === p.id);
+                    if (!old) return true;
+                    // Deep compare via JSON (simple & effective for this data size)
+                    const oldSnake = mapToSnake(old);
+                    return JSON.stringify(oldSnake) !== JSON.stringify(p);
+                });
 
                 if (changesToSave.length > 0) {
                     const promises = changesToSave.map(match => {

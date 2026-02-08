@@ -82,16 +82,26 @@ const Live = () => {
 
         const active = enriched.filter(m => {
             // DYNAMIC STATUS CALCULATION
-            // We cannot rely on m.status from DB being up-to-date (it might say 'scheduled')
-            // So we recalculate it based on player presence and scores.
             const calculatedStatus = getMatchStatus({
                 ...m,
-                winner_id: m.winnerId // map for utility compatibility
+                winner_id: m.winnerId
             });
             const s = calculatedStatus.toLowerCase();
 
-            // Allow matches that are logically 'live' or 'pending' (ready to play)
-            return !m.winnerId && ['live', 'pending'].includes(s);
+            // Strict Player Check: Ensure both players have real IDs (not TBD placeholders)
+            // m.player1 is the enriched object. If it was TBD, id would be null or undefined.
+            const p1Ready = m.player1 && m.player1.id;
+            const p2Ready = m.player2 && m.player2.id;
+            const isBye = m.player1?.isBye || m.player2?.isBye;
+
+            const isValid = !m.winnerId && p1Ready && p2Ready && !isBye && ['live', 'pending'].includes(s);
+
+            // DEBUG LOGGING for missing matches
+            // if (m.id.includes('lb-r2') && !isValid) {
+            //    console.log(`[LiveFilter] Excluded ${m.id}: Winner=${m.winnerId}, P1=${p1Ready}, P2=${p2Ready}, Status=${s}`);
+            // }
+
+            return isValid;
         }).sort((a, b) => {
             // Sort using calculated status
             const statusA = getMatchStatus({ ...a, winner_id: a.winnerId }).toLowerCase();
