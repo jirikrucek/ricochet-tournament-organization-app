@@ -11,6 +11,14 @@ import { usePlayers } from '../hooks/usePlayers';
 import { getCountryCode } from '../constants/countries';
 import { useAuth } from '../hooks/useAuth.tsx';
 
+const formatName = (p) => {
+    if (!p) return 'TBD';
+    if (p.full_name) return p.full_name;
+    if (p.fullName) return p.fullName; // Handle potential camelCase variation
+    if (p.firstName && p.lastName) return `${p.firstName} ${p.lastName}`;
+    return 'Unknown Player';
+};
+
 // Helper Component for Flag
 const PlayerFlag = ({ countryCode }) => {
     if (!countryCode) return null;
@@ -27,6 +35,130 @@ const PlayerFlag = ({ countryCode }) => {
             className="player-flag"
             onError={(e) => { e.target.style.display = 'none'; }}
         />
+    );
+};
+
+// ... MatchEditModal code ...
+
+// ... inside Matches component ...
+
+const renderMatchRow = (match, index, queueType = null) => {
+    const isWB = match.bracket === 'wb';
+    const isGF = match.bracket === 'gf';
+    const bracketClass = isGF ? 'gf' : (isWB ? 'wb' : 'lb');
+    const bracketLabel = isGF ? t('matches.bracketFinal') : (isWB ? t('matches.bracketWinners') : t('matches.bracketLosers'));
+
+    // Determine court color (predictive or assigned)
+    let colorType = queueType;
+    if (!colorType) {
+        const cUpper = (match.court || '').toUpperCase();
+        if (cUpper.includes('RÓŻOWY') || cUpper.includes('LEWY') || cUpper.includes('LEFT') || cUpper.includes('PINK')) colorType = 'pink';
+        else if (cUpper.includes('TURKUSOWY') || cUpper.includes('PRAWY') || cUpper.includes('RIGHT') || cUpper.includes('CYAN')) colorType = 'cyan';
+        else colorType = index % 2 === 0 ? 'pink' : 'cyan';
+    }
+
+    const rowBorderColor = colorType === 'pink' ? 'var(--accent-pink)' : 'var(--accent-cyan)';
+    const isPending = match.status === 'pending';
+
+    return (
+        <div key={match.id} className="match-list-row" style={{ borderLeft: `4px solid ${rowBorderColor}` }}>
+            {isPending && isAuthenticated && (
+                <div style={{ display: 'flex', flexDirection: 'column', marginRight: '8px', justifyContent: 'center' }}>
+                    <button
+                        className="icon-btn-small"
+                        onClick={() => handleMoveMatch(match.id, 'up')}
+                        style={{
+                            padding: '2px',
+                            lineHeight: 1,
+                            marginBottom: '2px',
+                            color: 'var(--text-secondary)',
+                            background: 'rgba(255,255,255,0.05)',
+                            borderRadius: '4px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseOver={e => { e.target.style.background = 'rgba(255,255,255,0.1)'; e.target.style.color = 'white'; }}
+                        onMouseOut={e => { e.target.style.background = 'rgba(255,255,255,0.05)'; e.target.style.color = 'var(--text-secondary)'; }}
+                        title="Move Up"
+                    >
+                        <span style={{ fontSize: '0.7rem' }}>▲</span>
+                    </button>
+                    <button
+                        className="icon-btn-small"
+                        onClick={() => handleMoveMatch(match.id, 'down')}
+                        style={{
+                            padding: '2px',
+                            lineHeight: 1,
+                            color: 'var(--text-secondary)',
+                            background: 'rgba(255,255,255,0.05)',
+                            borderRadius: '4px',
+                            border: 'none',
+                            cursor: 'pointer',
+                            transition: 'all 0.2s'
+                        }}
+                        onMouseOver={e => { e.target.style.background = 'rgba(255,255,255,0.1)'; e.target.style.color = 'white'; }}
+                        onMouseOut={e => { e.target.style.background = 'rgba(255,255,255,0.05)'; e.target.style.color = 'var(--text-secondary)'; }}
+                        title="Move Down"
+                    >
+                        <span style={{ fontSize: '0.7rem' }}>▼</span>
+                    </button>
+                </div>
+            )}
+            <div className="row-id" style={{ color: rowBorderColor }}>#{match.id.split('-m')[1]}</div>
+            <div className="row-bracket">
+                <span className={`bracket-badge ${bracketClass}`}>{bracketLabel}</span>
+                <span style={{ opacity: 0.5 }}>R{match.round}</span>
+                {(() => {
+                    let courtBadge = null;
+                    if (match.court) {
+                        const cUpper = match.court.toUpperCase();
+                        const isPink = cUpper.includes('RÓŻOWY') || cUpper.includes('LEWY') || cUpper.includes('LEFT') || cUpper.includes('PINK');
+                        const isCyan = cUpper.includes('TURKUSOWY') || cUpper.includes('PRAWY') || cUpper.includes('RIGHT') || cUpper.includes('CYAN');
+                        const courtName = isPink ? 'LEFT' : (isCyan ? 'RIGHT' : 'CRT');
+                        const badgeStyle = {
+                            fontSize: '0.65rem',
+                            fontWeight: '800',
+                            padding: '1px 5px',
+                            borderRadius: '4px',
+                            marginLeft: '6px',
+                            backgroundColor: isPink ? 'rgba(236, 72, 153, 0.15)' : (isCyan ? 'rgba(6, 182, 212, 0.15)' : 'rgba(255,255,255,0.1)'),
+                            color: isPink ? 'var(--accent-pink)' : (isCyan ? 'var(--accent-cyan)' : 'var(--text-secondary)'),
+                            border: `1px solid ${isPink ? 'var(--accent-pink)' : (isCyan ? 'var(--accent-cyan)' : 'var(--border-color)')}`,
+                            whiteSpace: 'nowrap',
+                            display: 'inline-block',
+                            lineHeight: '1'
+                        };
+                        return <span style={badgeStyle} title={match.court}>{courtName}</span>;
+                    }
+                    return null;
+                })()}
+            </div>
+
+            <div className="row-players">
+                <div className="list-player p1">
+                    <span>{formatName(match.player1)}</span>
+                    <PlayerFlag countryCode={match.player1.country} />
+                </div>
+                {match.status === 'finished' ? (
+                    <div className="list-score">{match.score1} : {match.score2}</div>
+                ) : (
+                    <div style={{ fontSize: '0.9rem', color: 'var(--text-secondary)' }}>vs</div>
+                )}
+                <div className="list-player p2">
+                    <PlayerFlag countryCode={match.player2.country} />
+                    <span>{formatName(match.player2)}</span>
+                </div>
+            </div>
+
+            <div className="row-action">
+                {isAuthenticated && (
+                    <button className="edit-icon-btn" onClick={() => setEditingMatch(match)} title="Edit">
+                        <Edit2 size={16} />
+                    </button>
+                )}
+            </div>
+        </div>
     );
 };
 
