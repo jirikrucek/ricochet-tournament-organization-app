@@ -5,6 +5,7 @@ import { Maximize, Clock, Activity, X, Trophy } from 'lucide-react';
 import { QRCodeCanvas } from 'qrcode.react';
 
 import { useMatches } from '../hooks/useMatches';
+import { useTournamentMatches } from '../hooks/useTournamentMatches';
 import { usePlayers } from '../hooks/usePlayers';
 import { useAuth } from '../hooks/useAuth.tsx';
 import { useTournament } from '../contexts/TournamentContext';
@@ -48,7 +49,7 @@ const splitNameForDisplay = (fullName) => {
 const Live = () => {
     const { t } = useTranslation();
     const { isAuthenticated } = useAuth();
-    const { matches, saveMatches } = useMatches();
+    const { matches, saveMatches } = useTournamentMatches(); // Replaces useMatches for logic hydration
     const { players } = usePlayers();
     const { activeTournamentId } = useTournament();
 
