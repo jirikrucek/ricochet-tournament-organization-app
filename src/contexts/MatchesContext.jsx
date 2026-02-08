@@ -2,7 +2,7 @@ import React, { createContext, useContext, useState, useEffect, useCallback, use
 import { useAuth } from '../hooks/useAuth.tsx';
 import { useTournament } from './TournamentContext';
 import { db, isFirebaseConfigured } from '../lib/firebase';
-import { collection, onSnapshot, getDocs, doc, query, where, writeBatch } from 'firebase/firestore';
+import { collection, onSnapshot, getDocs, doc, query, where, writeBatch, setDoc } from 'firebase/firestore';
 
 const MatchesContext = createContext(null);
 
@@ -130,6 +130,9 @@ export const MatchesProvider = ({ children }) => {
             return;
         }
 
+        // 0. CAPTURE CURRENT STATE BEFORE ASYNC/UPDATES
+        const previousMatches = [...matchesRef.current];
+
         // 1. OPTIMISTIC UPDATE
         setMatches(newMatches);
         isSavingRef.current = true; // Lock snapshots
@@ -137,7 +140,6 @@ export const MatchesProvider = ({ children }) => {
         // 2. PERSISTENCE
         if (isFirebaseConfigured && isAuthenticated) {
             try {
-                const { setDoc } = await import('firebase/firestore');
 
                 // Identify what to save
                 let changesToSave = [];
@@ -147,10 +149,9 @@ export const MatchesProvider = ({ children }) => {
                 // a single match update might propagate changes to other matches (winners/losers advancing).
                 // The diff logic below detects exactly which matches changed.
 
-                const currentMatches = matchesRef.current;
                 const payload = newMatches.map(m => mapToSnake(m));
                 changesToSave = payload.filter(p => {
-                    const old = currentMatches.find(m => m.id === p.id);
+                    const old = previousMatches.find(m => m.id === p.id);
                     if (!old) return true;
 
                     const oldSnake = mapToSnake(old);
