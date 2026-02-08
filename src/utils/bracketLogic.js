@@ -397,12 +397,21 @@ export const rebuildBracketState = (players, existingMatchesMap = {}) => {
     const matchMap = new Map();
     allMatches.forEach(m => matchMap.set(m.id, m));
 
-    // 3. Initial Seeding (WB R1)
+    // 3. Initial Seeding (WB R1) & Global Data Hydration (Order/Court)
     const wbR1 = allMatches.filter(m => m.bracket === 'wb' && m.round === 1);
     wbR1.forEach((m, i) => {
         const [seed1Idx, seed2Idx] = SEEDING_PAIRS[i];
         if (seeds[seed1Idx - 1]) m.player1Id = seeds[seed1Idx - 1].id;
         if (seeds[seed2Idx - 1]) m.player2Id = seeds[seed2Idx - 1].id;
+    });
+
+    // Hydrate manualOrder and court for ALL matches from the map immediately
+    allMatches.forEach(m => {
+        const saved = existingMatchesMap[m.id];
+        if (saved) {
+            m.manualOrder = saved.manualOrder ?? null;
+            m.court = saved.court ?? "";
+        }
     });
 
     // 4. Processing Order: WB -> LB -> Placement

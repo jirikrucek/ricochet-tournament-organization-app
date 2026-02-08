@@ -296,11 +296,10 @@ const Matches = () => {
 
         // Sort pending matches by manualOrder then ID
         const pending = enriched.filter(m => m.status === 'pending').sort((a, b) => {
-            if (a.manualOrder !== undefined || b.manualOrder !== undefined) {
-                const oa = a.manualOrder ?? Number.MAX_SAFE_INTEGER;
-                const ob = b.manualOrder ?? Number.MAX_SAFE_INTEGER;
-                if (oa !== ob) return oa - ob;
-            }
+            const oa = (a.manualOrder !== undefined && a.manualOrder !== null) ? a.manualOrder : Number.MAX_SAFE_INTEGER;
+            const ob = (b.manualOrder !== undefined && b.manualOrder !== null) ? b.manualOrder : Number.MAX_SAFE_INTEGER;
+
+            if (oa !== ob) return oa - ob;
             return compareMatchIds(a.id, b.id);
         });
 

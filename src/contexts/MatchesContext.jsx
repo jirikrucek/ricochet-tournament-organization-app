@@ -84,8 +84,8 @@ export const MatchesProvider = ({ children }) => {
                         // FORCE ID consistency: The document ID is the source of truth
                         return { ...doc.data(), id: doc.id };
                     })
-                        // Filter out any garbage IDs that might have crept in
-                        .filter(m => m.id && m.id.includes('-'))
+                        // Allow any non-empty ID (like 'grand-final')
+                        .filter(m => m.id)
                         .map(mapToCamel);
 
                     // Deduplicate logic: Map ensures unique IDs
