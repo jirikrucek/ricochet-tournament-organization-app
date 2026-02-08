@@ -1,6 +1,7 @@
 import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useMatches } from '../hooks/useMatches';
+import { useTournamentMatches } from '../hooks/useTournamentMatches';
 import { useTournament } from '../contexts/TournamentContext';
 import { updateBracketMatch, clearBracketMatch, generateDoubleEliminationBracket } from '../utils/bracketLogic';
 import { getBestOf, getMatchStatus, canEditMatch, compareMatchIds } from '../utils/matchUtils';
@@ -247,7 +248,7 @@ const MatchEditModal = ({ match, onClose, onSave, onClear }) => {
 
 const Matches = () => {
     const { t } = useTranslation();
-    const { matches, saveMatches } = useMatches();
+    const { matches, saveMatches } = useTournamentMatches();
     const { players } = usePlayers();
     const { activeTournamentId, updateTournament } = useTournament();
     const [filter, setFilter] = useState('all');
