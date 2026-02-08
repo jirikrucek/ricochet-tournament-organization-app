@@ -478,18 +478,18 @@ const Matches = () => {
                         <button
                             className="icon-btn-small"
                             onClick={() => handleMoveMatch(match.id, 'up')}
-                            style={{ padding: 0, lineHeight: 0.8, marginBottom: '2px', opacity: 0.7 }}
+                            style={{ padding: 0, lineHeight: 0.8, marginBottom: '2px', opacity: 1, color: 'white' }}
                             title="Move Up"
                         >
-                            <span style={{ fontSize: '0.7rem' }}>▲</span>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>▲</span>
                         </button>
                         <button
                             className="icon-btn-small"
                             onClick={() => handleMoveMatch(match.id, 'down')}
-                            style={{ padding: 0, lineHeight: 0.8, opacity: 0.7 }}
+                            style={{ padding: 0, lineHeight: 0.8, opacity: 1, color: 'white' }}
                             title="Move Down"
                         >
-                            <span style={{ fontSize: '0.7rem' }}>▼</span>
+                            <span style={{ fontSize: '0.8rem', fontWeight: 'bold' }}>▼</span>
                         </button>
                     </div>
                 )}

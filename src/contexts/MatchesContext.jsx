@@ -53,7 +53,7 @@ export const MatchesProvider = ({ children }) => {
         winner_id: m.winnerId || null,
         status: m.status || 'pending',
         court: m.court || "",
-        manual_order: m.manualOrder ?? null
+        manual_order: m.manualOrder !== undefined ? m.manualOrder : null
     });
 
     // Ref to track saving state to prevent snapshot racing/echoes
