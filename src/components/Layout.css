@@ -233,11 +233,6 @@
     overflow-x: auto;
 }
 
-/* Allow horizontal scroll ONLY for brackets page */
-.main-content:has(.bracket-scroll-container) {
-    overflow-x: auto;
-}
-
 .page-container {
     flex: 1;
     animation: fadeIn 0.4s ease-out;
@@ -331,14 +326,19 @@
 
     .bottom-nav {
         display: flex;
+        position: relative;
+        /* Not fixed anymore */
+        bottom: auto;
+        left: auto;
+        right: auto;
         background-color: #ffffff;
-        /* Explicitly opaque white */
         backdrop-filter: blur(20px);
         border-top: 1px solid var(--border-color);
         padding-bottom: env(safe-area-inset-bottom);
         height: auto;
         min-height: 60px;
-        box-shadow: 0 -4px 15px rgba(0, 0, 0, 0.05);
+        box-shadow: 0 -10px 20px rgba(0, 0, 0, 0.05);
+        /* Stronger shadow to indicate separation */
     }
 
     /* Dark mode override for bottom nav */
@@ -349,8 +349,8 @@
     }
 
     .app-footer {
-        padding-bottom: 80px;
-        /* Space for bottom nav within scroll */
+        padding-bottom: 2rem;
+        /* Normal padding now */
     }
 }
 
