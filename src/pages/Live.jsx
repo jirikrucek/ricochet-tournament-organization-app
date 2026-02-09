@@ -98,8 +98,8 @@ const Live = () => {
     const formatTime = (date) => date.toLocaleTimeString('en-US', { hour12: false, hour: '2-digit', minute: '2-digit', second: '2-digit' });
 
     // --- QUEUE LOGIC ---
-    const { pinkQueue, cyanQueue } = useMemo(() => {
-        if (!matches || !matches.length) return { pinkQueue: [], cyanQueue: [] };
+    const { pinkQueue, cyanQueue, pinkRecent, cyanRecent } = useMemo(() => {
+        if (!matches || !matches.length) return { pinkQueue: [], cyanQueue: [], pinkRecent: [], cyanRecent: [] };
 
         const enriched = matches.map(m => ({
             ...m,
