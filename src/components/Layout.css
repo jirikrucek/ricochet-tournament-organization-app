@@ -326,6 +326,12 @@
         border-radius: 50% !important;
     }
 
+    /* Hide text labels inside top-level buttons on mobile */
+    .header-actions>button span,
+    .header-actions>a span {
+        display: none !important;
+    }
+
     /* Force dropdown buttons to NEVER use the icon-only styles */
     .header-actions .lang-dropdown button.lang-option {
         width: 100% !important;
