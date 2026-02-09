@@ -82,7 +82,6 @@
     font-size: 0.95rem;
     pointer-events: none;
     display: block !important;
-    /* Force visibility even if parent hides spans */
     color: inherit !important;
 }
 
@@ -108,28 +107,17 @@
     }
 }
 
-@keyframes fadeInScaleMobile {
-    from {
-        opacity: 0;
-        transform: translateX(50%) translateY(-10px) scale(0.95);
-    }
-
-    to {
-        opacity: 1;
-        transform: translateX(50%) translateY(0) scale(1);
-    }
-}
-
 /* Mobile Overrides */
 @media (max-width: 768px) {
     .lang-dropdown {
-        right: 50%;
-        transform: translateX(50%);
-        width: 150px;
-        animation: fadeInScaleMobile 0.2s ease-out;
+        /* Aligning right side of dropdown with right side of globe icon container */
+        /* This prevents cutting off on the left because there is plenty of space to the left */
+        right: -10px;
+        width: 160px;
+        animation: fadeInScale 0.2s ease-out;
     }
 
     .lang-label {
-        font-size: 0.85rem;
+        font-size: 0.9rem;
     }
 }
