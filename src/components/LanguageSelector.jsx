@@ -5,7 +5,8 @@ import './LanguageSelector.css';
 
 const LANGUAGES = [
     { code: 'pl', label: 'Polski' },
-    { code: 'en', label: 'English' }
+    { code: 'en', label: 'English' },
+    { code: 'nl', label: 'Nederlands' }
 ];
 
 const LanguageSelector = () => {
@@ -47,14 +48,15 @@ const LanguageSelector = () => {
             {isOpen && (
                 <div className="lang-dropdown">
                     {LANGUAGES.map((lang) => {
-                        const isActive = i18n.language.startsWith(lang.code);
+                        const currentLang = i18n.language || 'pl';
+                        const isActive = currentLang.startsWith(lang.code);
                         return (
                             <button
                                 key={lang.code}
                                 className={`lang-option ${isActive ? 'active' : ''}`}
                                 onClick={() => changeLanguage(lang.code)}
                             >
-                                <span className="lang-label">{lang.label || lang.code.toUpperCase()}</span>
+                                <span className="lang-label">{lang.label}</span>
                                 {isActive && <Check size={16} className="lang-check" />}
                             </button>
                         );
