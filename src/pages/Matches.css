@@ -284,12 +284,14 @@
 /* If controls exist, column 1 is used */
 
 /* Court Colors */
+/* Court Colors */
 .match-list-row.pink {
     border-left: 4px solid var(--accent-pink);
 }
 
 .match-list-row.cyan {
-    border-left: 4px solid #21468B;
+    border-right: 4px solid #21468B;
+    border-left: none;
 }
 
 .match-list-row:hover {
@@ -306,7 +308,7 @@
     border-color: #21468B;
 }
 
-/* Badge (Top Left) */
+/* Badge (Top Left for Pink, Top Right for Cyan) */
 .row-meta-badge {
     position: absolute;
     top: 0;
@@ -324,6 +326,16 @@
     text-transform: uppercase;
     color: var(--text-secondary);
     gap: 4px;
+}
+
+.match-list-row.cyan .row-meta-badge {
+    left: auto;
+    right: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-left-radius: 8px;
+    border-right: none;
+    border-left: 1px solid var(--border-color);
+    flex-direction: row-reverse;
 }
 
 .bracket-pill {
