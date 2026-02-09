@@ -20,6 +20,7 @@
 .lang-dropdown {
     position: absolute;
     top: calc(100% + 8px);
+    /* DEFAULT DESKTOP: Right aligned with the icon */
     right: 0;
     width: 180px;
     background-color: white !important;
@@ -107,17 +108,17 @@
     }
 }
 
-/* Mobile Overrides */
+/* MOBILE FIX */
 @media (max-width: 768px) {
     .lang-dropdown {
-        /* Aligning right side of dropdown with right side of globe icon container */
-        /* This prevents cutting off on the left because there is plenty of space to the left */
-        right: -10px;
+        /* On mobile, we align to the LEFT side of the icon, 
+           meaning the dropdown extends to the RIGHT into the empty space. */
+        right: auto;
+        left: 0;
         width: 160px;
-        animation: fadeInScale 0.2s ease-out;
     }
 
     .lang-label {
-        font-size: 0.9rem;
+        font-size: 0.93rem;
     }
 }
