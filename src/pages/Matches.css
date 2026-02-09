@@ -367,14 +367,18 @@
 }
 
 .player .name {
-    font-size: 0.9rem;
+    font-size: 0.85rem;
     font-weight: 700;
     color: var(--text-primary);
     text-transform: uppercase;
     line-height: 1;
-    white-space: nowrap;
+    white-space: nowrap !important;
     overflow: hidden;
     text-overflow: ellipsis;
+    display: block;
+    min-width: 0;
+    flex: 1;
+    /* Allow taking available space */
 }
 
 .player-flag {
