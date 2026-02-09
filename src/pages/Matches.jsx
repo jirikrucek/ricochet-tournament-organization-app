@@ -8,6 +8,7 @@ import { Edit2, Trophy, Clock, Activity, CheckCircle, Save, X, Trash2, GripVerti
 import './Matches.css';
 import { usePlayers } from '../hooks/usePlayers';
 import { useAuth } from '../hooks/useAuth.tsx';
+import { usePlayerFocus } from '../contexts/PlayerFocusContext';
 import { getCountryCode } from '../constants/countries';
 
 // --- DND KIT IMPORTS ---
@@ -365,10 +366,23 @@ const Matches = () => {
         }
     }, [matches]);
 
+    // --- PLAYER FOCUS SETUP ---
+    const { focusedPlayerId, disableFocus } = usePlayerFocus(); // Import this hook
+
+    // Filter Logic
     const processedMatches = useMemo(() => {
         if (!matches || matches.length === 0) return { active: [], pending: [], finished: [], pinkQueue: [], cyanQueue: [] };
 
-        const enriched = matches.map(m => {
+        let candidateMatches = matches;
+
+        // Apply Focus Filter FIRST if active
+        if (focusedPlayerId) {
+            candidateMatches = matches.filter(m =>
+                m.player1Id === focusedPlayerId || m.player2Id === focusedPlayerId
+            );
+        }
+
+        const enriched = candidateMatches.map(m => {
             const p1 = players.find(p => p.id === m.player1Id);
             const p2 = players.find(p => p.id === m.player2Id);
             return {
@@ -437,8 +451,9 @@ const Matches = () => {
 
         const pending = [...pinkRest, ...cyanRest];
 
+
         return { active, pending, finished, pinkQueue: pinkRest, cyanQueue: cyanRest };
-    }, [matches, players]);
+    }, [matches, players, focusedPlayerId]);
 
 
     // -- DND LOGIC --
@@ -714,8 +729,35 @@ const Matches = () => {
         );
     }
 
+    const focusedPlayer = focusedPlayerId ? players.find(p => p.id === focusedPlayerId) : null;
+
     return (
         <div className="matches-container animate-fade-in">
+            {focusedPlayer && (
+                <div style={{
+                    background: 'rgba(251, 191, 36, 0.2)',
+                    border: '1px solid #fbbf24',
+                    color: '#fbbf24',
+                    padding: '0.75rem 1rem',
+                    borderRadius: '8px',
+                    marginBottom: '1rem',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    fontWeight: 600
+                }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        {/* We can reuse the Eye icon here or just text */}
+                        <span>{t('profile.focusModeActive', { name: formatName(focusedPlayer) }) || `Focus Mode: ${formatName(focusedPlayer)}`}</span>
+                    </div>
+                    <button
+                        onClick={disableFocus}
+                        style={{ background: 'transparent', border: 'none', color: 'inherit', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                    >
+                        <X size={20} /> <span style={{ marginLeft: '4px', fontSize: '0.8rem' }}>EXIT</span>
+                    </button>
+                </div>
+            )}
             <div className="matches-header">
                 <h1 className="matches-title text-gradient">{t('matches.title')}</h1>
                 <div className="matches-filters">
