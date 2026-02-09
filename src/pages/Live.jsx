@@ -226,7 +226,7 @@ const Live = () => {
                     {/* CENTER: SETS */}
                     <div className="broadcast-center">
                         <div className="sets-score-main">
-                            {match.score1} : {match.score2}
+                            {match.score1 ?? 0} : {match.score2 ?? 0}
                         </div>
                         <div className="sets-label">{t('live.sets')}</div>
                         <div className="set-dots">
