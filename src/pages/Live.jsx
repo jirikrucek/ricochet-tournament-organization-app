@@ -221,7 +221,6 @@ const Live = () => {
                         <div className="player-flag-row">
                             <PlayerFlag countryCode={match.player1.country} /> <span style={{ marginLeft: '6px' }}>{match.player1.country}</span>
                         </div>
-                        {isStillPlaying && <div className="current-points" style={{ color: courtColor }}>{currentSet.a}</div>}
                     </div>
 
                     {/* CENTER: SETS */}
@@ -253,7 +252,6 @@ const Live = () => {
                         <div className="player-flag-row" style={{ justifyContent: 'flex-end' }}>
                             <span style={{ marginRight: '6px' }}>{match.player2.country}</span> <PlayerFlag countryCode={match.player2.country} />
                         </div>
-                        {isStillPlaying && <div className="current-points" style={{ color: courtColor }}>{currentSet.b}</div>}
                     </div>
                 </div>
             </div>

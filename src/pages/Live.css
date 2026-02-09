@@ -194,13 +194,11 @@
 
 .broadcast-content {
     display: grid;
-    grid-template-columns: 1fr 180px 1fr;
-    /* Fixed ample width for score */
+    grid-template-columns: 1fr 160px 1fr;
     align-items: center;
-    padding: 1.5rem 1rem;
-    /* More horizontal padding */
-    gap: 1rem;
-    min-height: 220px;
+    padding: 2rem 1.5rem;
+    gap: 1.5rem;
+    min-height: 180px;
 }
 
 /* PLAYERS */
@@ -315,40 +313,14 @@
 .sets-label {
     font-size: 0.7rem;
     font-weight: 700;
-    letter-spacing: 3px;
+    letter-spacing: 2px;
     color: var(--text-secondary);
-    margin-top: 0.5rem;
+    margin-top: 0.25rem;
     text-transform: uppercase;
 }
 
 /* CURRENT POINTS */
-.current-points {
-    font-size: 3.5rem;
-    font-weight: 800;
-    color: var(--text-primary);
-    transition: all 0.2s;
-}
-
-.broadcast-player .current-points {
-    margin-top: 1rem;
-    color: var(--text-primary);
-    background: transparent;
-    padding: 0;
-    text-align: center;
-    /* keep points centered relative to player block width? or align? */
-    text-shadow: none;
-    /* For aligning points with text */
-    width: 100%;
-}
-
-/* Specific alignment for points */
-.broadcast-player.left .current-points {
-    text-align: right;
-}
-
-.broadcast-player.right .current-points {
-    text-align: left;
-}
+/* CURRENT POINTS REMOVED AS REQUESTED */
 
 
 /* SIDEBAR */
