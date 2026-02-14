@@ -26,7 +26,7 @@ if (isSupabaseConfigured) {
 }
 ```
 
-See [TournamentContext.jsx](../src/contexts/TournamentContext.jsx#L14-L65) for complete implementation pattern.
+See [TournamentContext.jsx](../src/contexts/TournamentContext.jsx) for complete implementation pattern.
 
 ### State Management
 
@@ -61,7 +61,7 @@ This app uses a **strict Brazilian double elimination system** with:
 
 - Winners Bracket: 5 rounds (WB)
 - Losers Bracket: 6 rounds (LB)
-- Specific drop patterns defined in [bracketLogic.js](../src/utils/bracketLogic.js#L38-L67)
+- Specific drop patterns defined in [bracketLogic.js](../src/utils/bracketLogic.js)
 
 **Match ID Pattern**: `{bracket}-r{round}-m{matchNum}`
 
@@ -92,7 +92,7 @@ Follow the `ricochet_*` naming convention:
 - Wrap top-level app in ErrorBoundary (already configured in [main.jsx](../src/main.jsx))
 - Use `console.error()` for debugging with descriptive messages
 - Try-catch blocks for async operations with meaningful error messages
-- See [TournamentContext.jsx](../src/contexts/TournamentContext.jsx#L23-L27) for patterns
+- See [TournamentContext.jsx](../src/contexts/TournamentContext.jsx) for patterns
 
 ## Integration Points
 
