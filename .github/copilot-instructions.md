@@ -527,6 +527,78 @@ When working with external libraries or need up-to-date documentation:
 - Resolving API compatibility issues
 - Finding code examples for specific use cases
 
+## Deployment
+
+### Vercel Deployment
+
+This application is optimized for deployment on **Vercel**, a static site hosting platform with global CDN distribution.
+
+#### Configuration
+
+The project includes [vercel.json](../vercel.json) with the following configuration:
+
+```json
+{
+  "rewrites": [
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
+```
+
+This rewrite rule enables client-side routing for the React Router v7 SPA by redirecting all routes to `index.html`.
+
+#### Build Settings
+
+Vercel automatically detects Vite projects. The build process uses:
+
+- **Build Command**: `npm run build` (outputs to `dist/`)
+- **Output Directory**: `dist`
+- **Development Command**: `npm run dev`
+- **Install Command**: `npm install`
+
+#### Environment Variables
+
+For production deployments, configure environment variables in the Vercel dashboard:
+
+```
+VITE_SUPABASE_URL=your_production_url
+VITE_SUPABASE_ANON_KEY=your_production_key
+```
+
+**Important**: Never commit `.env` files with real credentials. Use Vercel's environment variable management for sensitive data.
+
+#### Deployment Workflow
+
+1. **Automatic Deployments**: Push to `main` branch triggers production deployment
+2. **Preview Deployments**: Pull requests automatically get preview URLs
+3. **Rollback**: Use Vercel dashboard to rollback to previous deployments
+
+#### Best Practices
+
+- **Preview Before Merge**: Test changes in preview deployments before merging PRs
+- **Environment Parity**: Keep development and production environment variables in sync
+- **Build Validation**: Ensure `npm run build` succeeds locally before pushing
+- **Performance Monitoring**: Use Vercel Analytics to track Core Web Vitals
+- **Domain Configuration**: Configure custom domains via Vercel dashboard
+
+#### LocalStorage Mode
+
+The app works without Supabase configuration, using localStorage fallback. This means:
+
+- Production deployments work immediately without database setup
+- Users can test and develop offline
+- Supabase is optional for enhanced features (real-time sync, cloud storage)
+
+#### Troubleshooting
+
+- **404 on Refresh**: Ensure `vercel.json` rewrite rules are configured (already included)
+- **Build Failures**: Check for ESLint errors with `npm run lint`
+- **Environment Variables**: Verify all `VITE_*` prefixed variables are set in Vercel dashboard
+- **Routing Issues**: Confirm React Router routes match Vercel rewrite configuration
+
 ## Security
 
 - Simple authentication via [useAuth.tsx](../src/hooks/useAuth.tsx) hook
