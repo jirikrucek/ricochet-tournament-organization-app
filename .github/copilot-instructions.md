@@ -76,6 +76,29 @@ Example: [bracketLogic.test.js](../src/utils/bracketLogic.test.js) validates all
 
 **Key Pattern**: The dual-mode storage demonstrates DIP - high-level tournament logic doesn't depend on whether data comes from Supabase or localStorage.
 
+## Technology Stack
+
+### Frontend Framework
+- **React 19.2** with **Vite** for fast development
+- **React Router v7** for page navigation
+- **Context API** for state management
+
+### Data Storage (Dual-Mode)
+- **Supabase** (PostgreSQL cloud database) - optional for real-time sync
+- **LocalStorage** - fallback when Supabase is not configured
+- Hybrid approach allows offline operation
+
+### UI Components & Libraries
+- **Lucide React** - Modern icon library
+- **@dnd-kit** - Drag-and-drop functionality
+- **react-zoom-pan-pinch** - Interactive bracket zooming
+- **QRCode.react** - QR code generation
+- Custom CSS with dark mode support
+
+### Internationalization
+- **i18next** - Supports 5 languages (Polish, English, German, Dutch, Czech)
+- Auto-detection of browser language
+
 ## Architecture
 
 ### Dual-Mode Storage Pattern
@@ -111,6 +134,82 @@ See [TournamentContext.jsx](../src/contexts/TournamentContext.jsx) for complete 
 - `hooks/` - Custom React hooks for data operations
 - `utils/` - Pure business logic functions
 - `i18n/` - Translation files (5 languages)
+
+### Project Structure
+
+```
+src/
+├── pages/              # Main application screens
+│   ├── Live.jsx        # Real-time tournament display (public)
+│   ├── Matches.jsx     # Match list & scoring interface
+│   ├── Brackets.jsx    # Visual bracket diagram
+│   ├── Standings.jsx   # Rankings & statistics
+│   ├── Players.jsx     # Player roster with profiles
+│   ├── Organizer.jsx   # Tournament management (admin only)
+│   ├── Login.jsx       # Simple authentication
+│   ├── TournamentSelect.jsx  # Choose active tournament
+│   └── AllPages.jsx    # Settings page
+│
+├── contexts/           # Global state management
+│   ├── TournamentContext.jsx   # Tournament CRUD operations
+│   └── MatchesContext.jsx      # Match data & persistence
+│
+├── components/         # Reusable UI components
+│   ├── Layout.jsx      # Navigation bar & theme toggle
+│   ├── BracketCanvas.jsx       # Bracket rendering engine
+│   ├── PlayerProfileModal.jsx  # Player details popup
+│   └── [other components]
+│
+├── hooks/              # Custom React hooks
+│   ├── useAuth.tsx     # Authentication logic
+│   ├── useTournament.js # Tournament operations
+│   ├── useMatches.js   # Match operations
+│   └── usePlayers.js   # Player data access
+│
+├── utils/              # Business logic
+│   ├── bracketLogic.js # Tournament bracket calculations
+│   ├── matchUtils.js   # Score validation & updates
+│   └── [other utilities]
+│
+├── i18n/               # Translation files (5 languages)
+│   ├── en.json
+│   ├── pl.json
+│   ├── de.json
+│   ├── nl.json
+│   └── cs.json
+│
+└── lib/
+    └── supabase.js     # Database connection config
+```
+
+### Key Files to Understand
+
+1. **`src/App.jsx`** - Main app component with routing
+2. **`src/contexts/TournamentContext.jsx`** - Tournament management logic
+3. **`src/contexts/MatchesContext.jsx`** - Match state handling
+4. **`src/utils/bracketLogic.js`** - Bracket calculation algorithms
+5. **`src/pages/Live.jsx`** - Main public-facing interface
+6. **`src/pages/Organizer.jsx`** - Admin tournament setup
+
+### Data Flow
+
+```
+1. User opens app
+   ↓
+2. TournamentContext loads available tournaments
+   ↓
+3. User selects active tournament
+   ↓
+4. MatchesContext fetches matches for that tournament
+   ↓
+5. User navigates to different pages (Live, Brackets, Standings)
+   ↓
+6. Admin enters scores → optimistic UI update
+   ↓
+7. Changes saved to Supabase/localStorage
+   ↓
+8. Real-time subscriptions notify other users (if using Supabase)
+```
 
 ## Build and Test
 
@@ -339,6 +438,16 @@ Follow the `ricochet_*` naming convention:
 - `ricochet_theme` - Dark/light mode preference
 - `ricochet_matches_{tournamentId}` - Match data per tournament
 
+### Match Data Structure
+
+Each match has:
+- **ID**: e.g., "wb-r1-m1" (Winners Bracket, Round 1, Match 1)
+- **Players**: Two player IDs
+- **Scores**: Points for each player
+- **Micro-points**: Array of point-by-point results `[1, 2, 1, 1, 2]`
+- **Status**: pending/in_progress/completed
+- **Court**: Physical court assignment
+
 ### Error Handling
 
 - Wrap top-level app in ErrorBoundary (already configured in [main.jsx](../src/main.jsx))
@@ -354,6 +463,38 @@ Follow the `ricochet_*` naming convention:
 - Check `isSupabaseConfigured` boolean before all DB operations
 - Real-time subscriptions only when Supabase is configured
 - Schema defined in [supabase_schema.sql](../supabase_schema.sql)
+
+#### Database Schema
+
+**tournaments**
+- `id` (UUID) - Primary key
+- `name` (text) - Tournament name
+- `date` (text) - Tournament date
+- `status` (text) - Current status
+- `created_at` (timestamp)
+
+**players**
+- `id` (UUID) - Primary key
+- `tournament_id` (UUID) - Foreign key to tournaments
+- `full_name` (text) - Player's full name
+- `country` (text) - Country code
+- `elo` (integer) - ELO rating
+- `created_at` (timestamp)
+
+**matches**
+- `tournament_id` (UUID) - Foreign key to tournaments
+- `id` (text) - Match identifier (e.g., "wb-r1-m1")
+- `bracket_type` (text) - "wb" or "lb"
+- `round_id` (text) - Round identifier
+- `player1_id` (UUID) - Foreign key to players
+- `player2_id` (UUID) - Foreign key to players
+- `score1` (integer) - Player 1 score
+- `score2` (integer) - Player 2 score
+- `micro_points` (jsonb) - Array of point-by-point results
+- `winner_id` (UUID) - Foreign key to players
+- `status` (text) - Match status
+- `court` (text) - Court assignment
+- `created_at` (timestamp)
 
 ### Environment Variables
 
