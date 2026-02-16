@@ -3,7 +3,9 @@ import i18n from './config';
 
 describe('i18n configuration', () => {
     it('should have English as fallback language', () => {
-        expect(i18n.options.fallbackLng).toEqual(['en']);
+        const fallback = i18n.options.fallbackLng;
+        const fallbackArray = Array.isArray(fallback) ? fallback : [fallback];
+        expect(fallbackArray).toEqual(['en']);
     });
 
     it('should support required languages', () => {
