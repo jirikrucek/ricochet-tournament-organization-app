@@ -8,6 +8,74 @@
 - Import statements: Group by type (external libs → internal modules → styles)
 - See [Layout.jsx](../src/components/Layout.jsx) for component structure patterns
 
+## Design Principles
+
+This project follows three core software engineering principles: **Domain-Driven Design (DDD)**, **Test-Driven Development (TDD)**, and **SOLID** principles.
+
+### Domain-Driven Design (DDD)
+
+The codebase is organized around tournament domain concepts:
+
+- **Domain Logic**: Pure business logic in `utils/` (bracket progression, match state transitions)
+- **Domain Models**: Tournament, Player, Match entities with clear boundaries
+- **Ubiquitous Language**: Code uses tournament terminology (brackets, rounds, seeding, progression)
+- **Bounded Contexts**: Tournament management, match tracking, and player profiles are separate concerns
+- **Repository Pattern**: Data access abstracted through custom hooks (`usePlayers`, `useMatches`, `useTournamentMatches`)
+
+Example: [bracketLogic.js](../src/utils/bracketLogic.js) encapsulates all bracket progression rules as pure domain logic, independent of UI or storage concerns.
+
+### Test-Driven Development (TDD)
+
+Write tests before or alongside implementation:
+
+1. **Test Coverage Requirements**:
+   - All `utils/` functions must have unit tests
+   - Custom hooks should have integration tests
+   - Complex components require component tests
+   - Aim for >80% coverage on critical paths
+
+2. **Test-First Workflow**:
+   - Write failing test that describes desired behavior
+   - Implement minimal code to pass the test
+   - Refactor while keeping tests green
+
+3. **Test Organization**:
+   - Place `.test.js` or `.test.jsx` files adjacent to implementation
+   - Use descriptive test names: `should [expected behavior] when [condition]`
+   - Group related tests with `describe` blocks
+
+Example: [bracketLogic.test.js](../src/utils/bracketLogic.test.js) validates all bracket progression scenarios before they're used in the UI.
+
+### SOLID Principles
+
+#### Single Responsibility Principle (SRP)
+- Each component/hook/utility has one reason to change
+- `usePlayers` only handles player data operations
+- `BracketCanvas` only renders bracket visualization
+- `matchUtils.js` only contains match state logic
+
+#### Open/Closed Principle (OCP)
+- Dual-mode storage pattern allows extension (Supabase or localStorage) without modifying core logic
+- Custom hooks abstract data access, allowing storage implementation changes
+- Translation system supports adding languages without changing components
+
+#### Liskov Substitution Principle (LSP)
+- Storage implementations (Supabase/localStorage) are interchangeable
+- All hooks follow consistent interface patterns (loading, error, data)
+- Components receive props that can be fulfilled by different data sources
+
+#### Interface Segregation Principle (ISP)
+- Contexts expose only necessary methods (`TournamentContext` vs `MatchesContext`)
+- Custom hooks return focused interfaces (players hook doesn't expose match operations)
+- Components receive specific props, not entire context objects
+
+#### Dependency Inversion Principle (DIP)
+- Components depend on hooks (abstractions), not direct database access
+- Business logic in `utils/` has no dependencies on React or storage
+- UI components depend on contexts, not concrete data sources
+
+**Key Pattern**: The dual-mode storage demonstrates DIP - high-level tournament logic doesn't depend on whether data comes from Supabase or localStorage.
+
 ## Architecture
 
 ### Dual-Mode Storage Pattern
