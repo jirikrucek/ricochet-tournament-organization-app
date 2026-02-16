@@ -8,7 +8,7 @@ i18n:
   key-structure:
     description: Nested JSON structure and dot-notation access pattern
   language-support:
-    description: 5-language support with Polish fallback
+    description: 5-language support with English fallback
   usage-pattern:
     description: useTranslation hook and t() function usage in components
 

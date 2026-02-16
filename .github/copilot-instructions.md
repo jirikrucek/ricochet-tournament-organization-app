@@ -261,7 +261,7 @@ When adding or modifying UI text:
 1. Add translation keys to **ALL 5 language files**: [en.json](../src/i18n/en.json), [pl.json](../src/i18n/pl.json), [de.json](../src/i18n/de.json), [nl.json](../src/i18n/nl.json), [cs.json](../src/i18n/cs.json)
 2. Use nested structure matching existing patterns
 3. Access with `t('section.key')` via `useTranslation()` hook
-4. Fallback language is Polish (`pl`)
+4. Fallback language is English (`en`)
 
 ### LocalStorage Keys
 
