@@ -30,7 +30,6 @@
         "searchPlaceholder": "Szukaj...",
         "headers": {
             "fullName": "Imię i nazwisko",
-            "photo": "FOTO",
             "country": "Kraj",
             "elo": "POINTS"
         },
@@ -43,7 +42,6 @@
             "editTitle": "Edytuj zawodnika",
             "labels": {
                 "fullName": "Imię i nazwisko *",
-                "photo": "Link do zdjęcia",
                 "country": "Kraj",
                 "elo": "POINTS"
             },

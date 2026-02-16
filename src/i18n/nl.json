@@ -30,7 +30,6 @@
         "searchPlaceholder": "Zoeken...",
         "headers": {
             "fullName": "Volledige Naam",
-            "photo": "FOTO",
             "country": "Land",
             "elo": "PUNTEN"
         },
@@ -43,7 +42,6 @@
             "editTitle": "Speler Bewerken",
             "labels": {
                 "fullName": "Volledige Naam *",
-                "photo": "Link naar foto",
                 "country": "Land",
                 "elo": "PUNTEN"
             },
