@@ -11,6 +11,8 @@ describe('i18n configuration', () => {
         expect(supportedLanguages).toContain('en');
         expect(supportedLanguages).toContain('pl');
         expect(supportedLanguages).toContain('nl');
+        expect(supportedLanguages).toContain('de');
+        expect(supportedLanguages).toContain('cs');
     });
 
     it('should have language detector configured', () => {
