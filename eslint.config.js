@@ -24,6 +24,7 @@ export default [
       }
     },
     plugins: {
+      "react": pluginReact,
       "react-hooks": pluginReactHooks
     },
     rules: {
