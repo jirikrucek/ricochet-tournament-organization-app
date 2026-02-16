@@ -1,2 +1,61 @@
 # Agent OS Standards Index
 
+i18n:
+  adding-translations:
+    description: Step-by-step process for adding new translation keys
+  file-sync:
+    description: All 5 language files must have identical key structures
+  key-structure:
+    description: Nested JSON structure and dot-notation access pattern
+  language-support:
+    description: 5-language support with Polish fallback
+  usage-pattern:
+    description: useTranslation hook and t() function usage in components
+
+react:
+  component-structure:
+    description: Consistent internal organization: hooks, effects, helpers, guards, JSX
+  component-type:
+    description: Functional components only (except ErrorBoundary)
+  file-extensions:
+    description: Use .jsx for components, .js for utils, .tsx/.ts for TypeScript
+  file-organization:
+    description: pages/ for routes, components/ for reusable UI, naming conventions
+  import-ordering:
+    description: Group imports by type: external, hooks, components, icons, utils, styles
+
+state-management:
+  context-access:
+    description: Export contexts with useContext wrapper hooks for type safety
+  context-usage:
+    description: Use Context API for global state, not Redux or other libraries
+  custom-hooks:
+    description: Encapsulate data operations in custom hooks, not direct context access
+  hook-conventions:
+    description: Hook naming (use*), return structure, and operation naming patterns
+  provider-hierarchy:
+    description: Provider nesting order in main.jsx based on dependencies
+
+storage:
+  config-check:
+    description: Always check isSupabaseConfigured before data operations
+  data-mapping:
+    description: Convert between camelCase (app) and snake_case (Supabase)
+  localstorage-keys:
+    description: Consistent ricochet_* prefix naming convention
+  mode-selection:
+    description: App operates in ONE mode: Supabase OR localStorage, never both
+  realtime-subscriptions:
+    description: Supabase channels for live updates, storage events for localStorage
+
+tournament:
+  best-of-rules:
+    description: BO5 for WB/GF, BO3 for LB and placement matches
+  bracket-structure:
+    description: 32-player bracket structure with WB, LB, and placement brackets
+  drop-patterns:
+    description: Brazilian loser drop logic with diagonal and cross patterns
+  match-id-format:
+    description: Strict match ID pattern and special final identifiers
+  seeding-pattern:
+    description: Standard 32-player snake seeding pairs
