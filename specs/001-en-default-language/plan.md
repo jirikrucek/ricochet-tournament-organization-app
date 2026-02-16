@@ -115,10 +115,10 @@ tests/
 
 ---
 
-## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase nges only (fallbackLng, language impor## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phaslogic## Phase 1: Des## Phasle## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des##os## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Des#itut## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: D**## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phas ma## Phase 1: Des## Phase 1: Des## Phase 1: Des## Phase 1: Deogic## Phase 1: Des## Phase 1: Des## Phase 1: Des## Pded contexts
-- Pure UI configuration changes only
+## Phase 1: Design
 
-**Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Driven Development (TDD)**:**�� **Test-Dr GATE STATUS**: ✅✅ PASS - All principles revalidated post-design
+- Pure UI configuration changes only (i18n configuration: `fallbackLng`, supported languages, language detector order)
+- **Test-Driven Development (TDD)**: Define the unit and integration tests that will drive changes to the i18n initialization (fallback behavior, language persistence, and initial load), to be implemented in later phases.
 
 ---
 

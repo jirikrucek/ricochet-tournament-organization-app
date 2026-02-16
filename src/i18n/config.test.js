@@ -10,8 +10,10 @@ describe('i18n Configuration', () => {
     describe('Language Loading and Configuration', () => {
         it('should have English as fallback language', () => {
             const fallback = i18n.options.fallbackLng;
-            // i18next normalizes fallbackLng to an array
-            expect(Array.isArray(fallback) ? fallback[0] : fallback).toBe('en');
+            // i18next normalizes fallbackLng to an array; ensure English is primary and Polish is not a fallback
+            const fallbacks = Array.isArray(fallback) ? fallback : [fallback];
+            expect(fallbacks[0]).toBe('en');
+            expect(fallbacks).not.toContain('pl');
         });
 
         it('should load all 5 supported languages', () => {
@@ -37,7 +39,7 @@ describe('i18n Configuration', () => {
 
     describe('Translation Fallback Behavior (FR-011, FR-012)', () => {
         it('should fall back to English for missing translation keys', () => {
-            // Switch to German (which may have partial translations)
+            // Switch to German (translations are complete; use a nonexistent key to test fallback)
             i18n.changeLanguage('de');
 
             // Try to get a translation - should fall back to English if missing in German
