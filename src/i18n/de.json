@@ -17,7 +17,10 @@
         "actions": "Aktionen",
         "edit": "Bearbeiten",
         "delete": "Löschen",
-        "saved": "Gespeichert!"
+        "saved": "Gespeichert!",
+        "back": "Zurück",
+        "vs": "VS",
+        "reset": "Zurücksetzen"
     },
     "players": {
         "title": "Spielerdatenbank",
@@ -52,7 +55,166 @@
             }
         }
     },
+    "profile": {
+        "matchesPlayed": "Spiele",
+        "wins": "Siege",
+        "losses": "Niederlagen",
+        "matchHistory": "Spielverlauf",
+        "noMatches": "Noch keine Spiele gespielt."
+    },
     "pages": {
         "content_placeholder": "Inhalt für {{title}} wird hier erscheinen."
+    },
+    "live": {
+        "title": "LIVE",
+        "waitingMessage": "Turnier beginnt — warten auf Spiele",
+        "lastUpdate": "Letzte Aktualisierung:",
+        "justNow": "gerade eben",
+        "secondsAgo": "s ago",
+        "refresh": "Aktualisieren",
+        "courtPink": "LINKER PLATZ",
+        "courtCyan": "RECHTER PLATZ",
+        "noMatch": "Kein Spiel auf dem Platz",
+        "autoMatchInfo": "Spiel erscheint automatisch, wenn es in der Spiele-Tab gestartet wird",
+        "upcomingMatches": "Kommende Spiele",
+        "noUpcoming": "Keine Spiele geplant",
+        "recentResults": "Letzte Ergebnisse",
+        "noResults": "Noch keine Spiele gespielt.",
+        "wb": "Gewinnerbranche",
+        "lb": "Verliererbranche",
+        "gf": "Finale",
+        "round": "Runde",
+        "liveBadge": "LIVE",
+        "readinessAlert": "Nächstes Spiel: Bitte in der Nähe des Platzes bereit sein ⏳",
+        "scanForResults": "MOBILE ERGEBNISSE",
+        "tickerLabel": "NEUESTE ERGEBNISSE",
+        "tickerEmpty": "Noch keine Spiele beendet. Warten auf Ergebnisse...",
+        "upcomingHeader": "KOMMEND",
+        "pinkQueue": "LINKER PLATZ WARTESCHLANGE",
+        "cyanQueue": "RECHTER PLATZ WARTESCHLANGE",
+        "queueLeft": "WARTESCHLANGE - LINKS",
+        "queueRight": "WARTESCHLANGE - RECHTS",
+        "bo": "BO{{n}}",
+        "recentHeader": "LETZTE ERGEBNISSE",
+        "recentEmpty": "Noch keine Ergebnisse.",
+        "courtPinkLabel": "LINKER PLATZ",
+        "courtCyanLabel": "RECHTER PLATZ",
+        "waitingForMatch": "Warten auf Spiel...",
+        "sets": "SÄTZE",
+        "clickHint": "L-Klick / R-Klick (Punkte)"
+    },
+    "organizer": {
+        "title": "Turnierverwaltung",
+        "description": "Hier können Sie neue Turniere erstellen und das aktive verwalten.",
+        "createTitle": "Neues Turnier erstellen",
+        "yourTournaments": "Ihre Turniere",
+        "noTournaments": "Keine Turniere. Erstellen Sie Ihr erstes!",
+        "active": "AKTIV",
+        "select": "Auswählen",
+        "selected": "Ausgewählt",
+        "deleteTooltip": "Turnier löschen",
+        "editTooltip": "Bearbeiten",
+        "switchTooltip": "Zu diesem Turnier wechseln",
+        "editModalTitle": "Turnier bearbeiten",
+        "deleteModalTitle": "Turnier löschen?",
+        "deleteModalContent": "Möchten Sie dieses Turnier wirklich löschen?",
+        "deleteModalWarning": "Diese Aktion kann nicht rückgängig gemacht werden.",
+        "form": {
+            "namePlaceholder": "Turniername (z.B. RPO 2027)",
+            "addressPlaceholder": "Adresse (optional)",
+            "createBtn": "Erstellen",
+            "cancelBtn": "Abbrechen",
+            "saveBtn": "Änderungen speichern",
+            "deleteBtn": "Löschen",
+            "nameLabel": "Turniername",
+            "dateLabel": "Datum & Uhrzeit",
+            "addressLabel": "Adresse / Ort"
+        }
+    },
+    "matches": {
+        "title": "Turnierspiele",
+        "filters": {
+            "all": "Alle",
+            "pending": "Kommend",
+            "finished": "Beendet"
+        },
+        "currentMatch": "Aktuelles Spiel",
+        "nextMatches": "Nächste Spiele",
+        "played": "Gespielt",
+        "allFinished": "Alle Spiele beendet oder keine aktiven Spiele.",
+        "noActiveMatches": "Keine aktiven Spiele",
+        "generatePrompt": "Um das Turnier zu starten, generieren Sie eine Turnierstruktur aus der Spielerliste.",
+        "needPlayers": "Sie benötigen mindestens 2 Spieler!",
+        "generateConfirm": "Möchten Sie wirklich eine neue Turnierstruktur für {{count}} Spieler generieren? Alle aktuellen Ergebnisse werden gelöscht.",
+        "generateBtn": "Turnierstruktur generieren (ELO)",
+        "loginPrompt": "Melden Sie sich als Administrator an, um das Turnier zu verwalten.",
+        "match": "Spiel {{id}}",
+        "liveArena": "Live-Arena",
+        "controlMatch": "Spiel kontrollieren",
+        "editResultTitle": "Spielergebnis bearbeiten",
+        "formatInfo": "Format: Erster bis {{n}} (Best of {{bo}})",
+        "statusLabel": "Spielstatus",
+        "courtLabel": "Platzzuweisung",
+        "courtLeft": "Linker Platz",
+        "courtRight": "Rechter Platz",
+        "noCourt": "-- Kein Platz --",
+        "statusLive": "Live (Spielend)",
+        "statusFinished": "Beendet (Endergebnis)",
+        "microPoints": "Mikropunkte pro Satz",
+        "set": "Satz",
+        "queueEmpty": "Warteschlange ist leer",
+        "bracketWinners": "GEWINNER",
+        "bracketLosers": "VERLIERER",
+        "bracketFinal": "FINALE",
+        "registeredPlayers": "Registrierte Spieler"
+    },
+    "brackets": {
+        "wb": "Gewinnerbranche",
+        "lb": "Verliererbranche",
+        "finals": "Großes Finale",
+        "round": "Runde",
+        "clickToEdit": "(Zum Bearbeiten klicken)",
+        "finalBadge": "Finale",
+        "generateNew": "Neu generieren",
+        "resetConfirm": "Dies wird die aktuelle Turnierstruktur zurücksetzen. Fortfahren?",
+        "editScoreTitle": "Punktzahl bearbeiten",
+        "sourceWinner": "S von {{n}}",
+        "sourceLoser": "V von {{n}}",
+        "headerWB": "GEWINNERBRANCHE",
+        "headerLB": "VERLIERERBRANCHE",
+        "headerPlacement": "PLATZIERUNGSPHASE",
+        "placeRange": "Plätze {{range}}",
+        "placeSingle": "{{place}} Platz",
+        "scoreP1": "Punktzahl S1",
+        "scoreP2": "Punktzahl S2"
+    },
+    "standings": {
+        "description": "Die Rangliste wird nach Ende der Turnierteilnahme aktualisiert."
+    },
+    "select": {
+        "title": "Turnier auswählen",
+        "subtitle": "Wählen Sie ein Event aus, das Sie verfolgen möchten.",
+        "noActive": "Keine aktiven Turniere."
+    },
+    "welcome": {
+        "chooseMode": "Zugriffsmodus wählen",
+        "admin": "Administrator",
+        "adminDesc": "Voller Zugriff. Turnier verwalten, Ergebnisse bearbeiten, Turnierstruktur generieren.",
+        "participant": "Turnierteilnehmer",
+        "participantDesc": "Live-Ansicht. Ergebnisse, Turnierstruktur und kommende Spiele ansehen."
+    },
+    "login": {
+        "title": "Administrator-Login",
+        "subtitle": "Anmelden, um das Turnier zu verwalten",
+        "error": "Ungültiger Benutzername oder Passwort",
+        "username": "Benutzername",
+        "usernamePlaceholder": "Benutzername eingeben...",
+        "password": "Passwort",
+        "passwordPlaceholder": "Passwort eingeben...",
+        "signIn": "Anmelden"
+    },
+    "settings": {
+        "localModeTitle": "Lokaler Modus aktiv",
+        "localModeDesc": "Die Anwendung läuft im Offline-Modus mit Browser-Speicher."
     }
 }

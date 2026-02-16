@@ -17,7 +17,10 @@
         "actions": "Akce",
         "edit": "Upravit",
         "delete": "Smazat",
-        "saved": "Uloženo!"
+        "saved": "Uloženo!",
+        "back": "Zpět",
+        "vs": "VS",
+        "reset": "Resetovat"
     },
     "players": {
         "title": "Databáze hráčů",
@@ -52,7 +55,166 @@
             }
         }
     },
+    "profile": {
+        "matchesPlayed": "Zápasy",
+        "wins": "Výhry",
+        "losses": "Prohry",
+        "matchHistory": "Historie zápasů",
+        "noMatches": "Zatím nebyl odehrán žádný zápas."
+    },
     "pages": {
         "content_placeholder": "Obsah pro {{title}} bude zde."
+    },
+    "live": {
+        "title": "ŽIVĚ",
+        "waitingMessage": "Začátek turnaje — čekání na zápasy",
+        "lastUpdate": "Poslední aktualizace:",
+        "justNow": "právě teď",
+        "secondsAgo": "s ago",
+        "refresh": "Obnovit",
+        "courtPink": "LEVÝ KURT",
+        "courtCyan": "PRAVÝ KURT",
+        "noMatch": "Žádný zápas na kurtu",
+        "autoMatchInfo": "Zápas se zobrazí automaticky po zahájení v záložce Zápasy",
+        "upcomingMatches": "Nadcházející zápasy",
+        "noUpcoming": "Nejsou naplánovány žádné zápasy",
+        "recentResults": "Nedávné výsledky",
+        "noResults": "Zatím nebyl odehrán žádný zápas.",
+        "wb": "Pavouk vítězů",
+        "lb": "Pavouk poražených",
+        "gf": "Finále",
+        "round": "Kolo",
+        "liveBadge": "ŽIVĚ",
+        "readinessAlert": "Další zápas: Buďte prosím připraveni u kurtu ⏳",
+        "scanForResults": "MOBILNÍ VÝSLEDKY",
+        "tickerLabel": "NEJNOVĚJŠÍ VÝSLEDKY",
+        "tickerEmpty": "Zatím nebyly dokončeny žádné zápasy. Čekání na výsledky...",
+        "upcomingHeader": "NADCHÁZEJÍCÍ",
+        "pinkQueue": "FRONTA LEVÉHO KURTU",
+        "cyanQueue": "FRONTA PRAVÉHO KURTU",
+        "queueLeft": "FRONTA - VLEVO",
+        "queueRight": "FRONTA - VPRAVO",
+        "bo": "BO{{n}}",
+        "recentHeader": "NEDÁVNÉ VÝSLEDKY",
+        "recentEmpty": "Zatím žádné výsledky.",
+        "courtPinkLabel": "LEVÝ KURT",
+        "courtCyanLabel": "PRAVÝ KURT",
+        "waitingForMatch": "Čekání na zápas...",
+        "sets": "SETY",
+        "clickHint": "L-klik / P-klik (Body)"
+    },
+    "organizer": {
+        "title": "Správa turnaje",
+        "description": "Zde můžete vytvářet nové turnaje a spravovat aktivní.",
+        "createTitle": "Vytvořit nový turnaj",
+        "yourTournaments": "Vaše turnaje",
+        "noTournaments": "Žádné turnaje. Vytvořte svůj první!",
+        "active": "AKTIVNÍ",
+        "select": "Vybrat",
+        "selected": "Vybráno",
+        "deleteTooltip": "Smazat turnaj",
+        "editTooltip": "Upravit",
+        "switchTooltip": "Přepnout na tento turnaj",
+        "editModalTitle": "Upravit turnaj",
+        "deleteModalTitle": "Smazat turnaj?",
+        "deleteModalContent": "Opravdu chcete smazat tento turnaj?",
+        "deleteModalWarning": "Tuto akci nelze vrátit zpět.",
+        "form": {
+            "namePlaceholder": "Název turnaje (např. RPO 2027)",
+            "addressPlaceholder": "Adresa (volitelné)",
+            "createBtn": "Vytvořit",
+            "cancelBtn": "Zrušit",
+            "saveBtn": "Uložit změny",
+            "deleteBtn": "Smazat",
+            "nameLabel": "Název turnaje",
+            "dateLabel": "Datum a čas",
+            "addressLabel": "Adresa / Místo"
+        }
+    },
+    "matches": {
+        "title": "Zápasy turnaje",
+        "filters": {
+            "all": "Všechny",
+            "pending": "Nadcházející",
+            "finished": "Dokončené"
+        },
+        "currentMatch": "Aktuální zápas",
+        "nextMatches": "Další zápasy",
+        "played": "Odehráno",
+        "allFinished": "Všechny zápasy dokončeny nebo žádné aktivní zápasy.",
+        "noActiveMatches": "Žádné aktivní zápasy",
+        "generatePrompt": "Pro zahájení turnaje vygenerujte pavouk ze seznamu hráčů.",
+        "needPlayers": "Potřebujete alespoň 2 hráče!",
+        "generateConfirm": "Opravdu chcete vygenerovat nový pavouk pro {{count}} hráčů? Všechny aktuální výsledky budou smazány.",
+        "generateBtn": "Vygenerovat pavouk (ELO)",
+        "loginPrompt": "Přihlaste se jako administrátor pro správu turnaje.",
+        "match": "Zápas {{id}}",
+        "liveArena": "Živá aréna",
+        "controlMatch": "Ovládat zápas",
+        "editResultTitle": "Upravit výsledek zápasu",
+        "formatInfo": "Formát: První na {{n}} (Best of {{bo}})",
+        "statusLabel": "Stav zápasu",
+        "courtLabel": "Přiřazení kurtu",
+        "courtLeft": "Levý kurt",
+        "courtRight": "Pravý kurt",
+        "noCourt": "-- Žádný kurt --",
+        "statusLive": "Živě (Hraje se)",
+        "statusFinished": "Dokončeno (Konečný výsledek)",
+        "microPoints": "Mikrobody za set",
+        "set": "Set",
+        "queueEmpty": "Fronta je prázdná",
+        "bracketWinners": "VÍTĚZOVÉ",
+        "bracketLosers": "PORAŽENÍ",
+        "bracketFinal": "FINÁLE",
+        "registeredPlayers": "Registrovaní hráči"
+    },
+    "brackets": {
+        "wb": "Pavouk vítězů",
+        "lb": "Pavouk poražených",
+        "finals": "Velké finále",
+        "round": "Kolo",
+        "clickToEdit": "(Klikněte pro úpravu)",
+        "finalBadge": "Finále",
+        "generateNew": "Vygenerovat nový",
+        "resetConfirm": "Tím se resetuje aktuální pavouk. Pokračovat?",
+        "editScoreTitle": "Upravit skóre",
+        "sourceWinner": "V z {{n}}",
+        "sourceLoser": "P z {{n}}",
+        "headerWB": "PAVOUK VÍTĚZŮ",
+        "headerLB": "PAVOUK PORAŽENÝCH",
+        "headerPlacement": "FÁZE UMÍSTĚNÍ",
+        "placeRange": "Místa {{range}}",
+        "placeSingle": "{{place}} místo",
+        "scoreP1": "Skóre H1",
+        "scoreP2": "Skóre H2"
+    },
+    "standings": {
+        "description": "Žebříček je aktualizován po skončení účasti v turnaji."
+    },
+    "select": {
+        "title": "Vybrat turnaj",
+        "subtitle": "Vyberte událost, kterou chcete sledovat.",
+        "noActive": "Žádné aktivní turnaje."
+    },
+    "welcome": {
+        "chooseMode": "Vyberte režim přístupu",
+        "admin": "Administrátor",
+        "adminDesc": "Plný přístup. Spravovat turnaj, upravovat výsledky, generovat pavouk.",
+        "participant": "Účastník turnaje",
+        "participantDesc": "Živé zobrazení. Kontrolovat výsledky, pavouk a nadcházející zápasy."
+    },
+    "login": {
+        "title": "Přihlášení administrátora",
+        "subtitle": "Přihlaste se pro správu turnaje",
+        "error": "Neplatné uživatelské jméno nebo heslo",
+        "username": "Uživatelské jméno",
+        "usernamePlaceholder": "Zadejte uživatelské jméno...",
+        "password": "Heslo",
+        "passwordPlaceholder": "Zadejte heslo...",
+        "signIn": "Přihlásit se"
+    },
+    "settings": {
+        "localModeTitle": "Místní režim aktivní",
+        "localModeDesc": "Aplikace běží v offline režimu pomocí prohlížečového úložiště."
     }
 }

@@ -16,9 +16,9 @@
 
 **Purpose**: Project initialization and verification
 
-- [ ] T001 Verify current i18n configuration state in src/i18n/config.js (current fallbackLng, imported languages)
-- [ ] T002 Create backup branch checkpoint before changes (git commit current state)
-- [ ] T003 [P] Count existing translation keys in each language file (en.json=~220, pl.json=~220, nl.json=~220, de.json=~58, cs.json=~58)
+- [X] T001 Verify current i18n configuration state in src/i18n/config.js (current fallbackLng, imported languages)
+- [X] T002 Create backup branch checkpoint before changes (git commit current state)
+- [X] T003 [P] Count existing translation keys in each language file (en.json=~220, pl.json=~220, nl.json=~220, de.json=~58, cs.json=~58)
 
 **Checkpoint**: Current state documented, baseline established
 
@@ -30,13 +30,13 @@
 
 **⚠️ CRITICAL**: These tasks MUST complete before user story implementation begins
 
-- [ ] T004 Update fallbackLng from 'pl' to 'en' in src/i18n/config.js
-- [ ] T005 [P] Import German translations: Add `import de from './de.json';` to src/i18n/config.js
-- [ ] T006 [P] Import Czech translations: Add `import cs from './cs.json';` to src/i18n/config.js
-- [ ] T007 Register German in resources object: `de: { translation: de }` in src/i18n/config.js
-- [ ] T008 Register Czech in resources object: `cs: { translation: cs }` in src/i18n/config.js
-- [ ] T009 Verify all 5 languages load correctly (run dev server, check browser console for errors)
-- [ ] T009a [US1] Verify language detection order: test localStorage preference → browser navigator → English fallback (FR-009)
+- [X] T004 Update fallbackLng from 'pl' to 'en' in src/i18n/config.js
+- [X] T005 [P] Import German translations: Add `import de from './de.json';` to src/i18n/config.js
+- [X] T006 [P] Import Czech translations: Add `import cs from './cs.json';` to src/i18n/config.js
+- [X] T007 Register German in resources object: `de: { translation: de }` in src/i18n/config.js
+- [X] T008 Register Czech in resources object: `cs: { translation: cs }` in src/i18n/config.js
+- [X] T009 Verify all 5 languages load correctly (run dev server, check browser console for errors)
+- [X] T009a [US1] Verify language detection order: test localStorage preference → browser navigator → English fallback (FR-009)
 
 **Checkpoint**: i18n configuration complete - all 5 languages loaded with English as fallback
 
@@ -50,14 +50,14 @@
 
 ### Implementation for User Story 1
 
-- [ ] T010 [US1] Verify i18n initialization uses English fallback by testing in incognito mode
-- [ ] T010a [P] [US1] Implement error handling for language file loading failures with user-dismissible 5-second toast notification (FR-011)
-- [ ] T010b [P] [US1] Create tests for language file loading failure scenarios (graceful degradation, console logging, toast notification)
-- [ ] T011 [US1] Update test configuration in src/setupTests.js to use English fallback (if file exists, change fallbackLng: 'en')
-- [ ] T012 [US1] Update test configuration in src/test-utils.jsx to use English fallback (if file exists, change lng: 'en' and fallbackLng: 'en')
-- [ ] T013 [US1] Run existing test suite and identify failing tests that expect Polish defaults (npm run test, create list in tasks.md comments or separate file)
-- [ ] T014 [US1] Update test assertions expecting Polish text to expect English text (modify test files identified in T013)
-- [ ] T015 [US1] Verify all tests pass with English defaults (npm run test should show 0 failures)
+- [X] T010 [US1] Verify i18n initialization uses English fallback by testing in incognito mode
+- [X] T010a [P] [US1] Implement error handling for language file loading failures with user-dismissible 5-second toast notification (FR-011)
+- [X] T010b [P] [US1] Create tests for language file loading failure scenarios (graceful degradation, console logging, toast notification)
+- [X] T011 [US1] Update test configuration in src/setupTests.js to use English fallback (if file exists, change fallbackLng: 'en')
+- [X] T012 [US1] Update test configuration in src/test-utils.jsx to use English fallback (if file exists, change lng: 'en' and fallbackLng: 'en')
+- [X] T013 [US1] Run existing test suite and identify failing tests that expect Polish defaults (npm run test, create list in tasks.md comments or separate file)
+- [X] T014 [US1] Update test assertions expecting Polish text to expect English text (modify test files identified in T013)
+- [X] T015 [US1] Verify all tests pass with English defaults (npm run test should show 0 failures)
 
 **Checkpoint**: ✅ User Story 1 Complete - New users see English interface, all tests pass
 
@@ -71,24 +71,24 @@
 
 ### Translation File Completion
 
-- [ ] T016 [P] [US2] Extract complete key list from src/i18n/en.json as reference using `jq 'keys' en.json` or create extraction script (~220 keys)
-- [ ] T017 [P] [US2] Identify missing keys in src/i18n/de.json by comparing with reference (~162 missing keys)
-- [ ] T018 [P] [US2] Identify missing keys in src/i18n/cs.json by comparing with reference (~162 missing keys)
-- [ ] T019 [P] [US2] Translate missing German keys using machine translation (DeepL or Google Translate) and add to src/i18n/de.json
-- [ ] T020 [P] [US2] Translate missing Czech keys using machine translation (DeepL or Google Translate) and add to src/i18n/cs.json
-- [ ] T020a [P] [US2] Create automated tests to verify German translation completeness (all ~220 keys present, no missing translations)
-- [ ] T020b [P] [US2] Create automated tests to verify Czech translation completeness (all ~220 keys present, no missing translations)
-- [ ] T021 [US2] Verify German translation file completeness: all 5 files have identical key structure (run comparison script or manual verification)
-- [ ] T022 [US2] Verify Czech translation file completeness: all 5 files have identical key structure (run comparison script or manual verification)
+- [X] T016 [P] [US2] Extract complete key list from src/i18n/en.json as reference using `jq 'keys' en.json` or create extraction script (~220 keys)
+- [X] T017 [P] [US2] Identify missing keys in src/i18n/de.json by comparing with reference (~162 missing keys)
+- [X] T018 [P] [US2] Identify missing keys in src/i18n/cs.json by comparing with reference (~162 missing keys)
+- [X] T019 [P] [US2] Translate missing German keys using machine translation (DeepL or Google Translate) and add to src/i18n/de.json
+- [X] T020 [P] [US2] Translate missing Czech keys using machine translation (DeepL or Google Translate) and add to src/i18n/cs.json
+- [X] T020a [P] [US2] Create automated tests to verify German translation completeness (all ~220 keys present, no missing translations)
+- [X] T020b [P] [US2] Create automated tests to verify Czech translation completeness (all ~220 keys present, no missing translations)
+- [X] T021 [US2] Verify German translation file completeness: all 5 files have identical key structure (run comparison script or manual verification)
+- [X] T022 [US2] Verify Czech translation file completeness: all 5 files have identical key structure (run comparison script or manual verification)
 
 ### Language Selector Update
 
-- [ ] T023 [US2] Update LANGUAGES array order in src/components/LanguageSelector.jsx to [en, cs, de, nl, pl]
-- [ ] T024 [US2] Verify language selector displays all 5 languages in correct order (English, Čeština, Deutsch, Nederlands, Polski)
-- [ ] T025 [US2] Test language switching for all 5 languages (select each, verify UI updates immediately)
-- [ ] T025a [US2] Test silent fallback for unsupported browser languages (set browser to unsupported language, verify falls back to English without notification) (FR-012)
-- [ ] T026 [US2] Verify no missing translation fallback occurs in German (navigate all pages in German language)
-- [ ] T027 [US2] Verify no missing translation fallback occurs in Czech (navigate all pages in Czech language)
+- [X] T023 [US2] Update LANGUAGES array order in src/components/LanguageSelector.jsx to [en, cs, de, nl, pl]
+- [X] T024 [US2] Verify language selector displays all 5 languages in correct order (English, Čeština, Deutsch, Nederlands, Polski)
+- [X] T025 [US2] Test language switching for all 5 languages (select each, verify UI updates immediately)
+- [X] T025a [US2] Test silent fallback for unsupported browser languages (set browser to unsupported language, verify falls back to English without notification) (FR-012)
+- [X] T026 [US2] Verify no missing translation fallback occurs in German (navigate all pages in German language)
+- [X] T027 [US2] Verify no missing translation fallback occurs in Czech (navigate all pages in Czech language)
 
 **Checkpoint**: ✅ User Story 2 Complete - All 5 languages functional with complete translations, English appears first
 
@@ -102,12 +102,12 @@
 
 ### Documentation Updates
 
-- [ ] T028 [P] [US3] Search for fallback language references: `grep -r "fallback.*polish\|fallback.*pl\|default.*polish" .github/ agent-os/ README.md` (case-insensitive)
-- [ ] T029 [P] [US3] Update .github/copilot-instructions.md to state English as fallback language (find and replace Polish → English in fallback references)
-- [ ] T030 [P] [US3] Update agent-os/standards/i18n/language-support.md to list English first as default language
-- [ ] T031 [P] [US3] Verify consistency across all i18n documentation files in agent-os/standards/i18n/ directory
-- [ ] T032 [US3] Update README.md if it references supported languages or default language
-- [ ] T033 [US3] Verify no outdated Polish fallback references remain: run grep search again, should return no matches
+- [X] T028 [P] [US3] Search for fallback language references: `grep -r "fallback.*polish\|fallback.*pl\|default.*polish" .github/ agent-os/ README.md` (case-insensitive)
+- [X] T029 [P] [US3] Update .github/copilot-instructions.md to state English as fallback language (find and replace Polish → English in fallback references)
+- [X] T030 [P] [US3] Update agent-os/standards/i18n/language-support.md to list English first as default language
+- [X] T031 [P] [US3] Verify consistency across all i18n documentation files in agent-os/standards/i18n/ directory
+- [X] T032 [US3] Update README.md if it references supported languages or default language
+- [X] T033 [US3] Verify no outdated Polish fallback references remain: run grep search again, should return no matches
 
 **Checkpoint**: ✅ User Story 3 Complete - Documentation accurate and consistent
 

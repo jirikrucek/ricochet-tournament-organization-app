@@ -4,9 +4,11 @@ import { Globe, Check } from 'lucide-react';
 import './LanguageSelector.css';
 
 const LANGUAGES = [
-    { code: 'pl', label: 'Polski' },
     { code: 'en', label: 'English' },
-    { code: 'nl', label: 'Nederlands' }
+    { code: 'cs', label: 'Čeština' },
+    { code: 'de', label: 'Deutsch' },
+    { code: 'nl', label: 'Nederlands' },
+    { code: 'pl', label: 'Polski' }
 ];
 
 const LanguageSelector = () => {
@@ -48,7 +50,7 @@ const LanguageSelector = () => {
             {isOpen && (
                 <div className="lang-dropdown">
                     {LANGUAGES.map((lang) => {
-                        const currentLang = i18n.language || 'pl';
+                        const currentLang = i18n.language || 'en';
                         const isActive = currentLang.startsWith(lang.code);
                         return (
                             <button
