@@ -32,7 +32,7 @@
             "fullName": "Jméno a příjmení",
             "photo": "FOTO",
             "country": "Země",
-            "elo": "POINTS"
+            "elo": "ELO"
         },
         "empty": {
             "notFound": "Nebyli nalezeni žádní hráči.",
@@ -45,7 +45,7 @@
                 "fullName": "Jméno a příjmení *",
                 "photo": "Odkaz na fotografii",
                 "country": "Země",
-                "elo": "POINTS"
+                "elo": "ELO"
             },
             "placeholders": {
                 "fullName": "např. Jan Novák",

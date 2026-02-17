@@ -32,7 +32,7 @@
             "fullName": "Vollständiger Name",
             "photo": "FOTO",
             "country": "Land",
-            "elo": "POINTS"
+            "elo": "ELO"
         },
         "empty": {
             "notFound": "Keine Spieler gefunden.",
@@ -45,7 +45,7 @@
                 "fullName": "Vollständiger Name *",
                 "photo": "Foto-Link",
                 "country": "Land",
-                "elo": "POINTS"
+                "elo": "ELO"
             },
             "placeholders": {
                 "fullName": "z.B. Max Mustermann",

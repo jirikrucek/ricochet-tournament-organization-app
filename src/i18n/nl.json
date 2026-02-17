@@ -32,7 +32,7 @@
             "fullName": "Volledige Naam",
             "photo": "FOTO",
             "country": "Land",
-            "elo": "PUNTEN"
+            "elo": "ELO"
         },
         "empty": {
             "notFound": "Geen spelers gevonden.",
@@ -45,7 +45,7 @@
                 "fullName": "Volledige Naam *",
                 "photo": "Link naar foto",
                 "country": "Land",
-                "elo": "PUNTEN"
+                "elo": "ELO"
             },
             "placeholders": {
                 "fullName": "bijv. Jan de Vries",
