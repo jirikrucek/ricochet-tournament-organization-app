@@ -4,9 +4,11 @@ import { Globe, Check } from 'lucide-react';
 import './LanguageSelector.css';
 
 const LANGUAGES = [
-    { code: 'pl', label: 'Polski' },
     { code: 'en', label: 'English' },
-    { code: 'nl', label: 'Nederlands' }
+    { code: 'cs', label: 'Čeština' },
+    { code: 'de', label: 'Deutsch' },
+    { code: 'nl', label: 'Nederlands' },
+    { code: 'pl', label: 'Polski' }
 ];
 
 const LanguageSelector = () => {

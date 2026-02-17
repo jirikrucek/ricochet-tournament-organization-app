@@ -27,8 +27,8 @@
 
 **Purpose**: Backup existing files before modifications
 
-- [ ] T001 Backup existing German translation file from src/i18n/de.json to src/i18n/de.json.backup
-- [ ] T002 Backup existing Czech translation file from src/i18n/cs.json to src/i18n/cs.json.backup
+- [X] T001 Backup existing German translation file from src/i18n/de.json to src/i18n/de.json.backup
+- [X] T002 Backup existing Czech translation file from src/i18n/cs.json to src/i18n/cs.json.backup
 
 ---
 
@@ -50,8 +50,8 @@
 
 ### Implementation for User Story 1
 
-- [ ] T003 [P] [US1] Change fallbackLng from 'pl' to 'en' in src/i18n/config.js (line ~18)
-- [ ] T004 [P] [US1] Reorder import statements to place English first (convention) in src/i18n/config.js (lines 5-7)
+- [X] T003 [P] [US1] Change fallbackLng from 'pl' to 'en' in src/i18n/config.js (line ~18)
+- [X] T004 [P] [US1] Reorder import statements to place English first (convention) in src/i18n/config.js (lines 5-7)
 
 **Test Criteria for US1**:
 - Browser with unsupported language (e.g., Spanish) shows English interface
@@ -70,26 +70,26 @@
 
 ### Translation Completion for User Story 3
 
-- [ ] T005 [US3] Generate complete German translations using AI (add ~163 missing keys to src/i18n/de.json)
-- [ ] T006 [US3] Generate complete Czech translations using AI (add ~163 missing keys to src/i18n/cs.json)
-- [ ] T007 [P] [US3] Validate German JSON structure and syntax in src/i18n/de.json
-- [ ] T008 [P] [US3] Validate Czech JSON structure and syntax in src/i18n/cs.json
-- [ ] T009 [P] [US3] Verify German file has exactly 220 lines matching en.json structure
-- [ ] T010 [P] [US3] Verify Czech file has exactly 220 lines matching en.json structure
+- [X] T005 [US3] Generate complete German translations using AI (add ~163 missing keys to src/i18n/de.json)
+- [X] T006 [US3] Generate complete Czech translations using AI (add ~163 missing keys to src/i18n/cs.json)
+- [X] T007 [P] [US3] Validate German JSON structure and syntax in src/i18n/de.json
+- [X] T008 [P] [US3] Validate Czech JSON structure and syntax in src/i18n/cs.json
+- [X] T009 [P] [US3] Verify German file has exactly 220 lines matching en.json structure
+- [X] T010 [P] [US3] Verify Czech file has exactly 220 lines matching en.json structure
 
 ### Configuration Updates for User Story 3
 
-- [ ] T011 [P] [US3] Add import statement for German (de.json) in src/i18n/config.js
-- [ ] T012 [P] [US3] Add import statement for Czech (cs.json) in src/i18n/config.js  
-- [ ] T013 [P] [US3] Add German to resources object in src/i18n/config.js
-- [ ] T014 [P] [US3] Add Czech to resources object in src/i18n/config.js
-- [ ] T015 [P] [US3] Reorder resources object (en, cs, de, nl, pl) in src/i18n/config.js
+- [X] T011 [P] [US3] Add import statement for German (de.json) in src/i18n/config.js
+- [X] T012 [P] [US3] Add import statement for Czech (cs.json) in src/i18n/config.js  
+- [X] T013 [P] [US3] Add German to resources object in src/i18n/config.js
+- [X] T014 [P] [US3] Add Czech to resources object in src/i18n/config.js
+- [X] T015 [P] [US3] Reorder resources object (en, cs, de, nl, pl) in src/i18n/config.js
 
 ### UI Updates for User Story 3
 
-- [ ] T016 [P] [US3] Add German language option to LANGUAGES array in src/components/LanguageSelector.jsx
-- [ ] T017 [P] [US3] Add Czech language option to LANGUAGES array in src/components/LanguageSelector.jsx
-- [ ] T018 [P] [US3] Reorder LANGUAGES array (EN first, then alphabetical) in src/components/LanguageSelector.jsx
+- [X] T016 [P] [US3] Add German language option to LANGUAGES array in src/components/LanguageSelector.jsx
+- [X] T017 [P] [US3] Add Czech language option to LANGUAGES array in src/components/LanguageSelector.jsx
+- [X] T018 [P] [US3] Reorder LANGUAGES array (EN first, then alphabetical) in src/components/LanguageSelector.jsx
 
 **Test Criteria for US3**:
 - Language selector dropdown shows all 5 languages (EN, CS, DE, NL, PL)
@@ -110,9 +110,9 @@
 
 ### Verification for User Story 2
 
-- [ ] T019 [US2] Test fallback behavior by temporarily removing a key from German file and verifying English appears
-- [ ] T020 [US2] Test fallback behavior by temporarily removing a key from Czech file and verifying English appears
-- [ ] T021 [US2] Verify no Polish text appears anywhere when fallback is triggered in any language
+- [X] T019 [US2] Test fallback behavior by temporarily removing a key from German file and verifying English appears
+- [X] T020 [US2] Test fallback behavior by temporarily removing a key from Czech file and verifying English appears
+- [X] T021 [US2] Verify no Polish text appears anywhere when fallback is triggered in any language
 
 **Test Criteria for US2**:
 - Missing key in German → English text shown (not Polish)
@@ -133,8 +133,8 @@
 
 ### Documentation for User Story 4
 
-- [ ] T022 [US4] Document fallback behavior in quickstart.md for future developers adding new features
-- [ ] T023 [US4] Add inline code comment in src/i18n/config.js explaining fallbackLng behavior
+- [X] T022 [US4] Document fallback behavior in quickstart.md for future developers adding new features
+- [X] T023 [US4] Add inline code comment in src/i18n/config.js explaining fallbackLng behavior
 
 **Test Criteria for US4**:
 - Documentation explains that new features with partial translations fall back to English
@@ -151,8 +151,8 @@
 
 ### Code Quality
 
-- [ ] T024 Run ESLint to verify no syntax or style errors in modified files
-- [ ] T025 Run build command (npm run build) and verify successful compilation
+- [X] T024 Run ESLint to verify no syntax or style errors in modified files
+- [X] T025 Run build command (npm run build) and verify successful compilation
 
 ### Comprehensive Testing
 

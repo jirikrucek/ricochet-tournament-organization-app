@@ -428,6 +428,58 @@ After merging this feature:
 3. **Analytics**: Track language switching patterns
 4. **Future i18n**: Add more languages if needed (same process)
 
+## For Future Development: Adding New Features
+
+**⚠️ Important for Developers**: This application uses English as the fallback language for all missing translations.
+
+### What This Means for New Features
+
+When you add a new feature that introduces new UI text:
+
+1. **English is Required**: Always add English translations first to `src/i18n/en.json`
+2. **Other Languages are Optional**: You can add translations to other languages (de, cs, nl, pl) later
+3. **Automatic Fallback**: Any missing translation keys will automatically show English text
+4. **No Polish Fallback**: The app will NEVER fall back to Polish—only English
+
+### Best Practice Workflow
+
+```bash
+# 1. Add new feature with English translations only
+# src/i18n/en.json
+{
+  "newFeature": {
+    "title": "My New Feature",
+    "description": "This is a description"
+  }
+}
+
+# 2. Test the feature in all languages
+# Users in non-English languages will see English text for new keys (acceptable)
+
+# 3. Later, add translations for other languages
+# Get native speakers to review translations for accuracy
+# Update de.json, cs.json, nl.json, pl.json with translations
+
+# 4. Verify complete translations
+npm run build  # Should succeed with or without complete translations
+```
+
+### Translation Priority
+
+- **High Priority**: English (en) - ALWAYS required
+- **Medium Priority**: German (de), Czech (cs) - Complete translations preferred
+- **Low Priority**: Dutch (nl), Polish (pl) - English fallback acceptable
+
+### Fallback Configuration
+
+The fallback is configured in [src/i18n/config.js](../../../src/i18n/config.js):
+
+```javascript
+fallbackLng: 'en',  // All missing keys fall back to English
+```
+
+**DO NOT** change this to another language unless explicitly discussed with the team.
+
 ## References
 
 - Feature specification: [spec.md](spec.md)
