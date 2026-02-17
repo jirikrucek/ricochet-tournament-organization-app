@@ -30,7 +30,7 @@
         "searchPlaceholder": "Search...",
         "headers": {
             "fullName": "Full Name",
-            "photo": "PHOTO",
+            "photo": "Photo",
             "country": "Country",
             "elo": "POINTS"
         },
