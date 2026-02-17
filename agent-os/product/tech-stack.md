@@ -28,13 +28,16 @@ N/A - This is a frontend-only application with direct database integration
 
 - **i18next**: Multi-language support
 - **react-i18next**: React integration for translations
-- Supports 5 languages: Polish (default), English, German, Dutch, Czech
-- Automatic browser language detection
+- Supports 5 languages: **English (default/fallback)**, Polish, German, Dutch, Czech
+- Automatic browser language detection with localStorage caching
 
 ## Development Tools
 
-- **ESLint**: Code quality and style checking
+- **ESLint**: Code quality and style checking (configured for React 19)
 - **Vite**: Build optimization and hot module replacement
+- **Vitest**: Fast unit testing framework with jsdom environment
+- **Testing Library**: React component testing (@testing-library/react, user-event, jest-dom)
+- **TypeScript**: Type definitions for enhanced IDE support
 - **CSS**: Custom styling with dark mode support
 
 ## Hosting
