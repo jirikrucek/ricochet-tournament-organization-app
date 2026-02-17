@@ -172,15 +172,14 @@ re and language preference schema
 **Design Decisions**:
 1. **Translation Strategy**: Use AI-assisted translation with English as source, manual review for tournament-specific terms
 2. **File Changes**: Exac2. **File Changes**: Exac2. **Fi de2. **File Changes**: Exac2. **File Changes**: Eing Approach**: Manua2. **File Changes**: Exac2. **File Changes**: Exac2. **Fi de2. **File Changes**:on2. **File Changes**: Exac2. **File Changes**: Exac2. **Fi de2.t 2. **File Changes**: Exac2. **File Changes**: Exac2. **Fi de2. inci2. **File Changes**: Exac2. **File Changes**: Exac2. **Fi de2. ** ST2. **File Changes**: Exac2. **File Changes**: Exac2. **Fi de2. ** [x] **2. **File Changes**: Exac2. **Fiuirements remain Priority 3 (manual testing sufficient)
------------------------TILL PASS:-----------------------TILL PA
-------------------------------------------------------lStorage interaction
-- [x] **i18n** -- [x] **i18n** -- [x] **i18n** -- [x] **i18n** -- [x] **i18n** -- [x] **i18n** -- [��- [x] **i18n** -- [x] **i18n** -- [x] **i18n** -- [x] **i18n** --� *- [x] **i18n** -y for - [x] **i18n** -- [x] **i18n** -- [x] **i18n** -- [x] **i18n** -- [x] **i18n** -- [x] **i18n** -- [��- [x] **i18n** -- [x] omplexity |
-|------|-------------|---------------|------------|
-|  | Config update | ~10 | Low |
-|  | Content add | +163 | Low |
-|  | Content add | +163 | Low |
-|  | Array update | ~5 | Low |
+### Estimated Impact
 
+| Area                    | Change type  | LoC (approx) | Complexity |
+|-------------------------|--------------|--------------|------------|
+| i18n config             | Config update| ~10          | Low        |
+| Translation files       | Content add  | ~320         | Low        |
+| Language selector (UI)  | Array update | ~5           | Low        |
+| LocalStorage interaction| Config check | ~6           | Low        |
 **Total Impact**: 4 files, ~341 lines added/changed, all low complexity
 
 ### Dependencies
