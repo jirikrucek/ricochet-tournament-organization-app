@@ -50,7 +50,7 @@ const LanguageSelector = () => {
             {isOpen && (
                 <div className="lang-dropdown">
                     {LANGUAGES.map((lang) => {
-                        const currentLang = i18n.language || 'pl';
+                        const currentLang = i18n.language || 'en';
                         const isActive = currentLang.startsWith(lang.code);
                         return (
                             <button
