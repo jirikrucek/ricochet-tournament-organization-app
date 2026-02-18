@@ -5,4 +5,4 @@ context: |
 
 rules:
   design: |
-    Follow instructions in `.github/prompts/agent-os/agentos.inject-standards.prompt.md`.
+    Follow instructions in `.github/prompts/agent-os/agent-os.inject-standards.prompt.md`.
