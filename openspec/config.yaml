@@ -1,20 +1,8 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Read files `agent-os/product/mission.md`, `agent-os/product/roadmap.md`, `agent-os/product/tech-stack.md` to identify key information about this project and codebase.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  design: |
+    Follow instructions in `.github/prompts/agent-os/agentos.inject-standards.prompt.md`.
