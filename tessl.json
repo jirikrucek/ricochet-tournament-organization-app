@@ -1,0 +1,71 @@
+{
+  "name": "project",
+  "dependencies": {
+    "tessl/npm-dnd-kit--utilities": {
+      "version": "3.2.0"
+    },
+    "tessl/npm-supabase--supabase-js": {
+      "version": "2.57.0"
+    },
+    "tessl/npm-testing-library--react": {
+      "version": "16.3.2"
+    },
+    "tessl/npm-types--react": {
+      "version": "19.1.0"
+    },
+    "tessl/npm-vitejs--plugin-react": {
+      "version": "5.1.0"
+    },
+    "tessl/npm-vitest--ui": {
+      "version": "3.2.0"
+    },
+    "tessl/npm-eslint-plugin-react-hooks": {
+      "version": "5.2.0"
+    },
+    "tessl/npm-eslint-plugin-react": {
+      "version": "7.37.0"
+    },
+    "tessl/npm-eslint": {
+      "version": "9.34.0"
+    },
+    "tessl/npm-globals": {
+      "version": "16.3.0"
+    },
+    "tessl/npm-i18next-browser-languagedetector": {
+      "version": "7.2.0"
+    },
+    "tessl/npm-i18next": {
+      "version": "25.5.0"
+    },
+    "tessl/npm-jsdom": {
+      "version": "27.4.0"
+    },
+    "tessl/npm-lucide-react": {
+      "version": "0.542.0"
+    },
+    "tessl/npm-puppeteer": {
+      "version": "24.19.0"
+    },
+    "tessl/npm-qrcode-react": {
+      "version": "4.2.0"
+    },
+    "tessl/npm-react-dom": {
+      "version": "19.2.0"
+    },
+    "tessl/npm-react-i18next": {
+      "version": "15.7.0"
+    },
+    "tessl/npm-react-router-dom": {
+      "version": "7.8.0"
+    },
+    "tessl/npm-react": {
+      "version": "19.2.0"
+    },
+    "tessl/npm-vite": {
+      "version": "7.3.0"
+    },
+    "tessl/npm-vitest": {
+      "version": "4.0.0"
+    }
+  }
+}
