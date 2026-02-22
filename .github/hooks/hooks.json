@@ -1,0 +1,11 @@
+{
+	"hooks": {
+		"PreToolUse": [
+			{
+				"type": "command",
+				"command": "./scripts/block-dangerous-commands.sh",				
+				"timeoutSec": 5
+			}
+		]
+	}
+}
