@@ -1,7 +1,7 @@
 # TODO
 
 ## Chore
-- [x] fix block-dangerous-commands Hook
+- [ ] fix block-dangerous-commands Hook
 - [x] remove remote upstream
 - [ ] create daily-activity-report Agentic Workflow
 
