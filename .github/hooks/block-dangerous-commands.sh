@@ -1,6 +1,6 @@
 #!/bin/bash
 INPUT=$(cat)
-echo "DEBUG (block-dangerous-commands): Received input $INPUT"
+#echo "DEBUG (block-dangerous-commands): Received input $INPUT"
 
 TOOL_NAME=$(echo "$INPUT" | jq -r '.tool_name')
 TOOL_INPUT=$(echo "$INPUT" | jq -r '.tool_input')
