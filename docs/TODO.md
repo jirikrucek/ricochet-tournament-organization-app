@@ -1,9 +1,9 @@
 # TODO
 
 ## Chore
-- fix block-dangerous-commands Hook
-- change default branch from upstream to origin
-- create daily-activity-report Agentic Workflow + setup necessary secrets
+- [x] fix block-dangerous-commands Hook
+- [x] remove remote upstream
+- [ ] create daily-activity-report Agentic Workflow
 
 ## Features
-- rewrite all Polish text in codebase (comments, log messages) to English language
+- [ ] rewrite all Polish text in codebase (comments, log messages) to English language
