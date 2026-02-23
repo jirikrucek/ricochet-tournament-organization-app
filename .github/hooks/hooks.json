@@ -3,7 +3,8 @@
 		"PreToolUse": [
 			{
 				"type": "command",
-				"command": "./block-dangerous-commands.sh",				
+				"command": ".github/hooks/block-dangerous-commands.sh",
+				"cwd": ".",				
 				"timeoutSec": 5
 			}
 		]
