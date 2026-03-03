@@ -20,7 +20,10 @@
         "saved": "Opgeslagen!",
         "back": "Terug",
         "vs": "TEGEN",
-        "reset": "Resetten"
+        "reset": "Resetten",
+        "tbd": "TBD",
+        "unknownPlayer": "Onbekende speler",
+        "loading": "Laden..."
     },
     "players": {
         "title": "Spelerslijst",
@@ -34,6 +37,21 @@
             "country": "Land",
             "elo": "ELO"
         },
+        "import": {
+            "buttonTitle": "Importeren uit CSV-bestand",
+            "emptyFile": "Bestand is leeg of mist een koptekst.",
+            "missingColumns": "Vereiste kolommen niet gevonden (Surname, Name). Gevonden headers: {{headers}}",
+            "noPlayersFound": "Geen spelers gevonden in bestand (controleer of gegevens niet leeg zijn).",
+            "confirmImport": "{{count}} spelers gevonden. Import starten?",
+            "importSuccess": "{{count}} spelers succesvol geïmporteerd.",
+            "importError": "Importfout: {{error}}",
+            "unexpectedError": "Er is een onverwachte fout opgetreden bij het opslaan."
+        },
+        "generate32Title": "Genereer 32 willekeurig",
+        "generate32Label": "Genereer 32 (Test)",
+        "generate32Toast": "32 willekeurige spelers toegevoegd!",
+        "noCountryMatches": "Geen resultaten",
+        "pointsLabel": "PUNTEN",
         "empty": {
             "notFound": "Geen spelers gevonden.",
             "start": "De database is leeg."
@@ -43,17 +61,23 @@
             "editTitle": "Speler Bewerken",
             "labels": {
                 "fullName": "Volledige Naam *",
+                "firstName": "Voornaam",
+                "lastName": "Achternaam",
                 "photo": "Link naar foto",
                 "country": "Land",
                 "elo": "ELO"
             },
             "placeholders": {
                 "fullName": "bijv. Jan de Vries",
+                "firstName": "bijv. Jan",
+                "lastName": "bijv. de Vries",
                 "country": "Kies of typ...",
                 "elo": "bijv. 1200"
             },
             "errors": {
-                "fullNameRequired": "Volledige naam is verplicht"
+                "fullNameRequired": "Volledige naam is verplicht",
+                "firstNameRequired": "Voornaam is verplicht",
+                "lastNameRequired": "Achternaam is verplicht"
             }
         }
     },
@@ -62,7 +86,11 @@
         "wins": "Gewonnen",
         "losses": "Verloren",
         "matchHistory": "Wedstrijdgeschiedenis",
-        "noMatches": "Geen wedstrijden gespeeld."
+        "noMatches": "Geen wedstrijden gespeeld.",
+        "pointsBadge": "PUNTEN",
+        "resultWin": "W",
+        "resultLoss": "V",
+        "resultPending": "-"
     },
     "pages": {
         "content_placeholder": "Inhoud voor {{title}} verschijnt hier."
@@ -168,7 +196,9 @@
         "bracketWinners": "WINNAARS",
         "bracketLosers": "VERLIEZERS",
         "bracketFinal": "FINALE",
-        "registeredPlayers": "Geregistreerde spelers"
+        "registeredPlayers": "Geregistreerde spelers",
+        "clearConfirm": "Weet je het zeker? Dit verwijdert het resultaat.",
+        "editTitle": "Bewerken"
     },
     "brackets": {
         "wb": "Winnaars Schema",
@@ -188,7 +218,8 @@
         "placeRange": "Plaats {{range}}",
         "placeSingle": "Plaats {{place}}",
         "scoreP1": "Score S1",
-        "scoreP2": "Score S2"
+        "scoreP2": "Score S2",
+        "generationError": "Fout: {{error}}"
     },
     "standings": {
         "description": "Klassement wordt bijgewerkt na deelname aan het toernooi."
@@ -218,5 +249,12 @@
     "settings": {
         "localModeTitle": "Lokale Modus Actief",
         "localModeDesc": "De applicatie werkt offline via browseropslag."
+    },
+    "layout": {
+        "switchToLight": "Lichte modus",
+        "switchToDark": "Donkere modus",
+        "tvMode": "TV-modus",
+        "logout": "Uitloggen",
+        "adminLogin": "Beheerder aanmelden"
     }
 }

@@ -94,7 +94,7 @@ const Layout = () => {
                     <button
                         className="theme-toggle"
                         onClick={toggleTheme}
-                        title={darkMode ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                        title={darkMode ? t('layout.switchToLight') : t('layout.switchToDark')}
                         style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.2)' }}
                     >
                         {darkMode ? <Sun size={18} /> : <Moon size={18} />}
@@ -110,19 +110,19 @@ const Layout = () => {
                                 navigate('/live?mode=tv');
                             }
                         }}
-                        title="TV Mode"
+                        title={t('layout.tvMode')}
                         style={{ display: 'flex', alignItems: 'center', gap: '6px', padding: '0.4rem 0.8rem', height: '36px', borderRadius: '8px', background: 'rgba(255, 255, 255, 0.1)', color: 'white', border: 'none', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600 }}
                     >
                         <Maximize size={16} />
-                        <span>TV Mode</span>
+                        <span>{t('layout.tvMode')}</span>
                     </button>
 
                     {isAuthenticated ? (
-                        <button className="theme-toggle" onClick={handleLogout} title="Logout">
+                        <button className="theme-toggle" onClick={handleLogout} title={t('layout.logout')}>
                             <LogOut size={20} />
                         </button>
                     ) : (
-                        <NavLink to="/login" className="theme-toggle" title="Admin Login" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
+                        <NavLink to="/login" className="theme-toggle" title={t('layout.adminLogin')} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-secondary)' }}>
                             <UserCog size={20} />
                         </NavLink>
                     )}

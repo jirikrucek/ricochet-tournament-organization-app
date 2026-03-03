@@ -20,7 +20,10 @@
         "saved": "Zapisano!",
         "back": "Powrót",
         "vs": "VS",
-        "reset": "Resetuj"
+        "reset": "Resetuj",
+        "tbd": "TBD",
+        "unknownPlayer": "Nieznany zawodnik",
+        "loading": "Ładowanie..."
     },
     "players": {
         "title": "Baza zawodników",
@@ -34,6 +37,21 @@
             "country": "Kraj",
             "elo": "ELO"
         },
+        "import": {
+            "buttonTitle": "Importuj z pliku CSV",
+            "emptyFile": "Plik jest pusty lub brakuje nagłówka.",
+            "missingColumns": "Nie znaleziono wymaganych kolumn (Surname, Name). Wykryte nagłówki: {{headers}}",
+            "noPlayersFound": "Nie znaleziono zawodników w pliku (sprawdź czy dane nie są puste).",
+            "confirmImport": "Znaleziono {{count}} zawodników. Rozpocząć import?",
+            "importSuccess": "Pomyślnie zaimportowano {{count}} zawodników.",
+            "importError": "Błąd importu: {{error}}",
+            "unexpectedError": "Wystąpił nieoczekiwany błąd podczas zapisywania."
+        },
+        "generate32Title": "Generuj 32 losowych",
+        "generate32Label": "Generuj 32 (Test)",
+        "generate32Toast": "Dodano 32 losowych graczy!",
+        "noCountryMatches": "Brak dopasowań",
+        "pointsLabel": "PUNKTY",
         "empty": {
             "notFound": "Nie znaleziono zawodników.",
             "start": "Baza jest pusta."
@@ -49,11 +67,15 @@
             },
             "placeholders": {
                 "fullName": "np. Jan Kowalski",
+                "firstName": "np. Jan",
+                "lastName": "np. Kowalski",
                 "country": "Wybierz lub wpisz...",
                 "elo": "np. 1200"
             },
             "errors": {
-                "fullNameRequired": "Imię i nazwisko jest wymagane"
+                "fullNameRequired": "Imię i nazwisko jest wymagane",
+                "firstNameRequired": "Imię jest wymagane",
+                "lastNameRequired": "Nazwisko jest wymagane"
             }
         }
     },
@@ -62,7 +84,11 @@
         "wins": "Wygrane",
         "losses": "Przegrane",
         "matchHistory": "Historia Meczów",
-        "noMatches": "Brak rozegranych meczów."
+        "noMatches": "Brak rozegranych meczów.",
+        "pointsBadge": "PUNKTY",
+        "resultWin": "W",
+        "resultLoss": "P",
+        "resultPending": "-"
     },
     "pages": {
         "content_placeholder": "Treść dla {{title}} pojawi się tutaj."
@@ -168,7 +194,9 @@
         "bracketWinners": "WYGRANI",
         "bracketLosers": "PRZEGRANI",
         "bracketFinal": "FINAŁ",
-        "registeredPlayers": "Zarejestrowanych graczy"
+        "registeredPlayers": "Zarejestrowanych graczy",
+        "clearConfirm": "Czy na pewno? Spowoduje to usunięcie wyniku.",
+        "editTitle": "Edytuj"
     },
     "brackets": {
         "wb": "Drabinka Wygranych",
@@ -188,7 +216,8 @@
         "placeRange": "Miejsca {{range}}",
         "placeSingle": "Miejsce {{place}}",
         "scoreP1": "Wynik G1",
-        "scoreP2": "Wynik G2"
+        "scoreP2": "Wynik G2",
+        "generationError": "Błąd: {{error}}"
     },
     "standings": {
         "description": "Klasyfikacja aktualizowana po zakończeniu udziału w turnieju."
@@ -218,5 +247,12 @@
     "settings": {
         "localModeTitle": "Tryb Lokalny Aktywny",
         "localModeDesc": "Aplikacja działa w trybie offline używając pamięci przeglądarki."
+    },
+    "layout": {
+        "switchToLight": "Tryb jasny",
+        "switchToDark": "Tryb ciemny",
+        "tvMode": "Tryb TV",
+        "logout": "Wyloguj",
+        "adminLogin": "Logowanie Admina"
     }
 }

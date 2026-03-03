@@ -77,7 +77,7 @@ const Brackets = () => {
             }
         } catch (err) {
             console.error("Error during generation:", err);
-            alert("Error: " + err.message);
+            alert(t('brackets.generationError', { error: err.message }));
         }
     };
 
@@ -151,7 +151,7 @@ const Brackets = () => {
                             <button onClick={() => setSelectedMatch(null)} className="close-button"><X size={20} /></button>
                         </div>
                         <div style={{ textAlign: 'center', marginBottom: '1rem', fontWeight: 600 }}>
-                            {selectedMatch.player1?.full_name || 'TBD'} vs {selectedMatch.player2?.full_name || 'TBD'}
+                            {selectedMatch.player1?.full_name || t('common.tbd')} vs {selectedMatch.player2?.full_name || t('common.tbd')}
                         </div>
                         <form onSubmit={submitScore}>
                             <div style={{ display: 'flex', gap: '1rem', marginBottom: '1.5rem' }}>

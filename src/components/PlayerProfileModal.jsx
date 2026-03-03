@@ -87,7 +87,7 @@ const PlayerProfileModal = ({ player, matches, allPlayers, onClose }) => {
                                 {player.elo && (
                                     <div className="meta-item badge-elo">
                                         <Trophy size={14} />
-                                        <span>POINTS {player.elo}</span>
+                                        <span>{t('profile.pointsBadge')} {player.elo}</span>
                                     </div>
                                 )}
                             </div>
@@ -149,9 +149,9 @@ const PlayerProfileModal = ({ player, matches, allPlayers, onClose }) => {
                                     </div>
 
                                     <div className="result-badge">
-                                        {match.result === 'win' && 'W'}
-                                        {match.result === 'loss' && 'L'}
-                                        {match.result === 'pending' && '-'}
+                                        {match.result === 'win' && t('profile.resultWin')}
+                                        {match.result === 'loss' && t('profile.resultLoss')}
+                                        {match.result === 'pending' && t('profile.resultPending')}
                                     </div>
                                 </div>
                             ))

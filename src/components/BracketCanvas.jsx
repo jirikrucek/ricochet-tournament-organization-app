@@ -203,7 +203,7 @@ const BracketCanvas = ({ matches, players, onMatchClick, readonly = false, visib
                         { p: p1, s: match.score1, w: isWinner1, srcId: match.sourceMatchId1, srcType: match.sourceType1 },
                         { p: p2, s: match.score2, w: isWinner2, srcId: match.sourceMatchId2, srcType: match.sourceType2 }
                     ].map((row, idx) => {
-                        let displayText = 'TBD';
+                        let displayText = t('common.tbd');
                         let isPlaceholder = false;
 
                         if (row.p) {

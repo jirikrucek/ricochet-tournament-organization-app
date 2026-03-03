@@ -112,8 +112,8 @@ const Live = () => {
 
         const enriched = matches.map(m => ({
             ...m,
-            player1: players.find(p => p.id === m.player1Id) || { full_name: 'TBD', id: null },
-            player2: players.find(p => p.id === m.player2Id) || { full_name: 'TBD', id: null }
+            player1: players.find(p => p.id === m.player1Id) || { full_name: t('common.tbd'), id: null },
+            player2: players.find(p => p.id === m.player2Id) || { full_name: t('common.tbd'), id: null }
         }));
 
         const active = enriched.filter(m => {

@@ -20,7 +20,10 @@
         "saved": "Uloženo!",
         "back": "Zpět",
         "vs": "VS",
-        "reset": "Resetovat"
+        "reset": "Resetovat",
+        "tbd": "TBD",
+        "unknownPlayer": "Neznámý hráč",
+        "loading": "Načítání..."
     },
     "players": {
         "title": "Databáze hráčů",
@@ -34,6 +37,21 @@
             "country": "Země",
             "elo": "ELO"
         },
+        "import": {
+            "buttonTitle": "Importovat ze souboru CSV",
+            "emptyFile": "Soubor je prázdný nebo postrádá záhlaví.",
+            "missingColumns": "Požadované sloupce nebyly nalezeny (Surname, Name). Zjištěné záhlaví: {{headers}}",
+            "noPlayersFound": "Ve souboru nebyli nalezeni žádní hráči (zkontrolujte zda data nejsou prázdná).",
+            "confirmImport": "Nalezeno {{count}} hráčů. Spustit import?",
+            "importSuccess": "Úspěšně importováno {{count}} hráčů.",
+            "importError": "Chyba importu: {{error}}",
+            "unexpectedError": "Při ukládání došlo k neočekávané chybě."
+        },
+        "generate32Title": "Generovat 32 náhodných",
+        "generate32Label": "Generovat 32 (Test)",
+        "generate32Toast": "Přidáno 32 náhodných hráčů!",
+        "noCountryMatches": "Žádné shody",
+        "pointsLabel": "BODY",
         "empty": {
             "notFound": "Nebyli nalezeni žádní hráči.",
             "start": "Databáze je prázdná."
@@ -43,17 +61,23 @@
             "editTitle": "Upravit hráče",
             "labels": {
                 "fullName": "Jméno a příjmení *",
+                "firstName": "Jméno",
+                "lastName": "Příjmení",
                 "photo": "Odkaz na fotografii",
                 "country": "Země",
                 "elo": "ELO"
             },
             "placeholders": {
                 "fullName": "např. Jan Novák",
+                "firstName": "např. Jan",
+                "lastName": "např. Novák",
                 "country": "Vyberte nebo napište...",
                 "elo": "např. 1200"
             },
             "errors": {
-                "fullNameRequired": "Jméno a příjmení je povinné"
+                "fullNameRequired": "Jméno a příjmení je povinné",
+                "firstNameRequired": "Jméno je povinné",
+                "lastNameRequired": "Příjmení je povinné"
             }
         }
     },
@@ -62,7 +86,11 @@
         "wins": "Výhry",
         "losses": "Prohry",
         "matchHistory": "Historie zápasů",
-        "noMatches": "Zatím nebyly odehrány žádné zápasy."
+        "noMatches": "Zatím nebyly odehrány žádné zápasy.",
+        "pointsBadge": "BODY",
+        "resultWin": "V",
+        "resultLoss": "P",
+        "resultPending": "-"
     },
     "pages": {
         "content_placeholder": "Obsah pro {{title}} bude zde."
@@ -168,7 +196,9 @@
         "bracketWinners": "VÍTĚZOVÉ",
         "bracketLosers": "PORAŽENÍ",
         "bracketFinal": "FINÁLE",
-        "registeredPlayers": "Registrovaní hráči"
+        "registeredPlayers": "Registrovaní hráči",
+        "clearConfirm": "Opravdu? Tím se odstraňuje výsledek.",
+        "editTitle": "Upravit"
     },
     "brackets": {
         "wb": "Skupina vítězů",
@@ -188,7 +218,8 @@
         "placeRange": "Místa {{range}}",
         "placeSingle": "{{place}}. místo",
         "scoreP1": "Skóre H1",
-        "scoreP2": "Skóre H2"
+        "scoreP2": "Skóre H2",
+        "generationError": "Chyba: {{error}}"
     },
     "standings": {
         "description": "Tabulka bude aktualizována po skončení účasti v turnaji."
@@ -218,5 +249,12 @@
     "settings": {
         "localModeTitle": "Lokální režim aktivní",
         "localModeDesc": "Aplikace běží v offline režimu s využitím úložiště prohlížeče."
+    },
+    "layout": {
+        "switchToLight": "Světlý režim",
+        "switchToDark": "Tmavý režim",
+        "tvMode": "TV režim",
+        "logout": "Odhlásit se",
+        "adminLogin": "Přihlášení správce"
     }
 }

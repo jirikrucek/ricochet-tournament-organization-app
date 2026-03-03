@@ -140,7 +140,7 @@ const SortableMatchRow = ({ match, index, queueType, isAuthenticated, onEdit }) 
 
             <div className="row-action">
                 {isAuthenticated && (
-                    <button className="action-btn" onClick={() => onEdit(match)} title="Edit">
+                    <button className="action-btn" onClick={() => onEdit(match)} title={t('common.edit')}>
                         <Edit2 size={16} />
                     </button>
                 )}
@@ -151,6 +151,7 @@ const SortableMatchRow = ({ match, index, queueType, isAuthenticated, onEdit }) 
 
 // --- DRAG OVERLAY ITEM (Visual Clone) ---
 const DragOverlayItem = ({ match }) => {
+    const { t } = useTranslation();
     // Simplified version for the drag preview
     if (!match) return null;
     return (
@@ -158,7 +159,7 @@ const DragOverlayItem = ({ match }) => {
             <div className="player p1">
                 <span className="name">{formatName(match.player1)}</span>
             </div>
-            <div className="match-center-info">VS</div>
+            <div className="match-center-info">{t('common.vs')}</div>
             <div className="player p2">
                 <span className="name">{formatName(match.player2)}</span>
             </div>
@@ -241,7 +242,7 @@ const MatchEditModal = ({ match, onClose, onSave, onClear }) => {
     };
 
     const handleClear = () => {
-        if (window.confirm("Are you sure? This will remove the result.")) {
+        if (window.confirm(t('matches.clearConfirm'))) {
             onClear(match.id);
         }
     };
@@ -262,13 +263,13 @@ const MatchEditModal = ({ match, onClose, onSave, onClear }) => {
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 10px 1fr', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                         <div style={{ textAlign: 'center' }}>
                             <div style={{ fontWeight: 600, marginBottom: '0.5rem', fontSize: '1.1rem' }}>
-                                {match.player1?.full_name || 'TBD'}
+                                {match.player1?.full_name || t('common.tbd')}
                             </div>
                         </div>
                         <div></div>
                         <div style={{ textAlign: 'center' }}>
                             <div style={{ fontWeight: 600, marginBottom: '0.5rem', fontSize: '1.1rem' }}>
-                                {match.player2?.full_name || 'TBD'}
+                                {match.player2?.full_name || t('common.tbd')}
                             </div>
                         </div>
 
@@ -654,7 +655,7 @@ const Matches = () => {
                 {/* Column 5: Action */}
                 <div className="row-action">
                     {isAuthenticated && (
-                        <button className="action-btn" onClick={() => handleEditOpen(match)} title="Edit Result">
+                        <button className="action-btn" onClick={() => handleEditOpen(match)} title={t('matches.editResultTitle')}>
                             <Edit2 size={16} />
                         </button>
                     )}

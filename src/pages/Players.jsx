@@ -68,8 +68,8 @@ const PlayerFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
 
     const validate = () => {
         const newErrors = {};
-        if (!formData.last_name.trim()) newErrors.last_name = "Last name is required";
-        if (!formData.first_name.trim()) newErrors.first_name = "First name is required";
+        if (!formData.last_name.trim()) newErrors.last_name = t('players.modal.errors.lastNameRequired');
+        if (!formData.first_name.trim()) newErrors.first_name = t('players.modal.errors.firstNameRequired');
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -106,7 +106,7 @@ const PlayerFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                     <form onSubmit={handleSubmit}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                             <div className="form-group">
-                                <label className="form-label">First Name</label>
+                                <label className="form-label">{t('players.modal.labels.firstName')}</label>
                                 <input
                                     className={`form-input ${errors.first_name ? 'error' : ''}`}
                                     value={formData.first_name}
@@ -117,7 +117,7 @@ const PlayerFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                                 {errors.first_name && <div className="error-message">{errors.first_name}</div>}
                             </div>
                             <div className="form-group">
-                                <label className="form-label">Last Name</label>
+                                <label className="form-label">{t('players.modal.labels.lastName')}</label>
                                 <input
                                     className={`form-input ${errors.last_name ? 'error' : ''}`}
                                     value={formData.last_name}
@@ -189,7 +189,7 @@ const PlayerFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                                         ))}
                                         {filteredCountries.length === 0 && (
                                             <div style={{ padding: '0.5rem', color: 'var(--text-secondary)', fontSize: '0.9rem' }}>
-                                                No matches
+                                                {t('players.noCountryMatches')}
                                             </div>
                                         )}
                                     </div>
@@ -309,7 +309,7 @@ const Players = () => {
             // Improved CSV parser:
             const lines = text.split(/\r?\n/).filter(line => line.trim());
             if (lines.length < 2) {
-                alert("File is empty or missing a header row.");
+                alert(t('players.import.emptyFile'));
                 return;
             }
 
@@ -326,7 +326,7 @@ const Players = () => {
             const eloIndex = headers.findIndex(h => h === 'total_points' || h === 'points' || h === 'elo');
 
             if (surnameIndex === -1 || nameIndex === -1) {
-                alert(`Required columns not found (Surname, Name). Detected headers: ${headers.join(', ')}`);
+                alert(t('players.import.missingColumns', { headers: headers.join(', ') }));
                 if (fileInputRef.current) fileInputRef.current.value = "";
                 return;
             }
@@ -362,12 +362,12 @@ const Players = () => {
             }
 
             if (newPlayers.length === 0) {
-                alert("No players found in file (check that data is not empty).");
+                alert(t('players.import.noPlayersFound'));
                 if (fileInputRef.current) fileInputRef.current.value = "";
                 return;
             }
 
-            if (!confirm(`Found ${newPlayers.length} players. Start import?`)) {
+            if (!confirm(t('players.import.confirmImport', { count: newPlayers.length }))) {
                 if (fileInputRef.current) fileInputRef.current.value = "";
                 return;
             }
@@ -375,13 +375,13 @@ const Players = () => {
             try {
                 const result = await bulkUpsertPlayers(newPlayers);
                 if (result.success) {
-                    showToast(`Successfully imported ${result.count} players.`);
+                    showToast(t('players.import.importSuccess', { count: result.count }));
                 } else {
-                    alert("Import error: " + (result.error?.message || result.error));
+                    alert(t('players.import.importError', { error: result.error?.message || result.error }));
                 }
             } catch (err) {
                 console.error("Import error:", err);
-                alert("An unexpected error occurred during save.");
+                alert(t('players.import.unexpectedError'));
             }
 
             // Reset input
@@ -425,9 +425,9 @@ const Players = () => {
                                 accept=".csv"
                                 onChange={handleCsvUpload}
                             />
-                            <button className="btn-secondary" onClick={() => fileInputRef.current?.click()} title="Import from CSV file">
+                            <button className="btn-secondary" onClick={() => fileInputRef.current?.click()} title={t('players.import.buttonTitle')}>
                                 <Upload size={18} />
-                                <span className="hide-mobile">Import Players (Tournament)</span>
+                                <span className="hide-mobile">{t('players.import.buttonTitle')}</span>
                             </button>
                             <button className="btn-secondary" onClick={() => {
                                 const randomPlayers = Array.from({ length: 32 }, (_, i) => ({
@@ -438,10 +438,10 @@ const Players = () => {
                                 // Ensure unique ELOs for fun
                                 randomPlayers.forEach((p, idx) => p.elo += idx);
 
-                                bulkUpsertPlayers(randomPlayers).then(() => showToast('Dodano 32 losowych graczy!'));
-                            }} title="Generuj 32 losowych">
+                                bulkUpsertPlayers(randomPlayers).then(() => showToast(t('players.generate32Toast')));
+                            }} title={t('players.generate32Title')}>
                                 <Plus size={18} />
-                                <span className="hide-mobile">Generuj 32 (Test)</span>
+                                <span className="hide-mobile">{t('players.generate32Label')}</span>
                             </button>
                             <button className="btn-primary" onClick={handleAdd}>
                                 <Plus size={18} />
@@ -484,7 +484,7 @@ const Players = () => {
                                 <div className="card-stats">
                                     <div className="card-stat-item">
                                         <span className="card-stat-value">{player.elo || 0}</span>
-                                        <span className="card-stat-label">POINTS</span>
+                                        <span className="card-stat-label">{t('players.pointsLabel')}</span>
                                     </div>
                                     {/* Calculated Stats could go here if available in player object, defaulting to placeholder or removing if heavy calculation needed */}
                                 </div>

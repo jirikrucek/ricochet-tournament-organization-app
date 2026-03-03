@@ -20,7 +20,10 @@
         "saved": "Gespeichert!",
         "back": "Zurück",
         "vs": "VS",
-        "reset": "Zurücksetzen"
+        "reset": "Zurücksetzen",
+        "tbd": "TBD",
+        "unknownPlayer": "Unbekannter Spieler",
+        "loading": "Laden..."
     },
     "players": {
         "title": "Spielerdatenbank",
@@ -34,6 +37,21 @@
             "country": "Land",
             "elo": "ELO"
         },
+        "import": {
+            "buttonTitle": "Aus CSV-Datei importieren",
+            "emptyFile": "Datei ist leer oder fehlt eine Kopfzeile.",
+            "missingColumns": "Erforderliche Spalten nicht gefunden (Surname, Name). Erkannte Header: {{headers}}",
+            "noPlayersFound": "Keine Spieler in der Datei gefunden (prüfen Sie ob Daten vorhanden sind).",
+            "confirmImport": "{{count}} Spieler gefunden. Import starten?",
+            "importSuccess": "{{count}} Spieler erfolgreich importiert.",
+            "importError": "Importfehler: {{error}}",
+            "unexpectedError": "Beim Speichern ist ein unerwarteter Fehler aufgetreten."
+        },
+        "generate32Title": "32 zufällige generieren",
+        "generate32Label": "32 generieren (Test)",
+        "generate32Toast": "32 zufällige Spieler hinzugefügt!",
+        "noCountryMatches": "Keine Treffer",
+        "pointsLabel": "PUNKTE",
         "empty": {
             "notFound": "Keine Spieler gefunden.",
             "start": "Datenbank ist leer."
@@ -42,18 +60,22 @@
             "addTitle": "Neuen Spieler hinzufügen",
             "editTitle": "Spieler bearbeiten",
             "labels": {
-                "fullName": "Vollständiger Name *",
-                "photo": "Foto-Link",
+                "fullName": "Vollständiger Name *",                "firstName": "Vorname",
+                "lastName": "Nachname",                "photo": "Foto-Link",
                 "country": "Land",
                 "elo": "ELO"
             },
             "placeholders": {
                 "fullName": "z.B. Max Mustermann",
+                "firstName": "z.B. Max",
+                "lastName": "z.B. Mustermann",
                 "country": "Auswählen oder eingeben...",
                 "elo": "z.B. 1200"
             },
             "errors": {
-                "fullNameRequired": "Vollständiger Name ist erforderlich"
+                "fullNameRequired": "Vollständiger Name ist erforderlich",
+                "firstNameRequired": "Vorname ist erforderlich",
+                "lastNameRequired": "Nachname ist erforderlich"
             }
         }
     },
@@ -62,7 +84,11 @@
         "wins": "Siege",
         "losses": "Niederlagen",
         "matchHistory": "Spielverlauf",
-        "noMatches": "Noch keine Spiele absolviert."
+        "noMatches": "Noch keine Spiele absolviert.",
+        "pointsBadge": "PUNKTE",
+        "resultWin": "S",
+        "resultLoss": "N",
+        "resultPending": "-"
     },
     "pages": {
         "content_placeholder": "Inhalt für {{title}} wird hier erscheinen."
@@ -168,7 +194,9 @@
         "bracketWinners": "GEWINNER",
         "bracketLosers": "VERLIERER",
         "bracketFinal": "FINALE",
-        "registeredPlayers": "Registrierte Spieler"
+        "registeredPlayers": "Registrierte Spieler",
+        "clearConfirm": "Sind Sie sicher? Dies entfernt das Ergebnis.",
+        "editTitle": "Bearbeiten"
     },
     "brackets": {
         "wb": "Gewinnergruppe",
@@ -188,7 +216,8 @@
         "placeRange": "Plätze {{range}}",
         "placeSingle": "{{place}}. Platz",
         "scoreP1": "Punktzahl S1",
-        "scoreP2": "Punktzahl S2"
+        "scoreP2": "Punktzahl S2",
+        "generationError": "Fehler: {{error}}"
     },
     "standings": {
         "description": "Die Tabelle wird nach Ende der Turnierteilnahme aktualisiert."
@@ -218,5 +247,12 @@
     "settings": {
         "localModeTitle": "Lokaler Modus aktiv",
         "localModeDesc": "Anwendung läuft im Offline-Modus mit Browser-Speicher."
+    },
+    "layout": {
+        "switchToLight": "Heller Modus",
+        "switchToDark": "Dunkler Modus",
+        "tvMode": "TV-Modus",
+        "logout": "Abmelden",
+        "adminLogin": "Admin-Anmeldung"
     }
 }

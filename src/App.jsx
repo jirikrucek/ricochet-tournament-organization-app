@@ -13,13 +13,15 @@ import Login from './pages/Login';
 
 import TournamentSelect from './pages/TournamentSelect';
 import { useAuth } from './hooks/useAuth.tsx';
+import { useTranslation } from 'react-i18next';
 
 // Protected Route Guard
 const ProtectedRoute = () => {
   const { isLoading } = useAuth();
+  const { t } = useTranslation();
   const isAdmin = localStorage.getItem('rpo_admin') === 'true';
 
-  if (isLoading) return <div style={{ padding: '2rem' }}>Loading...</div>;
+  if (isLoading) return <div style={{ padding: '2rem' }}>{t('common.loading')}</div>;
 
   if (!isAdmin) {
     return <Navigate to="/login" replace />;

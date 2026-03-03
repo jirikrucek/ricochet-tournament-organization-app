@@ -20,7 +20,10 @@
         "saved": "Saved!",
         "back": "Back",
         "vs": "VS",
-        "reset": "Reset"
+        "reset": "Reset",
+        "tbd": "TBD",
+        "unknownPlayer": "Unknown Player",
+        "loading": "Loading..."
     },
     "players": {
         "title": "Players Database",
@@ -34,6 +37,21 @@
             "country": "Country",
             "elo": "ELO"
         },
+        "import": {
+            "buttonTitle": "Import from CSV file",
+            "emptyFile": "File is empty or missing a header row.",
+            "missingColumns": "Required columns not found (Surname, Name). Detected headers: {{headers}}",
+            "noPlayersFound": "No players found in file (check that data is not empty).",
+            "confirmImport": "Found {{count}} players. Start import?",
+            "importSuccess": "Successfully imported {{count}} players.",
+            "importError": "Import error: {{error}}",
+            "unexpectedError": "An unexpected error occurred during save."
+        },
+        "generate32Title": "Generate 32 random",
+        "generate32Label": "Generate 32 (Test)",
+        "generate32Toast": "Added 32 random players!",
+        "noCountryMatches": "No matches",
+        "pointsLabel": "POINTS",
         "empty": {
             "notFound": "No players found.",
             "start": "Database is empty."
@@ -42,18 +60,22 @@
             "addTitle": "Add New Player",
             "editTitle": "Edit Player",
             "labels": {
-                "fullName": "Full Name *",
-                "photo": "Photo Link",
+                "fullName": "Full Name *",                "firstName": "First Name",
+                "lastName": "Last Name",                "photo": "Photo Link",
                 "country": "Country",
                 "elo": "ELO"
             },
             "placeholders": {
                 "fullName": "e.g. John Doe",
+                "firstName": "e.g. John",
+                "lastName": "e.g. Doe",
                 "country": "Select or type...",
                 "elo": "e.g. 1200"
             },
             "errors": {
-                "fullNameRequired": "Full Name is required"
+                "fullNameRequired": "Full Name is required",
+                "firstNameRequired": "First name is required",
+                "lastNameRequired": "Last name is required"
             }
         }
     },
@@ -62,7 +84,11 @@
         "wins": "Wins",
         "losses": "Losses",
         "matchHistory": "Match History",
-        "noMatches": "No matches played yet."
+        "noMatches": "No matches played yet.",
+        "pointsBadge": "POINTS",
+        "resultWin": "W",
+        "resultLoss": "L",
+        "resultPending": "-"
     },
     "pages": {
         "content_placeholder": "Content for {{title}} will go here."
@@ -168,7 +194,9 @@
         "bracketWinners": "WINNERS",
         "bracketLosers": "LOSERS",
         "bracketFinal": "FINAL",
-        "registeredPlayers": "Registered Players"
+        "registeredPlayers": "Registered Players",
+        "clearConfirm": "Are you sure? This will remove the result.",
+        "editTitle": "Edit"
     },
     "brackets": {
         "wb": "Winners Bracket",
@@ -188,7 +216,8 @@
         "placeRange": "Places {{range}}",
         "placeSingle": "{{place}} Place",
         "scoreP1": "Score P1",
-        "scoreP2": "Score P2"
+        "scoreP2": "Score P2",
+        "generationError": "Error: {{error}}"
     },
     "standings": {
         "description": "Standings are updated after tournament participation ends."
@@ -218,5 +247,12 @@
     "settings": {
         "localModeTitle": "Local Mode Active",
         "localModeDesc": "Application is running in offline mode using Browser Storage."
+    },
+    "layout": {
+        "switchToLight": "Switch to Light Mode",
+        "switchToDark": "Switch to Dark Mode",
+        "tvMode": "TV Mode",
+        "logout": "Logout",
+        "adminLogin": "Admin Login"
     }
 }
