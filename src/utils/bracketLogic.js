@@ -367,7 +367,7 @@ export const getBracketBlueprint = () => {
         // Or I can just leave it as a terminal state.
         // Let's create it but populated by just one player to signify the rank? 
         // No, standard is: loser of LB Final IS 4th.
-        // But user said: "Przegrany zajmuje 4. miejsce (możesz go przypisać do p4-f dla porządku)".
+        // But the original note was: "The loser takes 4th place (you can assign them to p4-f for ordering)".
         // I will link it. Display might be weird if single player.
     }));
 

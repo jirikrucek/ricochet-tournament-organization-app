@@ -68,8 +68,8 @@ const PlayerFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
 
     const validate = () => {
         const newErrors = {};
-        if (!formData.last_name.trim()) newErrors.last_name = "Nazwisko jest wymagane";
-        if (!formData.first_name.trim()) newErrors.first_name = "Imię jest wymagane";
+        if (!formData.last_name.trim()) newErrors.last_name = "Last name is required";
+        if (!formData.first_name.trim()) newErrors.first_name = "First name is required";
         setErrors(newErrors);
         return Object.keys(newErrors).length === 0;
     };
@@ -106,23 +106,23 @@ const PlayerFormModal = ({ isOpen, onClose, onSubmit, initialData }) => {
                     <form onSubmit={handleSubmit}>
                         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                             <div className="form-group">
-                                <label className="form-label">Imię (Name)</label>
+                                <label className="form-label">First Name</label>
                                 <input
                                     className={`form-input ${errors.first_name ? 'error' : ''}`}
                                     value={formData.first_name}
                                     onChange={e => setFormData({ ...formData, first_name: e.target.value })}
-                                    placeholder="np. Jan"
+                                    placeholder="e.g. Jan"
                                     autoFocus
                                 />
                                 {errors.first_name && <div className="error-message">{errors.first_name}</div>}
                             </div>
                             <div className="form-group">
-                                <label className="form-label">Nazwisko (Surname)</label>
+                                <label className="form-label">Last Name</label>
                                 <input
                                     className={`form-input ${errors.last_name ? 'error' : ''}`}
                                     value={formData.last_name}
                                     onChange={e => setFormData({ ...formData, last_name: e.target.value })}
-                                    placeholder="np. Kowalski"
+                                    placeholder="e.g. Kowalski"
                                 />
                                 {errors.last_name && <div className="error-message">{errors.last_name}</div>}
                             </div>
@@ -309,7 +309,7 @@ const Players = () => {
             // Improved CSV parser:
             const lines = text.split(/\r?\n/).filter(line => line.trim());
             if (lines.length < 2) {
-                alert("Plik jest pusty lub brakuje nagłówka.");
+                alert("File is empty or missing a header row.");
                 return;
             }
 
@@ -326,7 +326,7 @@ const Players = () => {
             const eloIndex = headers.findIndex(h => h === 'total_points' || h === 'points' || h === 'elo');
 
             if (surnameIndex === -1 || nameIndex === -1) {
-                alert(`Nie znaleziono wymaganych kolumn (Surname, Name). Wykryte nagłówki: ${headers.join(', ')}`);
+                alert(`Required columns not found (Surname, Name). Detected headers: ${headers.join(', ')}`);
                 if (fileInputRef.current) fileInputRef.current.value = "";
                 return;
             }
@@ -362,12 +362,12 @@ const Players = () => {
             }
 
             if (newPlayers.length === 0) {
-                alert("Nie znaleziono żadnych zawodników w pliku (sprawdź czy dane nie są puste).");
+                alert("No players found in file (check that data is not empty).");
                 if (fileInputRef.current) fileInputRef.current.value = "";
                 return;
             }
 
-            if (!confirm(`Znaleziono ${newPlayers.length} zawodników. Rozpocząć import?`)) {
+            if (!confirm(`Found ${newPlayers.length} players. Start import?`)) {
                 if (fileInputRef.current) fileInputRef.current.value = "";
                 return;
             }
@@ -375,13 +375,13 @@ const Players = () => {
             try {
                 const result = await bulkUpsertPlayers(newPlayers);
                 if (result.success) {
-                    showToast(`Pomyślnie zaimportowano ${result.count} zawodników.`);
+                    showToast(`Successfully imported ${result.count} players.`);
                 } else {
-                    alert("Błąd importu: " + (result.error?.message || result.error));
+                    alert("Import error: " + (result.error?.message || result.error));
                 }
             } catch (err) {
                 console.error("Import error:", err);
-                alert("Wystąpił nieoczekiwany błąd podczas zapisu.");
+                alert("An unexpected error occurred during save.");
             }
 
             // Reset input
@@ -425,9 +425,9 @@ const Players = () => {
                                 accept=".csv"
                                 onChange={handleCsvUpload}
                             />
-                            <button className="btn-secondary" onClick={() => fileInputRef.current?.click()} title="Importuj z pliku CSV">
+                            <button className="btn-secondary" onClick={() => fileInputRef.current?.click()} title="Import from CSV file">
                                 <Upload size={18} />
-                                <span className="hide-mobile">Importuj zawodników (Turniej)</span>
+                                <span className="hide-mobile">Import Players (Tournament)</span>
                             </button>
                             <button className="btn-secondary" onClick={() => {
                                 const randomPlayers = Array.from({ length: 32 }, (_, i) => ({

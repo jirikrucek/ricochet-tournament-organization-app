@@ -87,9 +87,9 @@ const Live = () => {
         if (!players || players.length === 0) return;
 
         const RANDOM_NAMES = [
-            "Jan Kowalski", "Piotr Nowak", "Adam Wiśniewski", "Krzysztof Wójcik", "Michał Kamiński",
-            "Tomasz Lewandowski", "Marcin Zieliński", "Andrzej Szymański", "Jakub Woźniak", "Dariusz Dąbrowski",
-            "Marek Kozłowski", "Lukasz Jankowski", "Grzegorz Mazur", "Mateusz Kwiatkowski", "Pawel Krawczyk",
+            "John Smith", "Peter Brown", "Adam Clark", "Chris Wright", "Michael King",
+            "Thomas Wilson", "Mark Thompson", "Andrew Taylor", "Jake Moore", "Daniel Davis",
+            "Mark Johnson", "Luke Anderson", "Gregory Martin", "Matthew White", "Paul Walker",
             "James Smith", "Michael Johnson", "Robert Williams", "David Brown", "William Jones",
             "Richard Garcia", "Joseph Miller", "Thomas Davis", "Charles Rodriguez", "Daniel Martinez",
             "Hans Muller", "Klaus Weber", "Jurgen Schmidt", "Karl Wagner", "Stefan Meyer",
@@ -153,8 +153,8 @@ const Live = () => {
             let court = '';
             if (m.court) {
                 const cUpper = m.court.toUpperCase();
-                if (cUpper.includes('LEWY') || cUpper.includes('LEFT') || cUpper.includes('RÓŻOWY') || cUpper.includes('PINK') || m.court === 'pink') court = 'courtPink';
-                else if (cUpper.includes('PRAWY') || cUpper.includes('RIGHT') || cUpper.includes('TURKUSOWY') || cUpper.includes('CYAN') || m.court === 'cyan') court = 'courtCyan';
+                if (cUpper.includes('LEFT') || cUpper.includes('PINK') || m.court === 'pink' || cUpper === 'KORT LEWY') court = 'courtPink';
+                else if (cUpper.includes('RIGHT') || cUpper.includes('CYAN') || m.court === 'cyan' || cUpper === 'KORT PRAWY') court = 'courtCyan';
             }
             if (!court) {
                 if (pink.length <= cyan.length) court = 'courtPink';

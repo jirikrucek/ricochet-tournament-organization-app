@@ -44,7 +44,7 @@ describe('TournamentContext (localStorage mode)', () => {
             });
 
             expect(result.current.tournaments).toHaveLength(1);
-            expect(result.current.tournaments[0].name).toBe('RICOCHET POLISH OPEN 2026');
+            expect(result.current.tournaments[0].name).toBe('RICOCHET DUTCH OPEN 2026');
             expect(result.current.tournaments[0].id).toBe('default-rpo-2026');
         });
 
@@ -75,7 +75,7 @@ describe('TournamentContext (localStorage mode)', () => {
             });
 
             expect(result.current.tournaments).toHaveLength(1);
-            expect(result.current.tournaments[0].name).toBe('RICOCHET POLISH OPEN 2026');
+            expect(result.current.tournaments[0].name).toBe('RICOCHET DUTCH OPEN 2026');
         });
 
         it('should handle corrupt localStorage data gracefully', async () => {

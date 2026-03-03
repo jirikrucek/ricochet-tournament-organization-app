@@ -86,8 +86,8 @@ const SortableMatchRow = ({ match, index, queueType, isAuthenticated, onEdit }) 
     let colorType = queueType;
     if (!colorType) {
         const cUpper = (match.court || '').toUpperCase();
-        if (cUpper.includes('LEWY') || cUpper.includes('LEFT') || cUpper.includes('RÓŻOWY') || cUpper.includes('PINK')) colorType = 'pink';
-        else if (cUpper.includes('PRAWY') || cUpper.includes('RIGHT') || cUpper.includes('TURKUSOWY') || cUpper.includes('CYAN')) colorType = 'cyan';
+        if (cUpper.includes('LEFT') || cUpper.includes('PINK') || cUpper === 'KORT LEWY') colorType = 'pink';
+        else if (cUpper.includes('RIGHT') || cUpper.includes('CYAN') || cUpper === 'KORT PRAWY') colorType = 'cyan';
         else colorType = index % 2 === 0 ? 'pink' : 'cyan';
     }
 
@@ -394,8 +394,8 @@ const Matches = () => {
 
         ongoing.forEach(m => {
             const cUpper = (m.court || '').toUpperCase();
-            const isLeft = cUpper.includes('LEWY') || cUpper.includes('LEFT') || cUpper.includes('RÓŻOWY') || cUpper.includes('PINK');
-            const isRight = cUpper.includes('PRAWY') || cUpper.includes('RIGHT') || cUpper.includes('TURKUSOWY') || cUpper.includes('CYAN');
+            const isLeft = cUpper.includes('LEFT') || cUpper.includes('PINK') || cUpper === 'KORT LEWY';
+            const isRight = cUpper.includes('RIGHT') || cUpper.includes('CYAN') || cUpper === 'KORT PRAWY';
 
             if (isLeft) leftCandidates.push(m);
             else if (isRight) rightCandidates.push(m);
@@ -562,7 +562,7 @@ const Matches = () => {
 
     const renderActiveMatch = (match, index) => {
         const cUpper = (match.court || '').toUpperCase();
-        const isLeft = cUpper.includes('LEWY') || cUpper.includes('LEFT') || cUpper.includes('RÓŻOWY') || cUpper.includes('PINK') || (!match.court && index % 2 === 0);
+        const isLeft = cUpper.includes('LEFT') || cUpper.includes('PINK') || cUpper === 'KORT LEWY' || (!match.court && index % 2 === 0);
         const accentColor = isLeft ? 'var(--accent-pink)' : '#21468B';
         let courtDisplay = match.court || (isLeft ? t('live.courtPink') : t('live.courtCyan'));
         if (match.court === 'Kort Lewy') courtDisplay = t('live.courtPink');

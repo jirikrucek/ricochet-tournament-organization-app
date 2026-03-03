@@ -20,52 +20,52 @@ export const TournamentProvider = ({ children }) => {
             .select("*")
             .order("created_at", { ascending: false });
 
-                    if (error) throw error;
-                    setTournaments(data || []);
-                } catch (err) {
-                    console.error("Error loading tournaments:", err.message);
-                } finally {
-                    setIsLoading(false);
-                }
+          if (error) throw error;
+          setTournaments(data || []);
+        } catch (err) {
+          console.error("Error loading tournaments:", err.message);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        // LOCAL STORAGE MODE
+        const stored = localStorage.getItem(LOCAL_META_KEY);
+        if (stored) {
+          try {
+            const parsed = JSON.parse(stored);
+            if (parsed.length === 0) {
+              // Seed default if empty array found (edge case)
+              const defaultT = {
+                id: 'default-rpo-2026',
+                name: 'RICOCHET DUTCH OPEN 2026',
+                date: new Date().toISOString(),
+                status: 'setup',
+                address: 'Veendam'
+              };
+              setTournaments([defaultT]);
+              localStorage.setItem(LOCAL_META_KEY, JSON.stringify([defaultT]));
             } else {
-                // LOCAL STORAGE MODE
-                const stored = localStorage.getItem(LOCAL_META_KEY);
-                if (stored) {
-                    try {
-                        const parsed = JSON.parse(stored);
-                        if (parsed.length === 0) {
-                            // Seed default if empty array found (edge case)
-                            const defaultT = {
-                                id: 'default-rpo-2026',
-                                name: 'RICOCHET POLISH OPEN 2026',
-                                date: new Date().toISOString(),
-                                status: 'setup',
-                                address: 'Warszawa'
-                            };
-                            setTournaments([defaultT]);
-                            localStorage.setItem(LOCAL_META_KEY, JSON.stringify([defaultT]));
-                        } else {
-                            setTournaments(parsed);
-                        }
-                    } catch (e) {
-                        console.error("LS Parse Error", e);
-                        setTournaments([]);
-                    }
-                } else {
-                    // Seed default tournament for new users
-                    const defaultT = {
-                        id: 'default-rpo-2026',
-                        name: 'RICOCHET DUTCH OPEN 2026',
-                        date: new Date().toISOString(),
-                        status: 'setup',
-                        address: 'Veendam'
-                    };
-                    setTournaments([defaultT]);
-                    localStorage.setItem(LOCAL_META_KEY, JSON.stringify([defaultT]));
-                }
-                setIsLoading(false);
+              setTournaments(parsed);
             }
-        };
+          } catch (e) {
+            console.error("LS Parse Error", e);
+            setTournaments([]);
+          }
+        } else {
+          // Seed default tournament for new users
+          const defaultT = {
+            id: 'default-rpo-2026',
+            name: 'RICOCHET DUTCH OPEN 2026',
+            date: new Date().toISOString(),
+            status: 'setup',
+            address: 'Veendam'
+          };
+          setTournaments([defaultT]);
+          localStorage.setItem(LOCAL_META_KEY, JSON.stringify([defaultT]));
+        }
+        setIsLoading(false);
+      }
+    };
 
     initData();
 
@@ -127,7 +127,7 @@ export const TournamentProvider = ({ children }) => {
         return data.id;
       } catch (err) {
         console.error("Error creating tournament:", err);
-        alert("Błąd podczas tworzenia turnieju (Supabase). Sprawdź konsolę.");
+        alert("Error creating tournament (Supabase). Check the console.");
         return null;
       }
     } else {
