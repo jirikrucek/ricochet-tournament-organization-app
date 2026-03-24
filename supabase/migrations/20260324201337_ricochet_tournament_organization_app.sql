@@ -47,6 +47,6 @@ create policy "Allow public read players" on players for select using (true);
 create policy "Allow public read matches" on matches for select using (true);
 
 -- Allow authenticated insert/update/delete access
-create policy "Allow public all tournaments" on tournaments for all to authenticated using (true);
-create policy "Allow public all players" on players for all to authenticated using (true);
-create policy "Allow public all matches" on matches for all to authenticated using (true);
+create policy "Allow authenticated all tournaments" on tournaments for all to authenticated using (true);
+create policy "Allow authenticated all players" on players for all to authenticated using (true);
+create policy "Allow authenticated all matches" on matches for all to authenticated using (true);
