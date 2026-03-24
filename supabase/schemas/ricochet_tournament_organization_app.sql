@@ -2,6 +2,7 @@
 create table if not exists tournaments (
   id uuid default gen_random_uuid() primary key,
   name text not null,
+  address text,
   date timestamptz default now(),
   status text check (status in ('setup', 'live', 'finished')) default 'setup',
   created_at timestamptz default now()
@@ -36,8 +37,6 @@ create table if not exists matches (
   primary key (tournament_id, id)
 );
 
--- Enable RLS (Row Level Security) if you want to secure it, 
--- but for this MVP we can leave it public or set minimal policies.
 alter table tournaments enable row level security;
 alter table players enable row level security;
 alter table matches enable row level security;
@@ -47,10 +46,7 @@ create policy "Allow public read tournaments" on tournaments for select using (t
 create policy "Allow public read players" on players for select using (true);
 create policy "Allow public read matches" on matches for select using (true);
 
--- Allow authenticated insert/update/delete (or public for MVP simplicity if Auth is not Supabase Auth)
--- Since your app uses custom simple auth ('rpo_admin' in localStorage), 
--- these tables should probably be open for All or you need to implement Supabase Auth.
--- For now, allowing all operations for anon (simplest for your 'kacper/rpo26' setup which is client-side only).
-create policy "Allow public all tournaments" on tournaments for all using (true);
-create policy "Allow public all players" on players for all using (true);
-create policy "Allow public all matches" on matches for all using (true);
+-- Allow authenticated insert/update/delete access
+create policy "Allow public all tournaments" on tournaments for all to authenticated using (true);
+create policy "Allow public all players" on players for all to authenticated using (true);
+create policy "Allow public all matches" on matches for all to authenticated using (true);
