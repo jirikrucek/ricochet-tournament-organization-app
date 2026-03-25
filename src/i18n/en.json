@@ -60,8 +60,10 @@
             "addTitle": "Add New Player",
             "editTitle": "Edit Player",
             "labels": {
-                "fullName": "Full Name *",                "firstName": "First Name",
-                "lastName": "Last Name",                "photo": "Photo Link",
+                "fullName": "Full Name *",
+                "firstName": "First Name",
+                "lastName": "Last Name",
+                "photo": "Photo Link",
                 "country": "Country",
                 "elo": "ELO"
             },
@@ -237,9 +239,9 @@
     "login": {
         "title": "Admin Login",
         "subtitle": "Sign in to manage the tournament",
-        "error": "Invalid username or password",
-        "username": "Username",
-        "usernamePlaceholder": "Enter username...",
+        "error": "Invalid email or password",
+        "email": "Email",
+        "emailPlaceholder": "Enter email...",
         "password": "Password",
         "passwordPlaceholder": "Enter password...",
         "signIn": "Sign In"

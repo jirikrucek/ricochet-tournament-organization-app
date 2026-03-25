@@ -239,9 +239,9 @@
     "login": {
         "title": "Beheerder Inloggen",
         "subtitle": "Log in om het toernooi te beheren",
-        "error": "Ongeldige gebruikersnaam of wachtwoord",
-        "username": "Gebruikersnaam",
-        "usernamePlaceholder": "Typ naam...",
+        "error": "Ongeldig e-mailadres of wachtwoord",
+        "email": "E-mail",
+        "emailPlaceholder": "Typ e-mail...",
         "password": "Wachtwoord",
         "passwordPlaceholder": "Typ wachtwoord...",
         "signIn": "Inloggen"

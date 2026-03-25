@@ -55,12 +55,10 @@ Example: [bracketLogic.test.js](../src/utils/bracketLogic.test.js) validates all
 - `matchUtils.js` only contains match state logic
 
 #### Open/Closed Principle (OCP)
-- Dual-mode storage pattern allows extension (Supabase or localStorage) without modifying core logic
-- Custom hooks abstract data access, allowing storage implementation changes
+- Custom hooks abstract data access, allowing implementation changes
 - Translation system supports adding languages without changing components
 
 #### Liskov Substitution Principle (LSP)
-- Storage implementations (Supabase/localStorage) are interchangeable
 - All hooks follow consistent interface patterns (loading, error, data)
 - Components receive props that can be fulfilled by different data sources
 
@@ -74,7 +72,7 @@ Example: [bracketLogic.test.js](../src/utils/bracketLogic.test.js) validates all
 - Business logic in `utils/` has no dependencies on React or storage
 - UI components depend on contexts, not concrete data sources
 
-**Key Pattern**: The dual-mode storage demonstrates DIP - high-level tournament logic doesn't depend on whether data comes from Supabase or localStorage.
+**Key Pattern**: High-level tournament logic depends on abstractions (hooks/contexts), not concrete storage details.
 
 ## Technology Stack
 
@@ -83,10 +81,10 @@ Example: [bracketLogic.test.js](../src/utils/bracketLogic.test.js) validates all
 - **React Router v7** for page navigation
 - **Context API** for state management
 
-### Data Storage (Dual-Mode)
-- **Supabase** (PostgreSQL cloud database) - optional for real-time sync
-- **LocalStorage** - fallback when Supabase is not configured
-- Hybrid approach allows offline operation
+### Data Storage
+- **Supabase** (PostgreSQL cloud database) - required for all domain data
+- **LocalStorage** - only for UI preferences (theme, language, active tournament ID)
+- App will hard-fail with an error screen if Supabase is unreachable
 
 ### UI Components & Libraries
 - **Lucide React** - Modern icon library
@@ -101,23 +99,24 @@ Example: [bracketLogic.test.js](../src/utils/bracketLogic.test.js) validates all
 
 ## Architecture
 
-### Dual-Mode Storage Pattern
+### Supabase-Only Storage Pattern
 
-**Critical**: Always check `isSupabaseConfigured` before data operations. This app works both with Supabase cloud database AND localStorage fallback.
+**Critical**: Supabase is the sole data store for domain data (tournaments, players, matches). The app requires a valid Supabase connection at startup — a reachability check runs before the app renders. If it fails, a fatal error screen blocks all interaction.
 
 ```javascript
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 
-if (isSupabaseConfigured) {
-  // Supabase operations
-  const { data } = await supabase.from("table").select();
-} else {
-  // localStorage fallback
-  const data = JSON.parse(localStorage.getItem("key"));
-}
+// All domain data operations go through Supabase
+const { data, error } = await supabase.from("table").select();
+if (error) throw error;
 ```
 
-See [TournamentContext.jsx](../src/contexts/TournamentContext.jsx) for complete implementation pattern.
+**localStorage is only used for UI preferences:**
+- `ricochet_theme` — dark/light mode
+- `ricochet_active_id` — last selected tournament ID
+- `i18nextLng` — language preference (managed by i18next)
+
+See [TournamentContext.jsx](../src/contexts/TournamentContext.jsx) for the implementation pattern.
 
 ### State Management
 
@@ -343,40 +342,41 @@ it('should display translated text', () => {
 ```javascript
 import { vi } from 'vitest';
 
-// Mock the entire supabase module
+const mockFrom = vi.fn();
+
 vi.mock('../lib/supabase', () => ({
   supabase: {
-    from: vi.fn(() => ({
-      select: vi.fn(() => Promise.resolve({ data: [], error: null })),
-      insert: vi.fn(() => Promise.resolve({ data: [], error: null }))
-    }))
+    from: (...args) => mockFrom(...args),
+    channel: vi.fn(() => ({ on: vi.fn().mockReturnThis(), subscribe: vi.fn().mockReturnThis() })),
+    removeChannel: vi.fn(),
   },
-  isSupabaseConfigured: false
+  checkSupabaseReachability: vi.fn().mockResolvedValue(undefined),
 }));
-```
 
-**Mocking localStorage**:
+// Helper to create chainable mock
+const createChain = (resolveValue = { data: [], error: null }) => {
+    const chain = {};
+    chain.select = vi.fn().mockReturnValue(chain);
+    chain.insert = vi.fn().mockReturnValue(chain);
+    chain.update = vi.fn().mockReturnValue(chain);
+    chain.delete = vi.fn().mockReturnValue(chain);
+    chain.eq = vi.fn().mockReturnValue(chain);
+    chain.order = vi.fn().mockReturnValue(chain);
+    chain.single = vi.fn().mockResolvedValue(resolveValue);
+    chain.then = (fn) => Promise.resolve(resolveValue).then(fn);
+    chain.catch = (fn) => Promise.resolve(resolveValue).catch(fn);
+    return chain;
+};
 
-```javascript
-import { beforeEach, vi } from 'vitest';
-
-beforeEach(() => {
-  const mockStorage = {};
-  global.localStorage = {
-    getItem: vi.fn((key) => mockStorage[key] || null),
-    setItem: vi.fn((key, value) => { mockStorage[key] = value; }),
-    removeItem: vi.fn((key) => { delete mockStorage[key]; }),
-    clear: vi.fn(() => { Object.keys(mockStorage).forEach(key => delete mockStorage[key]); })
-  };
-});
+mockFrom.mockReturnValue(createChain({ data: [], error: null }));
 ```
 
 #### Testing Best Practices
 
 1. **Test file naming**: Use `.test.js` or `.test.jsx` extension
 2. **Organize with describe blocks**: Group related tests logically
-3. **Test dual-mode storage**: Always test both Supabase and localStorage paths
-4. **Mock external dependencies**: Mock Supabase, localStorage, and APIs
+3. **Mock Supabase chains**: Use the `createChain()` helper pattern for chainable mock queries
+4. **Mock external dependencies**: Mock Supabase module and auth hooks
 5. **Use Testing Library queries**: Prefer `getByRole`, `getByLabelText` over `getByTestId`
 6. **Test user interactions**: Use `@testing-library/user-event` for realistic interactions
 7. **Clean up**: Use `beforeEach`/`afterEach` for test isolation
@@ -390,7 +390,7 @@ beforeEach(() => {
 - Tournament CRUD operations (TournamentContext)
 
 **Priority 2 - Data Hooks**:
-- Custom hooks with dual-mode storage (usePlayers, useMatches)
+- Custom hooks with Supabase operations (usePlayers, useMatches)
 - Data fetching and error handling
 - Real-time subscription logic
 
@@ -432,11 +432,11 @@ When adding or modifying UI text:
 
 ### LocalStorage Keys
 
-Follow the `ricochet_*` naming convention:
+LocalStorage is used **only for UI preferences** (not domain data):
 
-- `ricochet_tournaments_meta` - Tournament metadata
 - `ricochet_theme` - Dark/light mode preference
-- `ricochet_matches_{tournamentId}` - Match data per tournament
+- `ricochet_active_id` - Last selected tournament ID
+- `i18nextLng` - Language preference (managed by i18next)
 
 ### Match Data Structure
 
@@ -459,10 +459,11 @@ Each match has:
 
 ### Supabase Integration
 
-- Optional cloud database configured via environment variables
-- Check `isSupabaseConfigured` boolean before all DB operations
-- Real-time subscriptions only when Supabase is configured
-- Schema defined in [supabase_schema.sql](../supabase_schema.sql)
+- **Required** cloud database configured via environment variables
+- App hard-fails at startup if Supabase is unreachable (shows fatal error UI)
+- Real-time subscriptions for live updates on tournaments, players, and matches
+- Schema defined in [supabase migrations](../supabase/migrations/)
+- Admin writes gated by `admin_users` allowlist table + RLS policies
 
 #### Database Schema
 
@@ -498,7 +499,7 @@ Each match has:
 
 ### Environment Variables
 
-Required for Supabase mode (app works without them):
+Required (app will not start without them):
 
 ```
 VITE_SUPABASE_URL=your_url
@@ -584,13 +585,15 @@ VITE_SUPABASE_ANON_KEY=your_production_key
 - **Performance Monitoring**: Use Vercel Analytics to track Core Web Vitals
 - **Domain Configuration**: Configure custom domains via Vercel dashboard
 
-#### LocalStorage Mode
+#### Supabase Requirement
 
-The app works without Supabase configuration, using localStorage fallback. This means:
+The app requires a running Supabase instance. Without it:
 
-- Production deployments work immediately without database setup
-- Users can test and develop offline
-- Supabase is optional for enhanced features (real-time sync, cloud storage)
+- The app shows a "Database Unavailable" error screen
+- No domain data can be loaded or saved
+- The retry button reloads the page to re-check connectivity
+
+For local development, use Supabase CLI (`supabase start`).
 
 #### Troubleshooting
 
@@ -601,7 +604,8 @@ The app works without Supabase configuration, using localStorage fallback. This 
 
 ## Security
 
-- Simple authentication via [useAuth.tsx](../src/hooks/useAuth.tsx) hook
+- Supabase Auth with email/password authentication via [useAuth.tsx](../src/hooks/useAuth.tsx) hook
+- `admin_users` allowlist table gates write access via RLS policies
 - No sensitive credentials in code - use environment variables
-- Admin routes check `isAuthenticated` state
+- Admin routes check `isAuthenticated` state (ProtectedRoute in App.jsx)
 - All player data is public by design

@@ -237,9 +237,9 @@
     "login": {
         "title": "Logowanie Admina",
         "subtitle": "Zaloguj się, aby zarządzać turniejem",
-        "error": "Zły login lub hasło",
-        "username": "Nazwa użytkownika",
-        "usernamePlaceholder": "Wpisz nazwę...",
+        "error": "Zły email lub hasło",
+        "email": "Email",
+        "emailPlaceholder": "Wpisz email...",
         "password": "Hasło",
         "passwordPlaceholder": "Wpisz hasło...",
         "signIn": "Zaloguj się"

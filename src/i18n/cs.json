@@ -239,9 +239,9 @@
     "login": {
         "title": "Přihlášení správce",
         "subtitle": "Přihlaste se pro správu turnaje",
-        "error": "Neplatné uživatelské jméno nebo heslo",
-        "username": "Uživatelské jméno",
-        "usernamePlaceholder": "Zadejte uživatelské jméno...",
+        "error": "Neplatný e-mail nebo heslo",
+        "email": "E-mail",
+        "emailPlaceholder": "Zadejte e-mail...",
         "password": "Heslo",
         "passwordPlaceholder": "Zadejte heslo...",
         "signIn": "Přihlásit se"

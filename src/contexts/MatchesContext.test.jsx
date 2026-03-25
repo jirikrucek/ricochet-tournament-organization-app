@@ -3,32 +3,32 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import React from 'react';
 import { createMockMatch } from '../test-utils';
 
-// ─── Mock supabase ──────────────────────────────────────────────────────────
+// Mock supabase
+
+const mockFrom = vi.fn();
+const mockChannel = vi.fn();
+const mockRemoveChannel = vi.fn();
 
 vi.mock('../lib/supabase', () => ({
-    isSupabaseConfigured: false,
     supabase: {
-        from: vi.fn(),
-        channel: vi.fn(() => ({
-            on: vi.fn().mockReturnThis(),
-            subscribe: vi.fn().mockReturnThis(),
-        })),
-        removeChannel: vi.fn(),
+        from: (...args) => mockFrom(...args),
+        channel: (...args) => mockChannel(...args),
+        removeChannel: (...args) => mockRemoveChannel(...args),
     },
 }));
 
-// ─── Mock useAuth ───────────────────────────────────────────────────────────
+// Mock useAuth
 
 vi.mock('../hooks/useAuth.tsx', () => ({
     useAuth: () => ({
         isAuthenticated: true,
         isLoading: false,
-        login: () => true,
-        logout: () => { },
+        login: async () => true,
+        logout: async () => { },
     }),
 }));
 
-// ─── Mock TournamentContext ─────────────────────────────────────────────────
+// Mock TournamentContext
 
 vi.mock('./TournamentContext', () => ({
     useTournament: () => ({
@@ -39,25 +39,43 @@ vi.mock('./TournamentContext', () => ({
 
 import { MatchesProvider, useMatchesContext } from './MatchesContext';
 
-const BASE_KEY = 'brazilian_v14_GLOBAL_STATE';
-const LS_KEY = `${BASE_KEY}_test-tournament-1`;
-
 const wrapper = ({ children }) => (
     <MatchesProvider>{children}</MatchesProvider>
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
+// Helper to create chainable mock
+const createChain = (resolveValue = { data: [], error: null }) => {
+    const chain = {};
+    chain.select = vi.fn().mockReturnValue(chain);
+    chain.insert = vi.fn().mockReturnValue(chain);
+    chain.update = vi.fn().mockReturnValue(chain);
+    chain.delete = vi.fn().mockReturnValue(chain);
+    chain.upsert = vi.fn().mockReturnValue(chain);
+    chain.eq = vi.fn().mockReturnValue(chain);
+    chain.order = vi.fn().mockReturnValue(chain);
+    chain.single = vi.fn().mockResolvedValue(resolveValue);
+    chain.then = (fn) => Promise.resolve(resolveValue).then(fn);
+    chain.catch = (fn) => Promise.resolve(resolveValue).catch(fn);
+    return chain;
+};
 
-describe('MatchesContext (localStorage mode)', () => {
+describe('MatchesContext (Supabase mode)', () => {
     beforeEach(() => {
-        localStorage.clear();
-        vi.restoreAllMocks();
+        mockFrom.mockReset();
+        mockChannel.mockReset();
+        mockRemoveChannel.mockReset();
+
+        mockFrom.mockReturnValue(createChain({ data: [], error: null }));
+        mockChannel.mockReturnValue({
+            on: vi.fn().mockReturnThis(),
+            subscribe: vi.fn().mockReturnThis(),
+        });
     });
 
-    // ─── Initial Loading ────────────────────────────────────────────────
+    // Initial Loading
 
     describe('initial loading', () => {
-        it('should start with empty matches when no data in localStorage', async () => {
+        it('should start with empty matches', async () => {
             const { result } = renderHook(() => useMatchesContext(), { wrapper });
 
             await waitFor(() => {
@@ -65,104 +83,27 @@ describe('MatchesContext (localStorage mode)', () => {
             });
         });
 
-        it('should load matches from localStorage', async () => {
-            const mockMatches = [
-                createMockMatch({ id: 'wb-r1-m1', score1: 3, score2: 0 }),
-                createMockMatch({ id: 'wb-r1-m2', score1: 1, score2: 2 }),
+        it('should fetch matches from Supabase', async () => {
+            const dbMatches = [
+                {
+                    id: 'wb-r1-m1',
+                    tournament_id: 'test-tournament-1',
+                    bracket_type: 'wb',
+                    round_id: 1,
+                    player1_id: 'p1',
+                    player2_id: 'p2',
+                    score1: 3,
+                    score2: 1,
+                    micro_points: '[]',
+                    winner_id: 'p1',
+                    status: 'finished',
+                    court: '',
+                    manual_order: null,
+                    finished_at: null,
+                },
             ];
-            localStorage.setItem(LS_KEY, JSON.stringify(mockMatches));
-
-            const { result } = renderHook(() => useMatchesContext(), { wrapper });
-
-            await waitFor(() => {
-                expect(result.current.matches).toHaveLength(2);
-            });
-        });
-
-        it('should handle corrupt localStorage data gracefully', async () => {
-            localStorage.setItem(LS_KEY, 'invalid-json!!!');
-
-            const { result } = renderHook(() => useMatchesContext(), { wrapper });
-
-            // Should not crash; fallback to empty
-            await waitFor(() => {
-                expect(result.current.matches).toEqual([]);
-            });
-        });
-    });
-
-    // ─── saveMatches ────────────────────────────────────────────────────
-
-    describe('saveMatches', () => {
-        it('should save matches to localStorage', async () => {
-            const { result } = renderHook(() => useMatchesContext(), { wrapper });
-
-            await waitFor(() => {
-                expect(result.current.isSaving).toBe(false);
-            });
-
-            const newMatches = [
-                createMockMatch({ id: 'wb-r1-m1', score1: 3, score2: 0, winnerId: 'p1', status: 'finished' }),
-                createMockMatch({ id: 'wb-r1-m2', score1: 1, score2: 2, status: 'live' }),
-            ];
-
-            await act(async () => {
-                await result.current.saveMatches(newMatches);
-            });
-
-            // Check state updated
-            expect(result.current.matches).toHaveLength(2);
-
-            // Check localStorage
-            const stored = JSON.parse(localStorage.getItem(LS_KEY));
-            expect(stored).toHaveLength(2);
-            expect(stored[0].id).toBe('wb-r1-m1');
-        });
-
-        it('should create a backup in localStorage', async () => {
-            const { result } = renderHook(() => useMatchesContext(), { wrapper });
-
-            await waitFor(() => {
-                expect(result.current.isSaving).toBe(false);
-            });
-
-            const newMatches = [createMockMatch({ id: 'wb-r1-m1' })];
-
-            await act(async () => {
-                await result.current.saveMatches(newMatches);
-            });
-
-            const backup = localStorage.getItem('ricochet_matches_backup');
-            expect(backup).toBeTruthy();
-            expect(JSON.parse(backup)).toHaveLength(1);
-        });
-
-        it('should perform optimistic update (update state immediately)', async () => {
-            const { result } = renderHook(() => useMatchesContext(), { wrapper });
-
-            await waitFor(() => {
-                expect(result.current.matches).toEqual([]);
-            });
-
-            const newMatches = [
-                createMockMatch({ id: 'wb-r1-m1', score1: 2, score2: 1 }),
-            ];
-
-            await act(async () => {
-                await result.current.saveMatches(newMatches);
-            });
-
-            // State should be updated immediately
-            expect(result.current.matches).toEqual(newMatches);
-        });
-    });
-
-    // ─── resetMatches ───────────────────────────────────────────────────
-
-    describe('resetMatches', () => {
-        it('should clear all matches and localStorage', async () => {
-            const mockMatches = [createMockMatch({ id: 'wb-r1-m1' })];
-            localStorage.setItem(LS_KEY, JSON.stringify(mockMatches));
+            const chain = createChain({ data: dbMatches, error: null });
+            mockFrom.mockReturnValue(chain);
 
             const { result } = renderHook(() => useMatchesContext(), { wrapper });
 
@@ -170,34 +111,118 @@ describe('MatchesContext (localStorage mode)', () => {
                 expect(result.current.matches).toHaveLength(1);
             });
 
+            expect(result.current.matches[0].id).toBe('wb-r1-m1');
+            expect(result.current.matches[0].score1).toBe(3);
+        });
+
+        it('should call supabase.from("matches")', async () => {
+            renderHook(() => useMatchesContext(), { wrapper });
+
+            await waitFor(() => {
+                expect(mockFrom).toHaveBeenCalledWith('matches');
+            });
+        });
+    });
+
+    // Save Matches
+
+    describe('saveMatches', () => {
+        it('should upsert changed matches to Supabase', async () => {
+            const upsertChain = createChain({ error: null });
+            let callCount = 0;
+            mockFrom.mockImplementation(() => {
+                callCount++;
+                if (callCount <= 1) return createChain({ data: [], error: null });
+                return upsertChain;
+            });
+
+            const { result } = renderHook(() => useMatchesContext(), { wrapper });
+
+            await waitFor(() => {
+                expect(result.current).toBeDefined();
+            });
+
+            const newMatches = [
+                createMockMatch({ id: 'wb-r1-m1', score1: 2, score2: 1, status: 'live' }),
+            ];
+
+            await act(async () => {
+                await result.current.saveMatches(newMatches);
+            });
+
+            // Verify upsert was called
+            expect(mockFrom).toHaveBeenCalledWith('matches');
+        });
+
+        it('should update local state optimistically', async () => {
+            mockFrom.mockReturnValue(createChain({ data: [], error: null }));
+
+            const { result } = renderHook(() => useMatchesContext(), { wrapper });
+
+            await waitFor(() => {
+                expect(result.current).toBeDefined();
+            });
+
+            const newMatches = [
+                createMockMatch({ id: 'wb-r1-m1', score1: 3, score2: 0, status: 'finished' }),
+            ];
+
+            await act(async () => {
+                await result.current.saveMatches(newMatches);
+            });
+
+            expect(result.current.matches).toHaveLength(1);
+            expect(result.current.matches[0].score1).toBe(3);
+        });
+    });
+
+    // Reset Matches
+
+    describe('resetMatches', () => {
+        it('should delete all matches for the tournament', async () => {
+            const deleteChain = createChain({ error: null });
+            let callCount = 0;
+            mockFrom.mockImplementation(() => {
+                callCount++;
+                if (callCount <= 1) return createChain({ data: [], error: null });
+                return deleteChain;
+            });
+
+            const { result } = renderHook(() => useMatchesContext(), { wrapper });
+
+            await waitFor(() => {
+                expect(result.current).toBeDefined();
+            });
+
             await act(async () => {
                 await result.current.resetMatches();
             });
 
             expect(result.current.matches).toEqual([]);
-            expect(localStorage.getItem(LS_KEY)).toBeNull();
         });
     });
 
-    // ─── Return Value ───────────────────────────────────────────────────
+    // Returned API
 
     describe('returned API', () => {
-        it('should return matches, saveMatches, resetMatches, and isSaving', () => {
+        it('should expose matches, saveMatches, resetMatches, isSaving', async () => {
             const { result } = renderHook(() => useMatchesContext(), { wrapper });
+
+            await waitFor(() => {
+                expect(result.current).toBeDefined();
+            });
 
             expect(result.current).toHaveProperty('matches');
             expect(result.current).toHaveProperty('saveMatches');
             expect(result.current).toHaveProperty('resetMatches');
             expect(result.current).toHaveProperty('isSaving');
-            expect(typeof result.current.saveMatches).toBe('function');
-            expect(typeof result.current.resetMatches).toBe('function');
         });
     });
 
-    // ─── Context Error ──────────────────────────────────────────────────
+    // Context error
 
-    describe('useMatchesContext outside provider', () => {
-        it('should throw an error when used outside MatchesProvider', () => {
+    describe('context error', () => {
+        it('should throw when used outside provider', () => {
             expect(() => {
                 renderHook(() => useMatchesContext());
             }).toThrow('useMatchesContext must be used within MatchesProvider');

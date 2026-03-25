@@ -60,8 +60,10 @@
             "addTitle": "Neuen Spieler hinzufügen",
             "editTitle": "Spieler bearbeiten",
             "labels": {
-                "fullName": "Vollständiger Name *",                "firstName": "Vorname",
-                "lastName": "Nachname",                "photo": "Foto-Link",
+                "fullName": "Vollständiger Name *",
+                "firstName": "Vorname",
+                "lastName": "Nachname",
+                "photo": "Foto-Link",
                 "country": "Land",
                 "elo": "ELO"
             },
@@ -237,9 +239,9 @@
     "login": {
         "title": "Administrator-Anmeldung",
         "subtitle": "Anmelden, um das Turnier zu verwalten",
-        "error": "Ungültiger Benutzername oder Passwort",
-        "username": "Benutzername",
-        "usernamePlaceholder": "Benutzername eingeben...",
+        "error": "Ungültige E-Mail oder Passwort",
+        "email": "E-Mail",
+        "emailPlaceholder": "E-Mail eingeben...",
         "password": "Passwort",
         "passwordPlaceholder": "Passwort eingeben...",
         "signIn": "Anmelden"

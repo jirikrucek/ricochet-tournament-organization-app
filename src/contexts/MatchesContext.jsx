@@ -8,19 +8,15 @@ import React, {
 } from "react";
 import { useAuth } from "../hooks/useAuth.tsx";
 import { useTournament } from "./TournamentContext";
-import { supabase, isSupabaseConfigured } from "../lib/supabase";
+import { supabase } from "../lib/supabase";
 
 const MatchesContext = createContext(null);
-
-const BASE_KEY = "brazilian_v14_GLOBAL_STATE";
 
 export const MatchesProvider = ({ children }) => {
   const [matches, setMatches] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
   const { isAuthenticated } = useAuth();
   const { activeTournamentId } = useTournament();
-
-  const lsKey = activeTournamentId ? `${BASE_KEY}_${activeTournamentId}` : null;
 
   // --- MAPPERS (Kept for consistency, simplified where possible) ---
   const mapToCamel = (m) => {
@@ -79,64 +75,49 @@ export const MatchesProvider = ({ children }) => {
     }
 
     const fetchMatches = async () => {
-      if (isSupabaseConfigured) {
-        try {
-          const { data, error } = await supabase
-            .from("matches")
-            .select("*")
-            .eq("tournament_id", activeTournamentId);
+      try {
+        const { data, error } = await supabase
+          .from("matches")
+          .select("*")
+          .eq("tournament_id", activeTournamentId);
 
-          if (error) throw error;
+        if (error) throw error;
 
-          const loaded = (data || []).filter((m) => m.id).map(mapToCamel);
+        const loaded = (data || []).filter((m) => m.id).map(mapToCamel);
 
-          const uniqueMap = new Map();
-          loaded.forEach((m) => uniqueMap.set(m.id, m));
+        const uniqueMap = new Map();
+        loaded.forEach((m) => uniqueMap.set(m.id, m));
 
-          setMatches(Array.from(uniqueMap.values()));
-        } catch (error) {
-          console.error("[MatchesContext] Supabase Error:", error);
-        }
-      } else {
-        // LocalStorage Fallback
-        try {
-          const saved = localStorage.getItem(lsKey);
-          if (saved) {
-            setMatches(JSON.parse(saved));
-          }
-        } catch (e) {
-          console.error("LS Load Error", e);
-        }
+        setMatches(Array.from(uniqueMap.values()));
+      } catch (error) {
+        console.error("[MatchesContext] Supabase Error:", error);
       }
     };
 
     fetchMatches();
 
-    let channel;
-    if (isSupabaseConfigured) {
-      channel = supabase
-        .channel(`matches:${activeTournamentId}`)
-        .on(
-          "postgres_changes",
-          {
-            event: "*",
-            schema: "public",
-            table: "matches",
-            filter: `tournament_id=eq.${activeTournamentId}`,
-          },
-          () => {
-            if (!isSavingRef.current) {
-              fetchMatches();
-            }
-          },
-        )
-        .subscribe();
-    }
+    const channel = supabase
+      .channel(`matches:${activeTournamentId}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: "matches",
+          filter: `tournament_id=eq.${activeTournamentId}`,
+        },
+        () => {
+          if (!isSavingRef.current) {
+            fetchMatches();
+          }
+        },
+      )
+      .subscribe();
 
     return () => {
-      if (channel) supabase.removeChannel(channel);
+      supabase.removeChannel(channel);
     };
-  }, [activeTournamentId, lsKey]);
+  }, [activeTournamentId]);
 
   const matchesRef = useRef(matches);
   useEffect(() => {
@@ -160,14 +141,11 @@ export const MatchesProvider = ({ children }) => {
       isSavingRef.current = true; // Lock snapshots
 
       // 2. PERSISTENCE
-      if (isSupabaseConfigured && isAuthenticated) {
+      if (isAuthenticated) {
         try {
           // Identify what to save
-          let changesToSave = [];
-
-          // ALWAYS perform a diff check.
           const payload = newMatches.map((m) => mapToSnake(m));
-          changesToSave = payload.filter((p) => {
+          const changesToSave = payload.filter((p) => {
             const old = previousMatches.find((m) => m.id === p.id);
             if (!old) return true;
 
@@ -201,20 +179,11 @@ export const MatchesProvider = ({ children }) => {
           }, 500);
         }
       } else {
-        // LS
-        localStorage.setItem(lsKey, JSON.stringify(newMatches));
-
-        // Also update global state for backup
-        localStorage.setItem(
-          "ricochet_matches_backup",
-          JSON.stringify(newMatches),
-        );
-
         isSavingRef.current = false;
       }
     },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [isAuthenticated, activeTournamentId, lsKey],
+    [isAuthenticated, activeTournamentId],
   );
 
   const resetMatches = async () => {
@@ -222,15 +191,11 @@ export const MatchesProvider = ({ children }) => {
 
     setIsSaving(true);
     try {
-      if (isSupabaseConfigured) {
-        const { error } = await supabase
-          .from("matches")
-          .delete()
-          .eq("tournament_id", activeTournamentId);
-        if (error) throw error;
-      } else {
-        localStorage.removeItem(lsKey);
-      }
+      const { error } = await supabase
+        .from("matches")
+        .delete()
+        .eq("tournament_id", activeTournamentId);
+      if (error) throw error;
       setMatches([]);
     } catch (e) {
       console.error("Error resetting matches:", e);

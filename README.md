@@ -4,7 +4,7 @@ A comprehensive web-based tournament management system specifically designed for
 
 ## 🎯 Overview
 
-The **Ricochet Polish Open 2026** app enables tournament organizers to manage complex tournament brackets, track matches in real-time, and provide spectators with live updates. It features a dual-mode architecture that works with or without a cloud database, making it highly flexible for different deployment scenarios.
+The **Ricochet Tournament Organization App** enables tournament organizers to manage complex tournament brackets, track matches in real-time, and provide spectators with live updates. It requires a Supabase (PostgreSQL) backend for all domain data persistence and uses Supabase Auth for admin authentication.
 
 ## ✨ Core Features
 
@@ -40,11 +40,6 @@ Available in 5 languages with automatic browser language detection:
 - 🇳🇱 Dutch
 - 🇨🇿 Czech
 
-### Flexible Deployment
-Works both online and offline:
-- **With Internet**: Real-time updates across all devices
-- **Without Internet**: Works locally using your browser's storage
-
 ## 🚀 Getting Started
 
 ### Prerequisites
@@ -63,10 +58,10 @@ cd ricochet-tournament-organization-app
 npm install
 ```
 
-3. (Optional) For real-time updates across devices:
-   - Create a free account at [Supabase](https://supabase.com)
-   - Copy `.env.example` to `.env` and add your credentials
-   - The app works perfectly fine without this step using local storage
+3. Set up Supabase (required):
+   - Run a local Supabase instance or create an account at [Supabase](https://supabase.com)
+   - Copy `.env.example` to `.env.local` and add your Supabase URL and anon key
+   - The app will not start without valid Supabase configuration
 
 4. Start the app:
 ```bash
@@ -85,12 +80,12 @@ npm run preview  # Preview production build
 
 ## 🌟 What Makes This App Special
 
-- ✨ **Works Anywhere** - Functions with or without internet connection
-- ✨ **Live Updates** - Real-time tournament progress when online
+- ✨ **Real-Time Updates** - Live tournament progress via Supabase
 - ✨ **Multilingual** - Available in 5 languages
 - ✨ **Mobile-Friendly** - Works on phones, tablets, and computers
 - ✨ **Easy to Use** - Intuitive interface for both organizers and spectators
 - ✨ **Specialized for Ricochet** - Built specifically for tournament management
+- ✨ **Secure Admin** - Email/password authentication via Supabase Auth with admin allowlist
 
 ## 🤝 Contributing
 

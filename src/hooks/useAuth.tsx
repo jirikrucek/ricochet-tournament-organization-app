@@ -1,10 +1,11 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { supabase } from '../lib/supabase';
 
 interface AuthContextType {
     isAuthenticated: boolean;
     isLoading: boolean;
-    login: (username: string, password: string) => boolean;
-    logout: () => void;
+    login: (email: string, password: string) => Promise<boolean>;
+    logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
@@ -18,28 +19,34 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const [isLoading, setIsLoading] = useState<boolean>(true);
 
     useEffect(() => {
-        const storedAuth = localStorage.getItem('rpo_admin');
-        if (storedAuth === 'true') {
-            setIsAuthenticated(true);
-        }
-        setIsLoading(false);
+        // Check current session on mount
+        supabase.auth.getSession().then(({ data: { session } }) => {
+            setIsAuthenticated(!!session);
+            setIsLoading(false);
+        });
+
+        // Listen for auth state changes
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            (_event, session) => {
+                setIsAuthenticated(!!session);
+            }
+        );
+
+        return () => {
+            subscription.unsubscribe();
+        };
     }, []);
 
-    const login = (username: string, password: string): boolean => {
-        const u = username.normalize("NFKC").trim();
-        const p = password.normalize("NFKC").trim();
-
-        if (u === 'kacper' && p === 'rpo26') {
-            localStorage.setItem('rpo_admin', 'true');
-            setIsAuthenticated(true);
-            return true;
-        }
-        return false;
+    const login = async (email: string, password: string): Promise<boolean> => {
+        const { error } = await supabase.auth.signInWithPassword({
+            email,
+            password,
+        });
+        return !error;
     };
 
-    const logout = () => {
-        localStorage.removeItem('rpo_admin');
-        setIsAuthenticated(false);
+    const logout = async () => {
+        await supabase.auth.signOut();
     };
 
     return (
@@ -52,14 +59,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 export const useAuth = (): AuthContextType => {
     const context = useContext(AuthContext);
     if (!context) {
-        // If used outside provider, return default "guest" state or throw
-        // For safety, let's return a default object to avoid crashes, 
-        // essentially mocking a not-authenticated state.
         return {
             isAuthenticated: false,
             isLoading: false,
-            login: () => false,
-            logout: () => { }
+            login: async () => false,
+            logout: async () => { }
         };
     }
     return context;

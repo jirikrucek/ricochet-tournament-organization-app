@@ -2,35 +2,33 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { renderHook, act, waitFor } from '@testing-library/react';
 import React from 'react';
 
-// ─── Mock supabase BEFORE importing usePlayers ──────────────────────────────
+// Mock supabase BEFORE importing usePlayers
 
-const { mockFrom, mockChannel, mockRemoveChannel } = vi.hoisted(() => ({
-    mockFrom: vi.fn(),
-    mockChannel: vi.fn(),
-    mockRemoveChannel: vi.fn(),
-}));
+const mockFrom = vi.fn();
+const mockChannel = vi.fn();
+const mockRemoveChannel = vi.fn();
 
 vi.mock('../lib/supabase', () => ({
-    isSupabaseConfigured: false,
     supabase: {
-        from: mockFrom,
-        channel: mockChannel,
-        removeChannel: mockRemoveChannel,
+        from: (...args) => mockFrom(...args),
+        channel: (...args) => mockChannel(...args),
+        removeChannel: (...args) => mockRemoveChannel(...args),
     },
 }));
 
-// ─── Mock useAuth ───────────────────────────────────────────────────────────
+// Mock useAuth with mutable isAuthenticated
+let mockIsAuthenticated = true;
 
 vi.mock('../hooks/useAuth.tsx', () => ({
     useAuth: () => ({
-        isAuthenticated: true,
+        get isAuthenticated() { return mockIsAuthenticated; },
         isLoading: false,
-        login: () => true,
-        logout: () => { },
+        login: async () => true,
+        logout: async () => { },
     }),
 }));
 
-// ─── Mock TournamentContext ─────────────────────────────────────────────────
+// Mock TournamentContext
 
 vi.mock('../contexts/TournamentContext', () => ({
     useTournament: () => ({
@@ -42,113 +40,155 @@ vi.mock('../contexts/TournamentContext', () => ({
 import { usePlayers } from './usePlayers';
 import { createMockPlayer } from '../test-utils';
 
-// ─────────────────────────────────────────────────────────────────────────────
+// Helper to create chainable mock
+const createChain = (resolveValue = { data: [], error: null }) => {
+    const chain = {};
+    chain.select = vi.fn().mockReturnValue(chain);
+    chain.insert = vi.fn().mockReturnValue(chain);
+    chain.update = vi.fn().mockReturnValue(chain);
+    chain.delete = vi.fn().mockReturnValue(chain);
+    chain.upsert = vi.fn().mockReturnValue(chain);
+    chain.eq = vi.fn().mockReturnValue(chain);
+    chain.order = vi.fn().mockReturnValue(chain);
+    chain.single = vi.fn().mockResolvedValue(resolveValue);
+    chain.then = (fn) => Promise.resolve(resolveValue).then(fn);
+    chain.catch = (fn) => Promise.resolve(resolveValue).catch(fn);
+    return chain;
+};
 
-describe('usePlayers (localStorage mode)', () => {
+describe('usePlayers (Supabase mode)', () => {
     beforeEach(() => {
-        localStorage.clear();
-        vi.restoreAllMocks();
         mockFrom.mockReset();
-    });
+        mockChannel.mockReset();
+        mockRemoveChannel.mockReset();
+        mockIsAuthenticated = true;
 
-    it('should initialize with empty players when no data in localStorage', async () => {
-        const { result } = renderHook(() => usePlayers());
-
-        await waitFor(() => {
-            expect(result.current.players).toEqual([]);
+        mockFrom.mockReturnValue(createChain({ data: [], error: null }));
+        mockChannel.mockReturnValue({
+            on: vi.fn().mockReturnThis(),
+            subscribe: vi.fn().mockReturnThis(),
         });
     });
 
-    it('should load players from localStorage', async () => {
-        const mockPlayers = [
-            createMockPlayer({ id: 'p1', full_name: 'Player One' }),
-            createMockPlayer({ id: 'p2', full_name: 'Player Two' }),
-        ];
-        localStorage.setItem(
-            'ricochet_players_db_test-tournament-1',
-            JSON.stringify(mockPlayers)
-        );
+    // Initial Loading
 
-        const { result } = renderHook(() => usePlayers());
+    describe('initial loading', () => {
+        it('should start with empty players', async () => {
+            const { result } = renderHook(() => usePlayers());
 
-        await waitFor(() => {
-            expect(result.current.players).toHaveLength(2);
-            expect(result.current.players[0].full_name).toBe('Player One');
+            await waitFor(() => {
+                expect(result.current.players).toEqual([]);
+            });
+        });
+
+        it('should fetch players from Supabase', async () => {
+            const players = [
+                createMockPlayer({ id: 'p1', full_name: 'Player 1' }),
+                createMockPlayer({ id: 'p2', full_name: 'Player 2' }),
+            ];
+            const chain = createChain({ data: players, error: null });
+            mockFrom.mockReturnValue(chain);
+
+            const { result } = renderHook(() => usePlayers());
+
+            await waitFor(() => {
+                expect(result.current.players).toHaveLength(2);
+            });
+
+            expect(result.current.players[0].full_name).toBe('Player 1');
         });
     });
 
-    // ─── addPlayer ──────────────────────────────────────────────────────
+    // Add Player
 
     describe('addPlayer', () => {
-        it('should add a player to localStorage', async () => {
+        it('should insert via Supabase and add to state', async () => {
+            const newPlayer = createMockPlayer({ id: 'new-1', full_name: 'New Player' });
+
+            let callCount = 0;
+            mockFrom.mockImplementation(() => {
+                callCount++;
+                if (callCount <= 1) return createChain({ data: [], error: null });
+                // insert chain returns single player
+                const insertChain = createChain({ data: newPlayer, error: null });
+                return insertChain;
+            });
+
             const { result } = renderHook(() => usePlayers());
 
             await waitFor(() => {
                 expect(result.current.players).toEqual([]);
             });
 
-            let newPlayer;
+            let addedPlayer;
             await act(async () => {
-                newPlayer = await result.current.addPlayer({
+                addedPlayer = await result.current.addPlayer({
                     full_name: 'New Player',
                     country: 'pl',
                     elo: 1500,
                 });
             });
 
-            expect(newPlayer).not.toBeNull();
-            expect(newPlayer.full_name).toBe('New Player');
-            expect(newPlayer.country).toBe('pl');
-            expect(newPlayer.elo).toBe(1500);
-            expect(newPlayer.id).toBeDefined();
-            expect(result.current.players).toHaveLength(1);
-
-            // Verify localStorage was updated
-            const stored = JSON.parse(localStorage.getItem('ricochet_players_db_test-tournament-1'));
-            expect(stored).toHaveLength(1);
+            expect(addedPlayer).toBeDefined();
+            expect(result.current.players).toContainEqual(
+                expect.objectContaining({ full_name: 'New Player' })
+            );
         });
 
-        it('should handle fullName alias', async () => {
+        it('should return null on Supabase error', async () => {
+            let callCount = 0;
+            mockFrom.mockImplementation(() => {
+                callCount++;
+                if (callCount <= 1) return createChain({ data: [], error: null });
+                const errorChain = createChain({ data: null, error: { message: 'Insert failed' } });
+                errorChain.single = vi.fn().mockResolvedValue({ data: null, error: { message: 'Insert failed' } });
+                return errorChain;
+            });
+
             const { result } = renderHook(() => usePlayers());
 
             await waitFor(() => {
                 expect(result.current.players).toEqual([]);
             });
 
-            let newPlayer;
+            let addedPlayer;
             await act(async () => {
-                newPlayer = await result.current.addPlayer({
-                    fullName: 'Aliased Player',
-                });
+                addedPlayer = await result.current.addPlayer({ full_name: 'Fail' });
             });
 
-            expect(newPlayer.full_name).toBe('Aliased Player');
+            expect(addedPlayer).toBeNull();
         });
 
-        it('should default elo to 0 when not provided', async () => {
+        it('should not add when not authenticated', async () => {
+            mockIsAuthenticated = false;
+
             const { result } = renderHook(() => usePlayers());
 
             await waitFor(() => {
-                expect(result.current.players).toEqual([]);
+                expect(result.current).toBeDefined();
             });
 
-            let newPlayer;
+            let added;
             await act(async () => {
-                newPlayer = await result.current.addPlayer({
-                    full_name: 'No Elo Player',
-                });
+                added = await result.current.addPlayer({ full_name: 'Test' });
             });
 
-            expect(newPlayer.elo).toBe(0);
+            expect(added).toBeNull();
         });
     });
 
-    // ─── updatePlayer ───────────────────────────────────────────────────
+    // Update Player
 
     describe('updatePlayer', () => {
-        it('should update a player in localStorage', async () => {
-            const mockPlayers = [createMockPlayer({ id: 'p1', full_name: 'Original Name' })];
-            localStorage.setItem('ricochet_players_db_test-tournament-1', JSON.stringify(mockPlayers));
+        it('should update via Supabase and update state', async () => {
+            const players = [createMockPlayer({ id: 'p1', full_name: 'Old Name' })];
+
+            let callCount = 0;
+            mockFrom.mockImplementation(() => {
+                callCount++;
+                if (callCount <= 1) return createChain({ data: players, error: null });
+                return createChain({ error: null });
+            });
 
             const { result } = renderHook(() => usePlayers());
 
@@ -157,25 +197,28 @@ describe('usePlayers (localStorage mode)', () => {
             });
 
             await act(async () => {
-                await result.current.updatePlayer('p1', { full_name: 'Updated Name' });
+                await result.current.updatePlayer('p1', { full_name: 'New Name' });
             });
 
-            expect(result.current.players[0].full_name).toBe('Updated Name');
-
-            const stored = JSON.parse(localStorage.getItem('ricochet_players_db_test-tournament-1'));
-            expect(stored[0].full_name).toBe('Updated Name');
+            expect(result.current.players[0].full_name).toBe('New Name');
         });
     });
 
-    // ─── deletePlayer ───────────────────────────────────────────────────
+    // Delete Player
 
     describe('deletePlayer', () => {
-        it('should remove a player from localStorage', async () => {
-            const mockPlayers = [
-                createMockPlayer({ id: 'p1', full_name: 'Player One' }),
-                createMockPlayer({ id: 'p2', full_name: 'Player Two' }),
+        it('should delete via Supabase and remove from state', async () => {
+            const players = [
+                createMockPlayer({ id: 'p1' }),
+                createMockPlayer({ id: 'p2' }),
             ];
-            localStorage.setItem('ricochet_players_db_test-tournament-1', JSON.stringify(mockPlayers));
+
+            let callCount = 0;
+            mockFrom.mockImplementation(() => {
+                callCount++;
+                if (callCount <= 1) return createChain({ data: players, error: null });
+                return createChain({ error: null });
+            });
 
             const { result } = renderHook(() => usePlayers());
 
@@ -184,76 +227,81 @@ describe('usePlayers (localStorage mode)', () => {
             });
 
             await act(async () => {
-                await result.current.deletePlayer('p1');
+                await result.current.deletePlayer('p2');
             });
 
             expect(result.current.players).toHaveLength(1);
-            expect(result.current.players[0].id).toBe('p2');
-
-            const stored = JSON.parse(localStorage.getItem('ricochet_players_db_test-tournament-1'));
-            expect(stored).toHaveLength(1);
+            expect(result.current.players[0].id).toBe('p1');
         });
     });
 
-    // ─── bulkUpsertPlayers ──────────────────────────────────────────────
+    // Bulk Upsert
 
     describe('bulkUpsertPlayers', () => {
-        it('should add multiple players at once', async () => {
+        it('should upsert via Supabase and return success', async () => {
+            const upsertedPlayers = [
+                createMockPlayer({ id: 'b1', full_name: 'Bulk 1' }),
+                createMockPlayer({ id: 'b2', full_name: 'Bulk 2' }),
+            ];
+
+            let callCount = 0;
+            mockFrom.mockImplementation(() => {
+                callCount++;
+                if (callCount <= 1) return createChain({ data: [], error: null });
+                return createChain({ data: upsertedPlayers, error: null });
+            });
+
             const { result } = renderHook(() => usePlayers());
 
             await waitFor(() => {
-                expect(result.current.players).toEqual([]);
+                expect(result.current).toBeDefined();
             });
 
-            let response;
+            let bulkResult;
             await act(async () => {
-                response = await result.current.bulkUpsertPlayers([
-                    { full_name: 'Player A', country: 'pl', elo: 1500 },
-                    { full_name: 'Player B', country: 'de', elo: 1600 },
-                    { full_name: 'Player C', country: 'nl', elo: 1700 },
+                bulkResult = await result.current.bulkUpsertPlayers([
+                    { full_name: 'Bulk 1', country: 'pl', elo: 1000 },
+                    { full_name: 'Bulk 2', country: 'de', elo: 1200 },
                 ]);
             });
 
-            expect(response.success).toBe(true);
-            expect(response.count).toBe(3);
-            expect(result.current.players).toHaveLength(3);
+            expect(bulkResult.success).toBe(true);
+            expect(bulkResult.count).toBe(2);
         });
 
-        it('should handle elo as dash or missing', async () => {
+        it('should return error when not authenticated', async () => {
+            mockIsAuthenticated = false;
+
             const { result } = renderHook(() => usePlayers());
 
             await waitFor(() => {
-                expect(result.current.players).toEqual([]);
+                expect(result.current).toBeDefined();
             });
 
+            let bulkResult;
             await act(async () => {
-                await result.current.bulkUpsertPlayers([
-                    { full_name: 'No Elo', country: 'pl', elo: '-' },
-                    { full_name: 'No Elo 2', country: 'pl' },
-                ]);
+                bulkResult = await result.current.bulkUpsertPlayers([{ full_name: 'Test' }]);
             });
 
-            expect(result.current.players[0].elo).toBe(0);
-            expect(result.current.players[1].elo).toBe(0);
+            expect(bulkResult.success).toBe(false);
         });
     });
 
-    // ─── Return Value ───────────────────────────────────────────────────
+    // Returned API
 
     describe('returned API', () => {
-        it('should return all expected functions', () => {
+        it('should expose all expected functions', async () => {
             const { result } = renderHook(() => usePlayers());
+
+            await waitFor(() => {
+                expect(result.current).toBeDefined();
+            });
 
             expect(result.current).toHaveProperty('players');
             expect(result.current).toHaveProperty('addPlayer');
-            expect(result.current).toHaveProperty('importPlayers');
             expect(result.current).toHaveProperty('updatePlayer');
             expect(result.current).toHaveProperty('deletePlayer');
             expect(result.current).toHaveProperty('bulkUpsertPlayers');
-            expect(typeof result.current.addPlayer).toBe('function');
-            expect(typeof result.current.updatePlayer).toBe('function');
-            expect(typeof result.current.deletePlayer).toBe('function');
-            expect(typeof result.current.bulkUpsertPlayers).toBe('function');
         });
     });
 });

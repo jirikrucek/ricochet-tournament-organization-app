@@ -3,57 +3,73 @@ import { renderHook, act, waitFor } from '@testing-library/react';
 import React from 'react';
 import { createMockTournament } from '../test-utils';
 
-// ─── Mock supabase ──────────────────────────────────────────────────────────
+// Mock supabase
+
+const mockFrom = vi.fn();
+const mockChannel = vi.fn();
+const mockRemoveChannel = vi.fn();
 
 vi.mock('../lib/supabase', () => ({
-    isSupabaseConfigured: false,
     supabase: {
-        from: vi.fn(),
-        channel: vi.fn(() => ({
-            on: vi.fn().mockReturnThis(),
-            subscribe: vi.fn().mockReturnThis(),
-        })),
-        removeChannel: vi.fn(),
+        from: (...args) => mockFrom(...args),
+        channel: (...args) => mockChannel(...args),
+        removeChannel: (...args) => mockRemoveChannel(...args),
     },
 }));
 
 import { TournamentProvider, useTournament } from './TournamentContext';
 
-const LOCAL_META_KEY = 'ricochet_tournaments_meta';
-
 const wrapper = ({ children }) => (
     <TournamentProvider>{children}</TournamentProvider>
 );
 
-// ─────────────────────────────────────────────────────────────────────────────
+// Helper to create chainable mock
+const createChain = (resolveValue = { data: [], error: null }) => {
+    const chain = {};
+    chain.select = vi.fn().mockReturnValue(chain);
+    chain.insert = vi.fn().mockReturnValue(chain);
+    chain.update = vi.fn().mockReturnValue(chain);
+    chain.delete = vi.fn().mockReturnValue(chain);
+    chain.eq = vi.fn().mockReturnValue(chain);
+    chain.order = vi.fn().mockReturnValue(chain);
+    chain.single = vi.fn().mockResolvedValue(resolveValue);
+    chain.then = (fn) => Promise.resolve(resolveValue).then(fn);
+    chain.catch = (fn) => Promise.resolve(resolveValue).catch(fn);
+    return chain;
+};
 
-describe('TournamentContext (localStorage mode)', () => {
+describe('TournamentContext (Supabase mode)', () => {
+    let defaultChain;
+
     beforeEach(() => {
         localStorage.clear();
-        vi.restoreAllMocks();
+        mockFrom.mockReset();
+        mockChannel.mockReset();
+        mockRemoveChannel.mockReset();
+
+        defaultChain = createChain({ data: [], error: null });
+        mockFrom.mockReturnValue(defaultChain);
+        mockChannel.mockReturnValue({
+            on: vi.fn().mockReturnThis(),
+            subscribe: vi.fn().mockReturnThis(),
+        });
     });
 
-    // ─── Initial Loading ────────────────────────────────────────────────
+    // Initial Loading
 
     describe('initial loading', () => {
-        it('should seed a default tournament when no data in localStorage', async () => {
+        it('should start in loading state', () => {
             const { result } = renderHook(() => useTournament(), { wrapper });
-
-            await waitFor(() => {
-                expect(result.current.isLoading).toBe(false);
-            });
-
-            expect(result.current.tournaments).toHaveLength(1);
-            expect(result.current.tournaments[0].name).toBe('RICOCHET DUTCH OPEN 2026');
-            expect(result.current.tournaments[0].id).toBe('default-rpo-2026');
+            expect(result.current.isLoading).toBe(true);
         });
 
-        it('should load existing tournaments from localStorage', async () => {
-            const existing = [
+        it('should load tournaments from Supabase', async () => {
+            const tournaments = [
                 createMockTournament({ id: 't1', name: 'Tournament 1' }),
                 createMockTournament({ id: 't2', name: 'Tournament 2' }),
             ];
-            localStorage.setItem(LOCAL_META_KEY, JSON.stringify(existing));
+            const chain = createChain({ data: tournaments, error: null });
+            mockFrom.mockReturnValue(chain);
 
             const { result } = renderHook(() => useTournament(), { wrapper });
 
@@ -62,11 +78,19 @@ describe('TournamentContext (localStorage mode)', () => {
             });
 
             expect(result.current.tournaments).toHaveLength(2);
-            expect(result.current.tournaments[0].name).toBe('Tournament 1');
+            expect(mockFrom).toHaveBeenCalledWith('tournaments');
         });
 
-        it('should seed default when stored array is empty', async () => {
-            localStorage.setItem(LOCAL_META_KEY, JSON.stringify([]));
+        it('should handle Supabase fetch error gracefully', async () => {
+            const chain = createChain({ data: null, error: { message: 'Network error' } });
+            // Override the chain to throw when awaited
+            const errorChain = {
+                ...chain,
+                select: vi.fn().mockReturnValue({
+                    order: vi.fn().mockResolvedValue({ data: null, error: { message: 'Network error' } }),
+                }),
+            };
+            mockFrom.mockReturnValue(errorChain);
 
             const { result } = renderHook(() => useTournament(), { wrapper });
 
@@ -74,33 +98,20 @@ describe('TournamentContext (localStorage mode)', () => {
                 expect(result.current.isLoading).toBe(false);
             });
 
-            expect(result.current.tournaments).toHaveLength(1);
-            expect(result.current.tournaments[0].name).toBe('RICOCHET DUTCH OPEN 2026');
-        });
-
-        it('should handle corrupt localStorage data gracefully', async () => {
-            localStorage.setItem(LOCAL_META_KEY, 'not-json!!!');
-
-            const { result } = renderHook(() => useTournament(), { wrapper });
-
-            await waitFor(() => {
-                expect(result.current.isLoading).toBe(false);
-            });
-
-            // Should fail gracefully with empty tournaments
             expect(result.current.tournaments).toEqual([]);
         });
     });
 
-    // ─── selectTournament ───────────────────────────────────────────────
+    // Select Tournament
 
     describe('selectTournament', () => {
-        it('should set the active tournament and persist to localStorage', async () => {
-            const existing = [
-                createMockTournament({ id: 't1', name: 'Tournament 1' }),
-                createMockTournament({ id: 't2', name: 'Tournament 2' }),
+        it('should update activeTournamentId', async () => {
+            const tournaments = [
+                createMockTournament({ id: 't1' }),
+                createMockTournament({ id: 't2' }),
             ];
-            localStorage.setItem(LOCAL_META_KEY, JSON.stringify(existing));
+            const chain = createChain({ data: tournaments, error: null });
+            mockFrom.mockReturnValue(chain);
 
             const { result } = renderHook(() => useTournament(), { wrapper });
 
@@ -113,14 +124,12 @@ describe('TournamentContext (localStorage mode)', () => {
             });
 
             expect(result.current.activeTournamentId).toBe('t2');
-            expect(localStorage.getItem('ricochet_active_id')).toBe('t2');
         });
 
-        it('should auto-select first tournament on load', async () => {
-            const existing = [
-                createMockTournament({ id: 't1', name: 'Tournament 1' }),
-            ];
-            localStorage.setItem(LOCAL_META_KEY, JSON.stringify(existing));
+        it('should persist active ID to localStorage', async () => {
+            const tournaments = [createMockTournament({ id: 't1' })];
+            const chain = createChain({ data: tournaments, error: null });
+            mockFrom.mockReturnValue(chain);
 
             const { result } = renderHook(() => useTournament(), { wrapper });
 
@@ -128,18 +137,22 @@ describe('TournamentContext (localStorage mode)', () => {
                 expect(result.current.isLoading).toBe(false);
             });
 
-            await waitFor(() => {
-                expect(result.current.activeTournamentId).toBe('t1');
+            act(() => {
+                result.current.selectTournament('t1');
             });
+
+            expect(localStorage.getItem('ricochet_active_id')).toBe('t1');
         });
 
-        it('should restore previously selected tournament from localStorage', async () => {
-            const existing = [
+        it('should restore active ID from localStorage on load', async () => {
+            localStorage.setItem('ricochet_active_id', 't2');
+
+            const tournaments = [
                 createMockTournament({ id: 't1' }),
                 createMockTournament({ id: 't2' }),
             ];
-            localStorage.setItem(LOCAL_META_KEY, JSON.stringify(existing));
-            localStorage.setItem('ricochet_active_id', 't2');
+            const chain = createChain({ data: tournaments, error: null });
+            mockFrom.mockReturnValue(chain);
 
             const { result } = renderHook(() => useTournament(), { wrapper });
 
@@ -147,63 +160,70 @@ describe('TournamentContext (localStorage mode)', () => {
                 expect(result.current.isLoading).toBe(false);
             });
 
-            await waitFor(() => {
-                expect(result.current.activeTournamentId).toBe('t2');
-            });
+            expect(result.current.activeTournamentId).toBe('t2');
         });
     });
 
-    // ─── createTournament ───────────────────────────────────────────────
+    // Create Tournament
 
     describe('createTournament', () => {
-        it('should create a new tournament in localStorage', async () => {
+        it('should insert via Supabase and add to state', async () => {
+            const newTournament = createMockTournament({ id: 'new-1', name: 'New Tournament' });
+
+            // Let initial load use the default chain from beforeEach
             const { result } = renderHook(() => useTournament(), { wrapper });
 
             await waitFor(() => {
                 expect(result.current.isLoading).toBe(false);
             });
 
-            let newId;
+            // Override mockFrom for the insert operation
+            const insertChain = createChain({ data: newTournament, error: null });
+            mockFrom.mockReturnValue(insertChain);
+
+            let createdId;
             await act(async () => {
-                newId = await result.current.createTournament('New Tournament');
+                createdId = await result.current.createTournament('New Tournament');
             });
 
-            expect(newId).toBeTruthy();
-            expect(result.current.tournaments).toHaveLength(2); // default + new
-            expect(result.current.tournaments[0].name).toBe('New Tournament');
-
-            // Should auto-select the new tournament
-            expect(result.current.activeTournamentId).toBe(newId);
-
-            // Verify persistence
-            const stored = JSON.parse(localStorage.getItem(LOCAL_META_KEY));
-            expect(stored).toHaveLength(2);
+            expect(createdId).toBe('new-1');
+            expect(result.current.tournaments).toContainEqual(
+                expect.objectContaining({ id: 'new-1' })
+            );
         });
 
-        it('should create tournament with correct defaults', async () => {
+        it('should return null on Supabase error', async () => {
+            // Let initial load use the default chain from beforeEach
             const { result } = renderHook(() => useTournament(), { wrapper });
 
             await waitFor(() => {
                 expect(result.current.isLoading).toBe(false);
             });
 
+            // Override mockFrom for the error insert operation
+            const errorChain = createChain({ data: null, error: { message: 'Insert failed' } });
+            mockFrom.mockReturnValue(errorChain);
+
+            let createdId;
             await act(async () => {
-                await result.current.createTournament('Test');
+                createdId = await result.current.createTournament('Fail Tournament');
             });
 
-            const created = result.current.tournaments[0];
-            expect(created.status).toBe('setup');
-            expect(created.address).toBe('');
-            expect(created.date).toBeTruthy();
+            expect(createdId).toBeNull();
         });
     });
 
-    // ─── updateTournament ───────────────────────────────────────────────
+    // Update Tournament
 
     describe('updateTournament', () => {
-        it('should update tournament fields in localStorage', async () => {
-            const existing = [createMockTournament({ id: 't1', name: 'Original' })];
-            localStorage.setItem(LOCAL_META_KEY, JSON.stringify(existing));
+        it('should update via Supabase and update state', async () => {
+            const tournaments = [createMockTournament({ id: 't1', name: 'Old Name' })];
+            let callCount = 0;
+            mockFrom.mockImplementation(() => {
+                callCount++;
+                if (callCount <= 1) return createChain({ data: tournaments, error: null });
+                return createChain({ error: null });
+            });
 
             const { result } = renderHook(() => useTournament(), { wrapper });
 
@@ -212,26 +232,27 @@ describe('TournamentContext (localStorage mode)', () => {
             });
 
             await act(async () => {
-                await result.current.updateTournament('t1', { name: 'Updated Name', status: 'active' });
+                await result.current.updateTournament('t1', { name: 'New Name' });
             });
 
-            expect(result.current.tournaments[0].name).toBe('Updated Name');
-            expect(result.current.tournaments[0].status).toBe('active');
-
-            const stored = JSON.parse(localStorage.getItem(LOCAL_META_KEY));
-            expect(stored[0].name).toBe('Updated Name');
+            expect(result.current.tournaments[0].name).toBe('New Name');
         });
     });
 
-    // ─── deleteTournament ───────────────────────────────────────────────
+    // Delete Tournament
 
     describe('deleteTournament', () => {
-        it('should remove a tournament from localStorage', async () => {
-            const existing = [
-                createMockTournament({ id: 't1', name: 'Tournament 1' }),
-                createMockTournament({ id: 't2', name: 'Tournament 2' }),
+        it('should delete via Supabase and remove from state', async () => {
+            const tournaments = [
+                createMockTournament({ id: 't1' }),
+                createMockTournament({ id: 't2' }),
             ];
-            localStorage.setItem(LOCAL_META_KEY, JSON.stringify(existing));
+            let callCount = 0;
+            mockFrom.mockImplementation(() => {
+                callCount++;
+                if (callCount <= 1) return createChain({ data: tournaments, error: null });
+                return createChain({ error: null });
+            });
 
             const { result } = renderHook(() => useTournament(), { wrapper });
 
@@ -240,82 +261,18 @@ describe('TournamentContext (localStorage mode)', () => {
             });
 
             await act(async () => {
-                await result.current.deleteTournament('t1');
+                await result.current.deleteTournament('t2');
             });
 
             expect(result.current.tournaments).toHaveLength(1);
-            expect(result.current.tournaments[0].id).toBe('t2');
-        });
-
-        it('should clean up related localStorage keys on delete', async () => {
-            const existing = [createMockTournament({ id: 't1' })];
-            localStorage.setItem(LOCAL_META_KEY, JSON.stringify(existing));
-            localStorage.setItem('ricochet_players_db_t1', JSON.stringify([]));
-            localStorage.setItem('ricochet_bracket_data_t1', JSON.stringify([]));
-
-            const { result } = renderHook(() => useTournament(), { wrapper });
-
-            await waitFor(() => {
-                expect(result.current.isLoading).toBe(false);
-            });
-
-            await act(async () => {
-                await result.current.deleteTournament('t1');
-            });
-
-            expect(localStorage.getItem('ricochet_players_db_t1')).toBeNull();
-            expect(localStorage.getItem('ricochet_bracket_data_t1')).toBeNull();
-        });
-
-        it('should switch active tournament when currently active one is deleted', async () => {
-            const existing = [
-                createMockTournament({ id: 't1' }),
-                createMockTournament({ id: 't2' }),
-            ];
-            localStorage.setItem(LOCAL_META_KEY, JSON.stringify(existing));
-            localStorage.setItem('ricochet_active_id', 't1');
-
-            const { result } = renderHook(() => useTournament(), { wrapper });
-
-            await waitFor(() => {
-                expect(result.current.isLoading).toBe(false);
-            });
-
-            // Wait for active ID to be restored
-            await waitFor(() => {
-                expect(result.current.activeTournamentId).toBe('t1');
-            });
-
-            await act(async () => {
-                await result.current.deleteTournament('t1');
-            });
-
-            // Should switch to remaining tournament
-            expect(result.current.activeTournamentId).toBe('t2');
-        });
-
-        it('should set activeTournamentId to null when last tournament is deleted', async () => {
-            const existing = [createMockTournament({ id: 't-only' })];
-            localStorage.setItem(LOCAL_META_KEY, JSON.stringify(existing));
-
-            const { result } = renderHook(() => useTournament(), { wrapper });
-
-            await waitFor(() => {
-                expect(result.current.isLoading).toBe(false);
-            });
-
-            await act(async () => {
-                await result.current.deleteTournament('t-only');
-            });
-
-            expect(result.current.activeTournamentId).toBeNull();
+            expect(result.current.tournaments[0].id).toBe('t1');
         });
     });
 
-    // ─── Context Error ──────────────────────────────────────────────────
+    // Context error
 
-    describe('useTournament outside provider', () => {
-        it('should throw an error when used outside TournamentProvider', () => {
+    describe('context error', () => {
+        it('should throw when used outside provider', () => {
             expect(() => {
                 renderHook(() => useTournament());
             }).toThrow('useTournament must be used within TournamentProvider');

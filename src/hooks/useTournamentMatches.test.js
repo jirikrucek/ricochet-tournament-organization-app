@@ -24,7 +24,6 @@ vi.mock('./usePlayers', () => ({
 }));
 
 vi.mock('../lib/supabase', () => ({
-    isSupabaseConfigured: false,
     supabase: {},
 }));
 
