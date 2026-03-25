@@ -6,6 +6,8 @@ on:
     branches: [ main ]
 jobs:
   test:
+    permissions:
+      contents: read
     name: Playwright
     timeout-minutes: 60
     runs-on: ubuntu-latest
