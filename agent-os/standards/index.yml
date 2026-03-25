@@ -37,16 +37,8 @@ state-management:
     description: Provider nesting order in main.jsx based on dependencies
 
 storage:
-  config-check:
-    description: Always check isSupabaseConfigured before data operations
   data-mapping:
     description: Convert between camelCase (app) and snake_case (Supabase)
-  localstorage-keys:
-    description: Consistent ricochet_* prefix naming convention
-  mode-selection:
-    description: App operates in ONE mode: Supabase OR localStorage, never both
-  realtime-subscriptions:
-    description: Supabase channels for live updates, storage events for localStorage
 
 tournament:
   best-of-rules:
