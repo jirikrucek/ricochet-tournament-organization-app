@@ -60,7 +60,7 @@ The requested direction is to converge on Supabase-only domain persistence and S
 A database-backed admin allowlist is required to prevent all authenticated users from writing.
 
 Proposed table:
-- `admin_users`
+- `admins`
   - `user_id uuid primary key references auth.users(id) on delete cascade`
   - `email text unique`
   - `created_at timestamptz default now()`
@@ -69,7 +69,7 @@ Policy strategy:
 - Public read policies remain unchanged.
 - Write policies on `tournaments`, `players`, `matches` require:
   - authenticated role
-  - `exists (select 1 from admin_users where admin_users.user_id = auth.uid())`
+  - `exists (select 1 from admins where admins.user_id = auth.uid())`
 
 ## Failure Semantics
 

@@ -1,5 +1,5 @@
 -- Seed a local dev admin user for Supabase Auth
--- This creates an auth user and adds them to admin_users for local development.
+-- This creates an auth user and adds them to admins for local development.
 -- Email: admin@ricochet.local / Password: admin123
 
 -- Insert into auth.users (local dev only - uses known test UUID)
@@ -52,7 +52,7 @@ insert into auth.identities (
   now()
 ) on conflict (provider_id, provider) do nothing;
 
--- Add to admin_users allowlist
-insert into admin_users (user_id, email)
-values ('00000000-0000-0000-0000-000000000001', 'admin@ricochet.local')
+-- Add to admins allowlist
+insert into admins (user_id)
+values ('00000000-0000-0000-0000-000000000001')
 on conflict (user_id) do nothing;

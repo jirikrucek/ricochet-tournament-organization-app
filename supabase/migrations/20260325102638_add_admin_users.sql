@@ -1,14 +1,13 @@
--- Create admin_users allowlist table
-create table if not exists admin_users (
+-- Create admins allowlist table
+create table if not exists admins (
   user_id uuid primary key references auth.users(id) on delete cascade,
-  email text unique not null,
   created_at timestamptz default now()
 );
 
--- Enable RLS on admin_users
-alter table admin_users enable row level security;
+-- Enable RLS on admins
+alter table admins enable row level security;
 
--- Only authenticated admins can read admin_users (for self-check)
-create policy "Allow admin self-read" on admin_users
+-- Only authenticated admins can read admins (for self-check)
+create policy "Allow admin self-read" on admins
   for select to authenticated
   using (user_id = auth.uid());

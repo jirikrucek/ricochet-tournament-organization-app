@@ -2,9 +2,9 @@
 
 ## 1. Schema and Policy Updates
 
-- [x] 1.1 Add migration creating `admin_users` table linked to `auth.users`
+- [x] 1.1 Add migration creating `admins` table linked to `auth.users`
 - [x] 1.2 Update write RLS policies for `tournaments`, `players`, and `matches` to require admin allowlist membership
-- [x] 1.3 Add local development seed/setup for at least one admin auth user and matching `admin_users` row
+- [x] 1.3 Add local development seed/setup for at least one admin auth user and matching `admins` row
 
 ## 2. Auth Migration (Email/Password)
 

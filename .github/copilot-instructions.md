@@ -463,7 +463,7 @@ Each match has:
 - App hard-fails at startup if Supabase is unreachable (shows fatal error UI)
 - Real-time subscriptions for live updates on tournaments, players, and matches
 - Schema defined in [supabase migrations](../supabase/migrations/)
-- Admin writes gated by `admin_users` allowlist table + RLS policies
+- Admin writes gated by `admins` allowlist table + RLS policies
 
 #### Database Schema
 
@@ -605,7 +605,7 @@ For local development, use Supabase CLI (`supabase start`).
 ## Security
 
 - Supabase Auth with email/password authentication via [useAuth.tsx](../src/hooks/useAuth.tsx) hook
-- `admin_users` allowlist table gates write access via RLS policies
+- `admins` allowlist table gates write access via RLS policies
 - No sensitive credentials in code - use environment variables
 - Admin routes check `isAuthenticated` state (ProtectedRoute in App.jsx)
 - All player data is public by design
