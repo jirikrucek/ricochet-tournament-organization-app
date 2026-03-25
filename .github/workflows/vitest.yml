@@ -1,4 +1,4 @@
-name: Vitest Tests
+name: Vitest
 
 permissions:
   contents: read
