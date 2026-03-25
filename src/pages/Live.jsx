@@ -180,7 +180,7 @@ const Live = () => {
         });
 
         return { pinkQueue: pink, cyanQueue: cyan, pinkRecent: pinkRecent.slice(0, 1), cyanRecent: cyanRecent.slice(0, 1) };
-    }, [matches, players]);
+    }, [matches, players, t]);
 
     const getCourtState = (queue, recent) => {
         const current = queue.length > 0 ? queue[0] : null;
