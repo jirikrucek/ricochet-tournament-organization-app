@@ -5,6 +5,9 @@ import pluginReactHooks from "eslint-plugin-react-hooks";
 
 export default [
   {
+    ignores: [".squad/**"],
+  },
+  {
     files: ["**/*.{js,mjs,cjs,jsx}"],
     languageOptions: {
       globals: globals.browser,
