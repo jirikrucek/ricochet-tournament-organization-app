@@ -56,7 +56,7 @@ export const MatchesProvider = ({ children }) => {
     player2_id: m.player2Id || null,
     score1: m.score1 ?? null,
     score2: m.score2 ?? null,
-    micro_points: JSON.stringify(m.microPoints || []),
+    micro_points: m.microPoints || [],
     winner_id: m.winnerId || null,
     status: m.status || "pending",
     court: m.court || "",
@@ -139,6 +139,7 @@ export const MatchesProvider = ({ children }) => {
       // 1. OPTIMISTIC UPDATE
       setMatches(newMatches);
       isSavingRef.current = true; // Lock snapshots
+      setIsSaving(true);
 
       // 2. PERSISTENCE
       if (isAuthenticated) {
@@ -168,17 +169,37 @@ export const MatchesProvider = ({ children }) => {
               .from("matches")
               .upsert(changesToSave, { onConflict: "tournament_id,id" });
 
-            if (error) throw error;
+            if (error) {
+              // Backward compatibility: older local schemas might not have
+              // optional queue/finish columns yet.
+              const message = `${error.message || ""} ${error.details || ""}`;
+              const missingOptionalColumns =
+                message.includes("manual_order") || message.includes("finished_at");
+
+              if (!missingOptionalColumns) throw error;
+
+              const fallbackPayload = changesToSave.map(
+                ({ manual_order, finished_at, ...rest }) => rest,
+              );
+
+              const { error: fallbackError } = await supabase
+                .from("matches")
+                .upsert(fallbackPayload, { onConflict: "tournament_id,id" });
+
+              if (fallbackError) throw fallbackError;
+            }
           }
         } catch (e) {
           console.error("Error saving matches:", e);
         } finally {
           // Release lock with slight delay
+          setIsSaving(false);
           setTimeout(() => {
             isSavingRef.current = false;
           }, 500);
         }
       } else {
+        setIsSaving(false);
         isSavingRef.current = false;
       }
     },
