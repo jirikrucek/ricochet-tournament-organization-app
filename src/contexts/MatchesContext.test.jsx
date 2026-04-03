@@ -174,6 +174,44 @@ describe('MatchesContext (Supabase mode)', () => {
             expect(result.current.matches).toHaveLength(1);
             expect(result.current.matches[0].score1).toBe(3);
         });
+
+        it('should sanitize BYE player IDs before upsert to Supabase', async () => {
+            const fetchChain = createChain({ data: [], error: null });
+            const upsertChain = createChain({ error: null });
+
+            let callCount = 0;
+            mockFrom.mockImplementation(() => {
+                callCount++;
+                if (callCount === 1) return fetchChain;
+                return upsertChain;
+            });
+
+            const { result } = renderHook(() => useMatchesContext(), { wrapper });
+
+            await waitFor(() => {
+                expect(result.current).toBeDefined();
+            });
+
+            const newMatches = [
+                createMockMatch({
+                    id: 'wb-r1-m1',
+                    player1Id: 'bye-1',
+                    player2Id: 'bye-2',
+                    score1: 1,
+                    score2: 0,
+                    status: 'finished',
+                }),
+            ];
+
+            await act(async () => {
+                await result.current.saveMatches(newMatches);
+            });
+
+            const [payload] = upsertChain.upsert.mock.calls[0];
+            expect(payload).toHaveLength(1);
+            expect(payload[0].player1_id).toBeNull();
+            expect(payload[0].player2_id).toBeNull();
+        });
     });
 
     // Reset Matches

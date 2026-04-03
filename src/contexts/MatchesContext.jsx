@@ -12,6 +12,14 @@ import { supabase } from "../lib/supabase";
 
 const MatchesContext = createContext(null);
 
+const UUID_REGEX =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+
+const toUuidOrNull = (value) => {
+  if (typeof value !== "string") return null;
+  return UUID_REGEX.test(value) ? value : null;
+};
+
 export const MatchesProvider = ({ children }) => {
   const [matches, setMatches] = useState([]);
   const [isSaving, setIsSaving] = useState(false);
@@ -52,12 +60,13 @@ export const MatchesProvider = ({ children }) => {
     tournament_id: activeTournamentId,
     bracket_type: m.bracket || "wb",
     round_id: m.round || 1,
-    player1_id: m.player1Id || null,
-    player2_id: m.player2Id || null,
+    // Do not persist synthetic BYE IDs (e.g. "bye-12") into UUID columns.
+    player1_id: toUuidOrNull(m.player1Id),
+    player2_id: toUuidOrNull(m.player2Id),
     score1: m.score1 ?? null,
     score2: m.score2 ?? null,
     micro_points: m.microPoints || [],
-    winner_id: m.winnerId || null,
+    winner_id: toUuidOrNull(m.winnerId),
     status: m.status || "pending",
     court: m.court || "",
     manual_order: m.manualOrder !== undefined ? m.manualOrder : null,
@@ -158,7 +167,8 @@ export const MatchesProvider = ({ children }) => {
             if (p.score1 !== oldSnake.score1 || p.score2 !== oldSnake.score2)
               return true;
             if (p.status !== oldSnake.status) return true;
-            if (p.micro_points !== oldSnake.micro_points) return true;
+            if (JSON.stringify(p.micro_points) !== JSON.stringify(oldSnake.micro_points))
+              return true;
             if (p.finished_at !== oldSnake.finished_at) return true;
 
             return false;
